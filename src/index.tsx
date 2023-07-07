@@ -6,8 +6,13 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const Printer = NativeModules.Printer
-  ? NativeModules.Printer
+//console.log(NativeModules.EscPos);
+//console.log(NativeModules.TcpSockets);
+//console.log(NativeModules.RNPrinter); 
+//console.log(NativeModules.RNNetworkInfo);
+
+const RNPrinter = NativeModules.RNPrinter
+  ? NativeModules.RNPrinter
   : new Proxy(
       {},
       {
@@ -17,6 +22,12 @@ const Printer = NativeModules.Printer
       }
     );
 
+// Register API here
+
 export function multiply(a: number, b: number): Promise<number> {
-  return Printer.multiply(a, b);
+  return RNPrinter.multiply(a, b);
+}
+
+export function scanNetworkDevices(): Promise<number> {
+  return NativeModules.EscPos.scanNetworkDevices();
 }

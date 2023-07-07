@@ -6,11 +6,14 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "pods": "pod-install --quiet"
+    "pods": "pod-install --quiet",
+    "log-android": "react-native log-android",
+    "server": "node ./src/socket/server.js"
   },
   "dependencies": {
     "react": "18.2.0",
-    "react-native": "0.72.1"
+    "react-native": "0.72.1",
+    "@decky.fx/react-native-printer": "0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
