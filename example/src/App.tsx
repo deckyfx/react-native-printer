@@ -1,14 +1,37 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text, Button } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Button,
+  NativeEventEmitter,
+} from 'react-native';
 
-import { multiply, scanNetworkDevices } from '@decky.fx/react-native-printer';
+import type { ReactNativePrinter } from '../../src/definitions/index';
+
+import {
+  RNPrinter as RNPrinterModule,
+  DeviceScanner as DeviceScannerModule,
+  DeviceScannerEventEmitter as DeviceScannerEventEmitterModule,
+} from '@decky.fx/react-native-printer';
+
+const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
+const DeviceScanner: ReactNativePrinter.DeviceScanner = DeviceScannerModule;
+const DeviceScannerEventEmitter: NativeEventEmitter =
+  DeviceScannerEventEmitterModule;
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
 
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    RNPrinter.multiply(3, 7).then(setResult);
+    DeviceScannerEventEmitter.addListener(
+      DeviceScanner.EVENT_DEVICE_FOUND,
+      (device) => {
+        console.log(device);
+      }
+    );
   }, []);
 
   return (
@@ -16,10 +39,16 @@ export default function App() {
       <Text>Result: {result}</Text>
       <Button
         onPress={async () => {
-          const result = await scanNetworkDevices();
-          console.log(result);
+          DeviceScanner.scan(DeviceScanner.SCAN_NETWORK);
         }}
         title="Scan Network"
+        color="#841584"
+      />
+      <Button
+        onPress={async () => {
+          DeviceScanner.stop(DeviceScanner.SCAN_NETWORK);
+        }}
+        title="Stop Network"
         color="#841584"
       />
     </View>

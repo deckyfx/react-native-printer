@@ -1,4 +1,6 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
+
+import type { ReactNativePrinter } from './definitions/index';
 
 const LINKING_ERROR =
   `The package 'react-native-printer' doesn't seem to be linked. Make sure: \n\n` +
@@ -6,12 +8,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-//console.log(NativeModules.EscPos);
-//console.log(NativeModules.TcpSockets);
-//console.log(NativeModules.RNPrinter); 
-//console.log(NativeModules.RNNetworkInfo);
-
-const RNPrinter = NativeModules.RNPrinter
+export const RNPrinter: ReactNativePrinter.RNPrinter = NativeModules.RNPrinter
   ? NativeModules.RNPrinter
   : new Proxy(
       {},
@@ -22,12 +19,29 @@ const RNPrinter = NativeModules.RNPrinter
       }
     );
 
+export const EscPos: ReactNativePrinter.EscPos = NativeModules.EscPos
+  ? NativeModules.EscPos
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
+
+export const DeviceScanner: ReactNativePrinter.DeviceScanner =
+  NativeModules.DeviceScanner
+    ? NativeModules.DeviceScanner
+    : new Proxy(
+        {},
+        {
+          get() {
+            throw new Error(LINKING_ERROR);
+          },
+        }
+      );
+
 // Register API here
 
-export function multiply(a: number, b: number): Promise<number> {
-  return RNPrinter.multiply(a, b);
-}
-
-export function scanNetworkDevices(): Promise<number> {
-  return NativeModules.EscPos.scanNetworkDevices();
-}
+export const DeviceScannerEventEmitter = new NativeEventEmitter(DeviceScanner);

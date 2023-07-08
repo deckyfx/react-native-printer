@@ -1,12 +1,10 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.devicescan
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
@@ -20,23 +18,25 @@ import java.net.InterfaceAddress
 import java.net.NetworkInterface
 import java.net.Socket
 
-
 class NetworkScanManager {
   var onNetworkScanListener: OnNetworkScanListener? = null
+  private var mIsRunning = false
 
   interface OnNetworkScanListener {
-    fun deviceFound(ip: String, port: Int)
+    fun deviceFound(ip: String, port: Int, deviceName: String)
+    fun startScan()
+    fun stopScan()
+    fun error(error: Exception)
   }
 
   /**
    * Start Scanning for discoverable devices
    */
-  fun startScan() {
-    Log.d(LOG_TAG, "Start Scan.")
-    if (onNetworkScanListener == null) {
-      Log.e(LOG_TAG, "You must call registerCallback(...) first!")
-    }
-    GlobalScope.launch { Dispatchers.IO
+  suspend fun startScan() {
+    if (mIsRunning) return
+    mIsRunning = true
+    onNetworkScanListener?.startScan()
+    withContext(Dispatchers.IO) { Dispatchers.IO
       val job = async { getIPV4Address() }
       val ip = job.await()
       ip?.let{ _ip ->
@@ -47,17 +47,13 @@ class NetworkScanManager {
               ipSegments[3] = i.toString()
               val host = ipSegments.joinToString(".")
               val port = PRINTER_PORT
-              val connected = socketConnect(host, port)
-              if (connected) {
-                Log.d(LOG_TAG, "$host:$port is reachable")
-                onNetworkScanListener?.deviceFound(host, port)
-              } else {
-                Log.d(LOG_TAG, "$host:$port is unreachable")
+              val deviceName = socketConnect(host, port)
+              if (!deviceName.isNullOrEmpty()) {
+                onNetworkScanListener?.deviceFound(host, port, deviceName)
               }
-              connected
             }
           }.awaitAll()
-          Log.d(LOG_TAG, "scan finished")
+          stopScan()
         }
       }
     }
@@ -67,11 +63,13 @@ class NetworkScanManager {
    * To Stop Scanning process
    */
   fun stopScan() {
-    Log.d(LOG_TAG, "Stop Scan.")
+    mIsRunning = false
+    onNetworkScanListener?.stopScan()
   }
 
   @Suppress("SameParameterValue")
-  private fun socketConnect(host: String?, port: Int? = PRINTER_PORT): Boolean {
+  private fun socketConnect(host: String?, port: Int? = PRINTER_PORT): String? {
+    if (!mIsRunning) return null
     val socketAddress: InetSocketAddress = if (host != null) {
       InetSocketAddress(InetAddress.getByName(host), port!!)
     } else {
@@ -90,13 +88,12 @@ class NetworkScanManager {
       val buffer = StringBuilder()
       while (input.ready()) {
         buffer.append(input.readLine())
-        Log.d(LOG_TAG, "Inside thread : input.readLine() == " + input.readLine())
-        Log.d(LOG_TAG, "Inside thread : buffer == $buffer")
       }
       socket.close()
-      true
+      buffer.toString()
     } catch (e: IOException) {
-      false
+      onNetworkScanListener?.error(e)
+      null
     }
   }
 
@@ -112,8 +109,8 @@ class NetworkScanManager {
             addresses.add(interface_address)
           }
         }
-      } catch (ex: Exception) {
-        Log.e(LOG_TAG, ex.toString())
+      } catch (e: Exception) {
+        onNetworkScanListener?.error(e)
       }
       return addresses
     }
@@ -143,14 +140,15 @@ class NetworkScanManager {
       }
       ipAddress.toString()
     } catch (e: Exception) {
-      Log.d(LOG_TAG, e.message.toString())
+      onNetworkScanListener?.error(e)
       null
     }
   }
 
   companion object {
     const val PRINTER_PORT = 9100
-    const val SOCKET_TIMEOUT = 800
+    const val SOCKET_TIMEOUT = 200
+
     private val LOG_TAG = NetworkScanManager::class.java.simpleName
     private val DSLITE_LIST = listOf(
       "192.0.0.0",
