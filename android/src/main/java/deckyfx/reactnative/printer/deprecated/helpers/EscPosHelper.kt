@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer.helpers
+package deckyfx.reactnative.printer.deprecated.helpers
 
 import android.graphics.Bitmap
 

@@ -1,7 +1,6 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.deprecated
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context

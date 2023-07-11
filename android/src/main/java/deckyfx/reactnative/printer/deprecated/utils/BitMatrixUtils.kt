@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer.utils
+package deckyfx.reactnative.printer.deprecated.utils
 
 import android.graphics.Bitmap
 import android.graphics.Color

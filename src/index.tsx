@@ -19,17 +19,6 @@ export const RNPrinter: ReactNativePrinter.RNPrinter = NativeModules.RNPrinter
       }
     );
 
-export const EscPos: ReactNativePrinter.EscPos = NativeModules.EscPos
-  ? NativeModules.EscPos
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
-
 export const DeviceScanner: ReactNativePrinter.DeviceScanner =
   NativeModules.DeviceScanner
     ? NativeModules.DeviceScanner
@@ -45,3 +34,4 @@ export const DeviceScanner: ReactNativePrinter.DeviceScanner =
 // Register API here
 
 export const DeviceScannerEventEmitter = new NativeEventEmitter(DeviceScanner);
+export const RNPrinterEventEmitter = new NativeEventEmitter(RNPrinter);

@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.deprecated
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -7,10 +7,10 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
-import deckyfx.reactnative.printer.command.PrinterCommand.getBarCodeCommand
-import deckyfx.reactnative.printer.helpers.EscPosHelper.collectImageSlice
-import deckyfx.reactnative.printer.helpers.EscPosHelper.resizeImage
-import deckyfx.reactnative.printer.utils.BitMatrixUtils.convertToBitmap
+import deckyfx.reactnative.printer.deprecated.command.PrinterCommand.getBarCodeCommand
+import deckyfx.reactnative.printer.deprecated.helpers.EscPosHelper.collectImageSlice
+import deckyfx.reactnative.printer.deprecated.helpers.EscPosHelper.resizeImage
+import deckyfx.reactnative.printer.deprecated.utils.BitMatrixUtils.convertToBitmap
 import io.github.escposjava.PrinterService
 import io.github.escposjava.print.Commands
 import io.github.escposjava.print.Printer

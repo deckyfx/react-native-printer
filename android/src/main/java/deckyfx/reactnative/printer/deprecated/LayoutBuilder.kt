@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.deprecated
 
 import org.apache.commons.lang3.StringUtils
 import java.io.BufferedReader
@@ -11,7 +11,7 @@ import java.util.regex.Pattern
 class LayoutBuilder {
     var charsOnLine = CHARS_ON_LINE_58_MM
 
-    internal constructor() {}
+    internal constructor()
     internal constructor(charsOnLine: Int) {
         this.charsOnLine = charsOnLine
     }

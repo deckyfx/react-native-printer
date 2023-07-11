@@ -1,9 +1,10 @@
 package deckyfx.reactnative.printer.devicescan
 
+import android.content.Context
 import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbManager
+import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
 
-class USBScanManager(private val usbManager: UsbManager) {
+class USBScanManager(private val context: Context) {
   var onUSBScanListener: OnUSBScanListener? = null
   private var mIsRunning = false
 
@@ -21,14 +22,14 @@ class USBScanManager(private val usbManager: UsbManager) {
     if (mIsRunning) return
     mIsRunning = true
     onUSBScanListener?.startScan()
-    val devices = usbManager.deviceList
-    // Iterate over all devices
-    val it = devices.keys.iterator()
-    while (it.hasNext()) {
-      val deviceName = it.next()
-      val device = devices[deviceName] ?: return
-      onUSBScanListener?.deviceFound(device)
+    val list = UsbPrintersConnectionsManager(context).list
+    if (list.isNullOrEmpty()) {
+      return
     }
+    list.forEach {
+      if (it != null) onUSBScanListener?.deviceFound(it.device)
+    }
+    stopScan()
   }
 
   /**

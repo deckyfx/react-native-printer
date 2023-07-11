@@ -147,7 +147,7 @@ class NetworkScanManager {
 
   companion object {
     const val PRINTER_PORT = 9100
-    const val SOCKET_TIMEOUT = 200
+    const val SOCKET_TIMEOUT = 50
 
     private val LOG_TAG = NetworkScanManager::class.java.simpleName
     private val DSLITE_LIST = listOf(

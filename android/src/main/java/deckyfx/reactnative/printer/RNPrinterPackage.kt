@@ -4,13 +4,15 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import deckyfx.reactnative.printer.deprecated.EscPosModule
+import deckyfx.reactnative.printer.deprecated.LayoutBuilderModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
 
 class RNPrinterPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
     return listOf<NativeModule>(
       DeviceScanner(reactContext),
-      RNPrinterModule(reactContext),
+      RNPrinter(reactContext),
       EscPosModule(reactContext),
       LayoutBuilderModule(reactContext)
     )

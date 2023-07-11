@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.deprecated
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -8,7 +8,7 @@ import java.io.IOException
 
 class LayoutBuilderModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     private val layoutBuilder = LayoutBuilder()
-    override fun getConstants(): Map<String, Any>? {
+    override fun getConstants(): Map<String, Any> {
         val constants: MutableMap<String, Any> = HashMap()
         constants[LayoutBuilder.TEXT_ALIGNMENT_LEFT] = LayoutBuilder.TEXT_ALIGNMENT_LEFT
         constants[LayoutBuilder.TEXT_ALIGNMENT_CENTER] = LayoutBuilder.TEXT_ALIGNMENT_CENTER

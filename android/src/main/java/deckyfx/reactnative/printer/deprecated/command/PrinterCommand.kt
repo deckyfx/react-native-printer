@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer.command
+package deckyfx.reactnative.printer.deprecated.command
 
 import java.io.UnsupportedEncodingException
 
@@ -45,8 +45,8 @@ object PrinterCommand {
         command[12] = 29
         command[13] = 107
         command[14] = nType.toByte()
-        command[15] = bCodeData?.size!!.toByte()
-        System.arraycopy(bCodeData, 0, command, 16, bCodeData?.size!!)
+        command[15] = bCodeData.size!!.toByte()
+        System.arraycopy(bCodeData, 0, command, 16, bCodeData.size!!)
         return command
     }
 }

@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer
+package deckyfx.reactnative.printer.deprecated
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -21,7 +21,7 @@ class EscPosModule(private val reactContext: ReactApplicationContext) : ReactCon
         CONNECTED, DISCONNECTED, DEVICE_FOUND, NONE
     }
 
-    override fun getConstants(): Map<String, Any>? {
+    override fun getConstants(): Map<String, Any> {
         val constants: MutableMap<String, Any> = HashMap()
         constants[PRINTING_SIZE_58_MM] = PRINTING_SIZE_58_MM
         constants[PRINTING_SIZE_76_MM] = PRINTING_SIZE_76_MM
