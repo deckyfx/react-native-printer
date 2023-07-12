@@ -1,6 +1,7 @@
 package deckyfx.reactnative.printer.escposprinter.textparser
 
 import android.content.Context
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -8,10 +9,13 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
+import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.webkit.URLUtil
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
 import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParserImg.Companion.bitmapToHexadecimalString
+import java.io.File
 import java.util.Locale
 
 
@@ -23,6 +27,7 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
     val stringLines = text.split("\n|\r\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     val resultLines = Array(stringLines.size) { "" }
     for ((i, line) in stringLines.withIndex()) {
+      resultLines[i] = line
       var textAlign = ""
       var textColumn = ""
       if (line.length > 2) {
@@ -74,14 +79,14 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
                       }
                     }
 
-                    if (URLUtil.isFileUrl(imageContents) || URLUtil.isAssetUrl(imageContents)) {
+                    if (URLUtil.isContentUrl(imageContents)) {
+                      // content:// is not handlee for now
+                    } else if (URLUtil.isFileUrl(imageContents) || URLUtil.isAssetUrl(imageContents)) {
                       imageData = getImageHexadecimalString(imageContents, width, height)
                     } else if (URLUtil.isHttpUrl(imageContents) || URLUtil.isHttpsUrl(imageContents)) {
                       imageData = getImageHexadecimalString(imageContents, width, height)
                     }
-                    if (imageData.isNullOrEmpty()) {
-                      resultLines[i] = line
-                    } else {
+                    if (!imageData.isNullOrEmpty()) {
                       resultLines[i] = textAlign + "<" + textParserTag.tagName + ">" + imageData + "</" + textParserTag.tagName + ">"
                     }
                   }
@@ -95,7 +100,6 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
       // if contain file:// resize image, convert to monochrome, then get its bitmap
       // if contains http[s?]:// download, resize image, convert to monochrome then get its bitmap
       // otherwise return as is
-      resultLines[i] = line
     }
     return resultLines.joinToString("\n")
   }

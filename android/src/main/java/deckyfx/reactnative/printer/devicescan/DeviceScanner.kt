@@ -27,14 +27,12 @@ import kotlinx.coroutines.launch
 
 class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val mNetworkScanManager: NetworkScanManager = NetworkScanManager()
-  private val mUSBScanManager: USBScanManager
-  private val mBluetoothScanManager: BluetoothScanManager
+  private val mUSBScanManager: USBScanManager = USBScanManager(reactContext)
+  private val mBluetoothScanManager: BluetoothScanManager = BluetoothScanManager(reactContext)
   private val mZeroconfScanManager: ZeroconfScanManager
   private var mListenerCount: Int = 0
 
   init {
-    mUSBScanManager = USBScanManager(reactContext)
-    mBluetoothScanManager = BluetoothScanManager(reactContext)
     val nsdManager = reactContext.getSystemService(Context.NSD_SERVICE) as NsdManager
     mZeroconfScanManager = ZeroconfScanManager(reactContext, nsdManager)
   }
@@ -149,16 +147,11 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     }
     if (scanType == SCAN_USB || scanType == SCAN_ALL) {
       mUSBScanManager.onUSBScanListener = object : OnUSBScanListener {
-        override fun deviceFound(usbDevice: UsbDevice) {
+        override fun deviceFound(usbDevice: UsbDevice,  data: WritableMap) {
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)
           }
-          eventParams.putString("deviceName", usbDevice.deviceName)
-          eventParams.putInt("deviceId", usbDevice.deviceId)
-          eventParams.putString("manufacturerName", usbDevice.manufacturerName)
-          eventParams.putString("serialNumber", usbDevice.serialNumber)
-          eventParams.putString("VID", Integer.toHexString(usbDevice.vendorId).uppercase())
-          eventParams.putString("PID", Integer.toHexString(usbDevice.productId).uppercase())
+          eventParams.merge(data)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
         override fun startScan() {

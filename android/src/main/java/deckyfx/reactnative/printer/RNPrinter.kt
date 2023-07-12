@@ -38,6 +38,34 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   companion object {
     private val LOG_TAG = RNPrinter::class.java.simpleName
+    val TEST_PRINT_DESIGN =
+       // "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, this.getApplicationContext().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM))+"</img>\n" +
+      "[L]\n" +
+      "[C]<u><font size='big'>ORDER N°045</font></u>\n" +
+      "[L]\n" +
+      "[C]================================\n" +
+      "[L]\n" +
+      "[L]<b>BEAUTIFUL SHIRT</b>[R]9.99e\n" +
+      "[L]  + Size : S\n" +
+      "[L]\n" +
+      "[L]<b>AWESOME HAT</b>[R]24.99e\n" +
+      "[L]  + Size : 57/58\n" +
+      "[L]\n" +
+      "[C]--------------------------------\n" +
+      "[R]TOTAL PRICE :[R]34.98e\n" +
+      "[R]TAX :[R]4.23e\n" +
+      "[L]\n" +
+      "[C]================================\n" +
+      "[L]\n" +
+      "[L]<font size='tall'>Customer :</font>\n" +
+      "[L]Raymond DUPONT\n" +
+      "[L]5 rue des girafes\n" +
+      "[L]31547 PERPETES\n" +
+      "[L]Tel : +33801201456\n" +
+      "[L]\n" +
+      "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
+      "[C]<qrcode size='20'>https://dantsu.com/</qrcode>\n" +
+      "[L]\n"
   }
 
   @ReactMethod
@@ -147,20 +175,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       return
     }
     if (inferredScanType == DeviceScanner.SCAN_USB) {
-      val usbManager = reactContext.getSystemService(Context.USB_SERVICE) as UsbManager
-      UsbPrintersConnectionsManager(reactContext).list?.forEach {
-        if (it != null) {
-          val permissionIntent = PendingIntent.getBroadcast(
-            reactContext,
-            0,
-            Intent(DeviceScanner.ACTION_USB_PERMISSION),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
-          )
-          val filter: IntentFilter = IntentFilter(DeviceScanner.ACTION_USB_PERMISSION)
-          reactContext.registerReceiver(usbReceiver, filter)
-          usbManager.requestPermission(it.device, permissionIntent)
-        }
-      }
+      UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
       promise.resolve(true)
     }
     if (inferredScanType == DeviceScanner.SCAN_BLUETOOTH) {
@@ -228,10 +243,25 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun write(printerType: String, address:String, text: String) {}
+  fun write(printerType: String, address:String, text: String, promise: Promise) {
+    write(printerType, address, 0.0, text, promise)
+  }
 
   @ReactMethod
-  fun write(printerType: String, address:String, port:Double, text: String) {}
+  fun write(printerType: String, address:String, port:Double, text: String, promise: Promise) {
+    val deviceConnection = resolvePrinter(printerType, address, port)
+    deviceConnection?.let {
+      try {
+        val printer = EscPosPrinter(reactContext, it, 203, 48f, 32)
+        printer.printFormattedText(text, 0)
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve(true)
+  }
 
   @ReactMethod
   fun cutPaper(printerType: String, address:String) {}
@@ -271,6 +301,27 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         val printer = EscPosPrinter(reactContext, it, 203, 48f, 32)
         val model = printer.getPrinterModel()
         promise.resolve(model)
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve("")
+  }
+
+  @ReactMethod
+  fun testPrint(printerType: String, address:String, promise: Promise) {
+    testPrint(printerType, address, 0.0, promise)
+  }
+
+  @ReactMethod
+  fun testPrint(printerType: String, address:String, port: Double = 9100.0, promise: Promise) {
+    val deviceConnection = resolvePrinter(printerType, address, port)
+    deviceConnection?.let {
+      try {
+        val printer = EscPosPrinter(reactContext, it, 203, 48f, 32)
+        printer.printFormattedTextAndCut(TEST_PRINT_DESIGN, 0)
         return
       } catch (e: Exception) {
         promise.reject(e)

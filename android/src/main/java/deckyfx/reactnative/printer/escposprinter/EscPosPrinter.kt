@@ -141,8 +141,8 @@ class EscPosPrinter(
     if (text.isNullOrEmpty()) {
       return this
     }
-    val imageParsedText = text // PrinterImageUriParser(context, this).parse(text)
-    if (imageParsedText.isNullOrEmpty()) {
+    val imageParsedText = PrinterImageUriParser(context, this).parse(text)
+    if (imageParsedText.isEmpty()) {
       return this
     }
     val textParser = PrinterTextParser(this)

@@ -1,8 +1,14 @@
 package deckyfx.reactnative.printer.escposprinter.connection.usb
 
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.os.Build
+import deckyfx.reactnative.printer.devicescan.DeviceScanner
 
 open class UsbConnectionsManager(context: Context) {
     @JvmField
@@ -36,4 +42,24 @@ open class UsbConnectionsManager(context: Context) {
             }
             return usbDevices
         }
+
+
+  open fun requestUSBPermissions(context: Context, receiver: BroadcastReceiver?) {
+    if (usbManager == null) {
+      return
+    }
+    list?.forEach {
+      if (it != null) {
+        val permissionIntent = PendingIntent.getBroadcast(
+          context,
+          0,
+          Intent(DeviceScanner.ACTION_USB_PERMISSION),
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
+        )
+        val filter = IntentFilter(DeviceScanner.ACTION_USB_PERMISSION)
+        context.registerReceiver(receiver, filter)
+        usbManager?.requestPermission(it.device, permissionIntent)
+      }
+    }
+  }
 }

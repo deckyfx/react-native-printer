@@ -14,6 +14,24 @@ const EVENT_ERROR = 'ERROR';
 const EVENT_DEVICE_FOUND = 'DEVICE_FOUND';
 const EVENT_OTHER = 'OTHER';
 
+export const Constants = {
+  SCAN_ALL: SCAN_ALL,
+  SCAN_NETWORK: SCAN_NETWORK,
+  SCAN_ZEROCONF: SCAN_ZEROCONF,
+  SCAN_BLUETOOTH: SCAN_BLUETOOTH,
+  SCAN_USB: SCAN_USB,
+
+  PRINTER_TYPE_NETWORK: PRINTER_TYPE_NETWORK,
+  PRINTER_TYPE_BLUETOOTH: PRINTER_TYPE_BLUETOOTH,
+  PRINTER_TYPE_USB: PRINTER_TYPE_USB,
+
+  EVENT_START_SCAN: EVENT_START_SCAN,
+  EVENT_STOP_SCAN: EVENT_STOP_SCAN,
+  EVENT_ERROR: EVENT_ERROR,
+  EVENT_DEVICE_FOUND: EVENT_DEVICE_FOUND,
+  EVENT_OTHER: EVENT_OTHER,
+};
+
 export type SCAN_TYPE =
   | typeof SCAN_ALL
   | typeof SCAN_NETWORK
@@ -41,4 +59,20 @@ export type DeviceScanner = {
   EVENT_ERROR: typeof EVENT_ERROR;
   EVENT_DEVICE_FOUND: typeof EVENT_DEVICE_FOUND;
   EVENT_OTHER: typeof EVENT_OTHER;
+};
+
+export interface DeviceFoundPayload {
+  scanType: SCAN_TYPE;
+  [key: string]: any;
+}
+
+export type USBDeviceData = {
+  PID: string | undefined;
+  VID: string | undefined;
+  deviceId: string | undefined;
+  deviceName: string | undefined;
+  manufacturerName: string | undefined;
+  serialNumber: number | undefined;
+  status: string | undefined;
+  scanType: SCAN_TYPE;
 };

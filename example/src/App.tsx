@@ -1,149 +1,93 @@
 import * as React from 'react';
 
-import {
-  StyleSheet,
-  View,
-  Text,
-  Button,
-  NativeEventEmitter,
-  TextInput,
-} from 'react-native';
+import { StyleSheet, View, Text, Button, TextInput } from 'react-native';
+
+import DocumentPicker from 'react-native-document-picker';
 
 import type { ReactNativePrinter } from '../../src/definitions/index';
+import type {
+  DeviceFoundPayload,
+  USBDeviceData,
+} from 'src/definitions/DeviceScanner';
+import type ExtendedNativeEventEmitter from '../../src/ExtendedNativeEventEmitter';
 
 // @ts-ignore
 import {
   RNPrinter as RNPrinterModule,
   DeviceScanner as DeviceScannerModule,
-  DeviceScannerEventEmitter as DeviceScannerEventEmitterModule,
   RNPrinterEventEmitter as RNPrinterEventEmitterModule,
 } from '@decky.fx/react-native-printer';
 
 const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
 const DeviceScanner: ReactNativePrinter.DeviceScanner = DeviceScannerModule;
-const DeviceScannerEventEmitter: NativeEventEmitter =
-  DeviceScannerEventEmitterModule;
-const RNPrinterEventEmitter: NativeEventEmitter = RNPrinterEventEmitterModule;
+const RNPrinterEventEmitter: ExtendedNativeEventEmitter =
+  RNPrinterEventEmitterModule;
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
-  const [address, setAddress] = React.useState<string | undefined>(
-    '/dev/bus/usb/001/003'
-  );
+  const [address, setAddress] = React.useState<string | undefined>('');
+  const [imageUri, setImageUri] = React.useState<string | undefined>('');
 
   React.useEffect(() => {
-    DeviceScannerEventEmitter.addListener(
-      DeviceScanner.EVENT_START_SCAN,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_START_SCAN, ...args);
+    RNPrinterEventEmitter.onEvents(
+      (event: string, payload: DeviceFoundPayload) => {
+        console.log(event, payload);
+        if (
+          event === 'DEVICE_FOUND' &&
+          payload.scanType === DeviceScanner.SCAN_USB
+        ) {
+          const usbDevice = payload as USBDeviceData;
+          setAddress(usbDevice.deviceName);
+        }
       }
     );
-    DeviceScannerEventEmitter.addListener(
-      DeviceScanner.EVENT_STOP_SCAN,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_STOP_SCAN, ...args);
-      }
-    );
-    DeviceScannerEventEmitter.addListener(
-      DeviceScanner.EVENT_DEVICE_FOUND,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_DEVICE_FOUND, ...args);
-      }
-    );
-    DeviceScannerEventEmitter.addListener(
-      DeviceScanner.EVENT_OTHER,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_OTHER, ...args);
-      }
-    );
-    DeviceScannerEventEmitter.addListener(
-      DeviceScanner.EVENT_ERROR,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_ERROR, ...args);
-      }
-    );
-
-    RNPrinterEventEmitter.addListener(
-      DeviceScanner.EVENT_START_SCAN,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_START_SCAN, ...args);
-      }
-    );
-    RNPrinterEventEmitter.addListener(
-      DeviceScanner.EVENT_STOP_SCAN,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_STOP_SCAN, ...args);
-      }
-    );
-    RNPrinterEventEmitter.addListener(
-      DeviceScanner.EVENT_DEVICE_FOUND,
-      (...args) => {
-        console.log(DeviceScanner.EVENT_DEVICE_FOUND, ...args);
-      }
-    );
-    RNPrinterEventEmitter.addListener(DeviceScanner.EVENT_OTHER, (...args) => {
-      console.log(DeviceScanner.EVENT_OTHER, ...args);
-    });
-    RNPrinterEventEmitter.addListener(DeviceScanner.EVENT_ERROR, (...args) => {
-      console.log(DeviceScanner.EVENT_ERROR, ...args);
-    });
     RNPrinter.multiply(3, 7).then(setResult);
     return () => {
-      DeviceScannerEventEmitter.removeAllListeners(DeviceScanner.EVENT_ERROR);
-      DeviceScannerEventEmitter.removeAllListeners(DeviceScanner.EVENT_OTHER);
-      DeviceScannerEventEmitter.removeAllListeners(
-        DeviceScanner.EVENT_DEVICE_FOUND
-      );
-      DeviceScannerEventEmitter.removeAllListeners(
-        DeviceScanner.EVENT_STOP_SCAN
-      );
-      DeviceScannerEventEmitter.removeAllListeners(
-        DeviceScanner.EVENT_START_SCAN
-      );
-
-      RNPrinterEventEmitter.removeAllListeners(DeviceScanner.EVENT_ERROR);
-      RNPrinterEventEmitter.removeAllListeners(DeviceScanner.EVENT_OTHER);
-      RNPrinterEventEmitter.removeAllListeners(
-        DeviceScanner.EVENT_DEVICE_FOUND
-      );
-      RNPrinterEventEmitter.removeAllListeners(DeviceScanner.EVENT_STOP_SCAN);
-      RNPrinterEventEmitter.removeAllListeners(DeviceScanner.EVENT_START_SCAN);
+      RNPrinterEventEmitter.offEvents();
     };
   }, []);
 
   return (
     <View style={styles.container}>
       <Text>This is invoked from Native Modules: {result}</Text>
-      <TextInput value={address} onChangeText={setAddress} />
       <Button
         onPress={async () => {
-          RNPrinter.getUsbPrintersCount()
-            .then((count) => {
-              console.log('USB Printer detected', count);
-              return RNPrinter.requestPermissions(DeviceScanner.SCAN_USB);
-            })
-            .then((_result: boolean) => {
-              if (!_result) {
-                console.log('Something wrong');
-              }
-            });
+          DeviceScanner.scan(DeviceScanner.SCAN_USB);
         }}
-        title="Check USB Devices"
+        title="Scan USB Devices"
         color="#841584"
+      />
+      <TextInput
+        value={address}
+        onChangeText={setAddress}
+        // eslint-disable-next-line react-native/no-inline-styles
+        style={{ borderColor: 'black' }}
       />
       <Button
         onPress={async () => {
+          DocumentPicker.pickSingle({
+            presentationStyle: 'fullScreen',
+            copyTo: 'cachesDirectory',
+            type: ['image/jpg', 'image/png'],
+          }).then((_result) => {
+            setImageUri(_result.fileCopyUri!!);
+          });
+        }}
+        title="Select Image"
+        color="#841584"
+      />
+      <Text>{imageUri}</Text>
+      <Button
+        onPress={async () => {
           if (address) {
-            RNPrinter.getPrinterModel(DeviceScanner.PRINTER_TYPE_USB, address)
-              .then((_result) => {
-                console.log('Device Name', _result);
-              })
-              .catch((error) => {
-                console.error(error);
-              });
+            RNPrinter.write(
+              DeviceScanner.PRINTER_TYPE_USB,
+              address,
+              `[C]<img>${imageUri}</img>\n"` + '[L]\n'
+            );
           }
         }}
-        title="Scan USB"
+        title="Print USB"
         color="#841584"
       />
     </View>

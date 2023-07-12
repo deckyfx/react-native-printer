@@ -7,13 +7,17 @@ export type RNPrinter = {
   requestPermissions(scanType: SCAN_TYPE): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
 
-  write(prNumbererType: string, address: string, text: string): void;
+  write(
+    prNumbererType: string,
+    address: string,
+    text: string
+  ): Promise<boolean>;
   write(
     prNumbererType: string,
     address: string,
     port: Number,
     text: string
-  ): void;
+  ): Promise<boolean>;
   cutPaper(prNumbererType: string, address: string): void;
   cutPaper(prNumbererType: string, address: string, port: Number): void;
   openCashBox(prNumbererType: string, address: string): void;
@@ -26,4 +30,10 @@ export type RNPrinter = {
     address: String,
     port: Number
   ): Promise<string>;
+  testPrint(
+    prNumbererType: string,
+    address: string,
+    port: Number
+  ): Promise<void>;
+  testPrint(printerType: String, address: String): Promise<void>;
 };
