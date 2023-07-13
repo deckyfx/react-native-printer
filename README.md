@@ -1,3 +1,6 @@
+> **Warning**
+> Experimental
+
 # react-native-printer
 
 printing on react-native
