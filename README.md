@@ -30,6 +30,7 @@ yarn add @decky.fx/react-native-printer
 - `cd example && yarn install`
 - if something wrong use `yarn install --ignore-engines`
 - recommmended node version are `v16.16.0` or `v18.16.1`
+- within example directory: `yarn start`
 
 ## Usage
 
