@@ -1,6 +1,17 @@
 # react-native-printer
 
-printing on react native
+printing on react-native
+
+modified from https://github.com/DantSu/ESCPOS-ThermalPrinter-Android, 
+written in full Kotlin, using latest sdk, and modern language like coroutines etc.
+
+### Notable change from DantSu's
+ - Expose it as react-native's Native Module
+ - Add devices scan methods
+ - Allow to pass image file path uri or URL for `<img>` tag's payload
+ ```js
+ const data = '<img>file:///sdcard/image.png</img>'
+ ```
 
 ## Feature
 - [ ] Scan Local Network using Socket
@@ -59,6 +70,17 @@ RNPrinterEventEmitter.offEvents();
 ## API
 
 ## Constants
+
+## TODO
+- [x] Scan Local Network using Socket
+- [x] Scan Local Network using Zeroconf
+- [X] Scan Bluetooth Devices
+- [x] Scan USB Devices
+- [x] Print to Network Printer
+- [x] Print to Bluetooth Printer
+- [x] Print to USB Printer
+- [x] iOS Implementation
+
 
 ## Contributing
 
