@@ -1,15 +1,15 @@
 import { NativeEventEmitter, type NativeModule } from 'react-native';
 import {
   Constants as DeviceScanner,
-  type DeviceFoundPayload,
+  type DeviceScanPayload,
 } from './definitions/DeviceScanner';
 
-export default class ExtendedNativeEventEmitter extends NativeEventEmitter {
+export default class DeviceScannerEventEmitter extends NativeEventEmitter {
   constructor(nativeModule?: NativeModule) {
     super(nativeModule);
   }
 
-  onEvents(listener: (even: string, payload: DeviceFoundPayload) => void) {
+  onEvents(listener: (even: string, payload: DeviceScanPayload) => void) {
     [
       DeviceScanner.EVENT_START_SCAN,
       DeviceScanner.EVENT_STOP_SCAN,

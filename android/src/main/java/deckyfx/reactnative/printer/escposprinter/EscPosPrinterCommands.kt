@@ -24,6 +24,9 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   private val charsetEncoding: EscPosCharsetEncoding
   private var useEscAsteriskCommand = false
 
+  val connection: DeviceConnection?
+    get() = printerConnection
+
   /**
    * Start socket connection and open stream with the device.
    */

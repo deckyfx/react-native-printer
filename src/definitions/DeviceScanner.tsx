@@ -4,10 +4,6 @@ const SCAN_ZEROCONF = 2;
 const SCAN_BLUETOOTH = 3;
 const SCAN_USB = 4;
 
-const PRINTER_TYPE_NETWORK = 'network';
-const PRINTER_TYPE_BLUETOOTH = 'bluetooth';
-const PRINTER_TYPE_USB = 'usb';
-
 const EVENT_START_SCAN = 'START_SCAN';
 const EVENT_STOP_SCAN = 'STOP_SCAN';
 const EVENT_ERROR = 'ERROR';
@@ -20,10 +16,6 @@ export const Constants = {
   SCAN_ZEROCONF: SCAN_ZEROCONF,
   SCAN_BLUETOOTH: SCAN_BLUETOOTH,
   SCAN_USB: SCAN_USB,
-
-  PRINTER_TYPE_NETWORK: PRINTER_TYPE_NETWORK,
-  PRINTER_TYPE_BLUETOOTH: PRINTER_TYPE_BLUETOOTH,
-  PRINTER_TYPE_USB: PRINTER_TYPE_USB,
 
   EVENT_START_SCAN: EVENT_START_SCAN,
   EVENT_STOP_SCAN: EVENT_STOP_SCAN,
@@ -61,7 +53,7 @@ export type DeviceScanner = {
   EVENT_OTHER: typeof EVENT_OTHER;
 };
 
-export interface DeviceFoundPayload {
+export interface DeviceScanPayload {
   scanType: SCAN_TYPE;
   [key: string]: any;
 }

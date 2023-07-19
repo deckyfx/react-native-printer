@@ -6,22 +6,25 @@ import DocumentPicker from 'react-native-document-picker';
 
 import type { ReactNativePrinter } from '../../src/definitions/index';
 import type {
-  DeviceFoundPayload,
+  DeviceScanPayload,
   USBDeviceData,
 } from 'src/definitions/DeviceScanner';
-import type ExtendedNativeEventEmitter from '../../src/ExtendedNativeEventEmitter';
+import type DSEventEmitter from '../../src/DeviceScannerEventEmitter';
+import type RNPEventEmitter from '../../src/RNPrinterEventEmitter';
 
 // @ts-ignore
 import {
   RNPrinter as RNPrinterModule,
   DeviceScanner as DeviceScannerModule,
+  DeviceScannerEventEmitter as DeviceScannerEventEmitterModule,
   RNPrinterEventEmitter as RNPrinterEventEmitterModule,
 } from '@decky.fx/react-native-printer';
 
 const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
 const DeviceScanner: ReactNativePrinter.DeviceScanner = DeviceScannerModule;
-const RNPrinterEventEmitter: ExtendedNativeEventEmitter =
-  RNPrinterEventEmitterModule;
+const RNPrinterEventEmitter: DSEventEmitter = RNPrinterEventEmitterModule;
+const DeviceScannerEventEmitter: RNPEventEmitter =
+  DeviceScannerEventEmitterModule;
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
@@ -30,8 +33,20 @@ export default function App() {
 
   React.useEffect(() => {
     RNPrinterEventEmitter.onEvents(
-      (event: string, payload: DeviceFoundPayload) => {
-        console.log(event, payload);
+      (event: string, payload: DeviceScanPayload) => {
+        console.log('RNPrinterEventEmitter', event, payload);
+        if (
+          event === 'DEVICE_FOUND' &&
+          payload.scanType === DeviceScanner.SCAN_USB
+        ) {
+          const usbDevice = payload as USBDeviceData;
+          setAddress(usbDevice.deviceName);
+        }
+      }
+    );
+    DeviceScannerEventEmitter.onEvents(
+      (event: string, payload: DeviceScanPayload) => {
+        console.log('DeviceScannerEventEmitter', event, payload);
         if (
           event === 'DEVICE_FOUND' &&
           payload.scanType === DeviceScanner.SCAN_USB
@@ -44,6 +59,7 @@ export default function App() {
     RNPrinter.multiply(3, 7).then(setResult);
     return () => {
       RNPrinterEventEmitter.offEvents();
+      DeviceScannerEventEmitter.offEvents();
     };
   }, []);
 
@@ -80,14 +96,31 @@ export default function App() {
       <Button
         onPress={async () => {
           if (address) {
-            RNPrinter.write(
-              DeviceScanner.PRINTER_TYPE_USB,
-              address,
+            RNPrinter.enqueuePrint(
+              {
+                type: RNPrinter.PRINTER_TYPE_USB,
+                address: address,
+              },
               `[C]<img>${imageUri}</img>\n"` + '[L]\n'
             );
           }
         }}
-        title="Print USB"
+        title="Print With Image"
+        color="#841584"
+      />
+      <Button
+        onPress={async () => {
+          if (address) {
+            RNPrinter.enqueuePrint(
+              {
+                type: RNPrinter.PRINTER_TYPE_USB,
+                address: address,
+              },
+              RNPrinter.TEST_PRINT_DESIGN
+            );
+          }
+        }}
+        title="Print Receipt"
         color="#841584"
       />
     </View>

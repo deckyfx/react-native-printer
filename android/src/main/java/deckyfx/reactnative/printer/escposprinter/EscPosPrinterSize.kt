@@ -1,6 +1,7 @@
 package deckyfx.reactnative.printer.escposprinter
 
 import android.graphics.Bitmap
+import kotlin.math.roundToInt
 
 abstract class EscPosPrinterSize protected constructor(
     /**
@@ -51,7 +52,7 @@ abstract class EscPosPrinterSize protected constructor(
      * @return int
      */
     fun mmToPx(mmSize: Float): Int {
-        return Math.round(mmSize * printerDpi.toFloat() / INCH_TO_MM)
+        return (mmSize * printerDpi.toFloat() / INCH_TO_MM).roundToInt()
     }
 
     /**
@@ -62,7 +63,7 @@ abstract class EscPosPrinterSize protected constructor(
      * @return Bytes contain the image in ESC/POS command
      */
     fun bitmapToBytes(bitmap: Bitmap, gradient: Boolean): ByteArray {
-        var bitmap = bitmap
+        var newBitmap = bitmap
         var isSizeEdit = false
         var bitmapWidth = bitmap.width
         var bitmapHeight = bitmap.height
@@ -81,9 +82,9 @@ abstract class EscPosPrinterSize protected constructor(
             isSizeEdit = true
         }
         if (isSizeEdit) {
-            bitmap = Bitmap.createScaledBitmap(bitmap, bitmapWidth, bitmapHeight, true)
+          newBitmap = Bitmap.createScaledBitmap(bitmap, bitmapWidth, bitmapHeight, true)
         }
-        return EscPosPrinterCommands.bitmapToBytes(bitmap, gradient)
+        return EscPosPrinterCommands.bitmapToBytes(newBitmap, gradient)
     }
 
     companion object {

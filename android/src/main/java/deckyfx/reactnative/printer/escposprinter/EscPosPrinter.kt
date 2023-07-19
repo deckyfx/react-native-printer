@@ -83,6 +83,12 @@ class EscPosPrinter(
     }
   }
 
+  val commands: EscPosPrinterCommands?
+    get() = printer
+
+  val connection: DeviceConnection?
+    get() = printer?.connection
+
   /**
    * Close the connection with the printer.
    *

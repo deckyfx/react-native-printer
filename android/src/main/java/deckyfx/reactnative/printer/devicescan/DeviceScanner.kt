@@ -48,10 +48,6 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     constants["SCAN_BLUETOOTH"] = SCAN_BLUETOOTH
     constants["SCAN_USB"] = SCAN_USB
 
-    constants["PRINTER_TYPE_NETWORK"] = PRINTER_TYPE_NETWORK
-    constants["PRINTER_TYPE_BLUETOOTH"] = PRINTER_TYPE_BLUETOOTH
-    constants["PRINTER_TYPE_USB"] = PRINTER_TYPE_USB
-
     constants["EVENT_START_SCAN"] = EVENT_START_SCAN
     constants["EVENT_STOP_SCAN"] = EVENT_STOP_SCAN
     constants["EVENT_ERROR"] = EVENT_ERROR
@@ -281,10 +277,6 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     const val SCAN_ZEROCONF = 2
     const val SCAN_BLUETOOTH = 3
     const val SCAN_USB = 4
-
-    const val PRINTER_TYPE_NETWORK = "network"
-    const val PRINTER_TYPE_BLUETOOTH = "bluetooth"
-    const val PRINTER_TYPE_USB = "usb"
 
     const val EVENT_START_SCAN = "START_SCAN"
     const val EVENT_STOP_SCAN = "STOP_SCAN"
