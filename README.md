@@ -54,20 +54,28 @@ import {
   RNPrinter,
   DeviceScanner,
   RNPrinterEventEmitter,
+  DeviceScannerEventEmitter,
 } from '@decky.fx/react-native-printer';
 
 // Listen various event
 RNPrinterEventEmitter.onEvents((event, payload) => {});
+DeviceScannerEventEmitter.onEvents((event, payload) => {});
 
 // Scan usb devices
 DeviceScanner.scan(DeviceScanner.SCAN_USB);
 
 // Write to usb device 
-RNPrinter.write(DeviceScanner.PRINTER_TYPE_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'
-);
+RNPrinter.write(RNPrinter.PRINTER_TYPE_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'
+
+// Write to usb device 
+RNPrinter.write({
+  type: RNPrinter.PRINTER_TYPE_USB,
+  address: '/dev/usb/001/003',
+}, RNPrinter.TEST_PRINT_DESIGN);
 
 // unsubscribe listeners if no longer needed
 RNPrinterEventEmitter.offEvents();
+DeviceScannerEventEmitter.offEvents();
 ```
 
 ## API
