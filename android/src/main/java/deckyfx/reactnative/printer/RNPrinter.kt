@@ -24,7 +24,9 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
@@ -33,6 +35,9 @@ import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothP
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
 import deckyfx.reactnative.printer.worker.PrintingWorkerManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class RNPrinter(private val reactContext: ReactApplicationContext) :
@@ -347,9 +352,15 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun enqueuePrint(config: ReadableMap, text:String) {
+  fun enqueuePrint(config: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
     initWorkerListener()
-    PrintingWorkerManager.getInstance().enqueuePrint(reactContext, config, text)
+    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, config, text, cutPaper, openCashBox)
+    promise.resolve(uuid?.toString())
+  }
+
+  @ReactMethod
+  fun prunePrintingWorks() {
+    WorkManager.getInstance(reactContext).pruneWork()
   }
 
   // Example method
@@ -444,48 +455,71 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     if (workerListenerInitialized) {
       return
     }
-    WorkManager.getInstance(reactContext)
-      // requestId is the WorkRequest id
-      .getWorkInfosByTagLiveData(PrintingWorkerManager.PRINTING_JOB_TAG)
-      .observe(currentActivity as LifecycleOwner, Observer { works: List<WorkInfo> ->
-        if (works.isNotEmpty()) {
-          works.forEach { workInfo ->
-            val eventParams = Arguments.createMap().apply {
-              putString("type", workInfo.progress.getString("type"))
-              putString("address", workInfo.progress.getString("address"))
-              putInt("port", workInfo.progress.getInt("port", 0))
-              putInt("dpi", workInfo.progress.getInt("dpi", 0))
-              putDouble("width", workInfo.progress.getFloat("width", 0f).toDouble())
-              putInt("maxChars", workInfo.progress.getInt("maxChars", 0))
-              putString("jobId", workInfo.progress.getString("jobId"))
-              putString("jobName", workInfo.progress.getString("jobName"))
-              putString("jobTag", workInfo.progress.getString("jobTag"))
-            }
-            when  (workInfo.state) {
-              WorkInfo.State.ENQUEUED -> {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+    GlobalScope.launch(Dispatchers.Main) {
+      WorkManager.getInstance(reactContext)
+        // requestId is the WorkRequest id
+        .getWorkInfosByTagLiveData(PrintingWorkerManager.PRINTING_JOB_TAG)
+        .observe(currentActivity as LifecycleOwner, Observer { works: List<WorkInfo> ->
+          if (works.isNotEmpty()) {
+            works.forEach { workInfo ->
+              val eventParams = Arguments.createMap().apply {
+                putString("type", workInfo.progress.getString("type"))
+                putString("address", workInfo.progress.getString("address"))
+                putInt("port", workInfo.progress.getInt("port", 0))
+                putInt("dpi", workInfo.progress.getInt("dpi", 0))
+                putDouble("width", workInfo.progress.getFloat("width", 0f).toDouble())
+                putInt("maxChars", workInfo.progress.getInt("maxChars", 0))
+                putString("jobId", workInfo.progress.getString("jobId"))
+                putString("jobName", workInfo.progress.getString("jobName"))
+                putString("jobTag", workInfo.progress.getString("jobTag"))
+                putString("state", workInfo.state.name)
+                putString("id", workInfo.id.toString())
+                val tags = Arguments.createArray()
+                workInfo.tags.forEach {
+                  tags.pushString(it)
+                }
+                putArray("tags", tags)
+                putInt("generation", workInfo.generation)
+                putInt("runAttemptCount", workInfo.runAttemptCount)
               }
-              WorkInfo.State.RUNNING -> {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-              }
-              WorkInfo.State.SUCCEEDED -> {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-              }
-              WorkInfo.State.FAILED -> {
-                eventParams.putString("error", workInfo.outputData.getString("error"))
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-              }
-              WorkInfo.State.BLOCKED -> {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-              }
-              WorkInfo.State.CANCELLED -> {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+              when (workInfo.state) {
+                WorkInfo.State.ENQUEUED -> {
+                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                }
+
+                WorkInfo.State.RUNNING -> {
+                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                }
+
+                WorkInfo.State.SUCCEEDED -> {
+                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                }
+
+                WorkInfo.State.FAILED -> {
+                  val errorMessage = workInfo.outputData.getString("error")
+                  val type = workInfo.progress.getString("type")
+                  val address = workInfo.progress.getString("address")
+                  if (errorMessage.isNullOrEmpty() && type.isNullOrEmpty() && address.isNullOrEmpty()) {
+                    eventParams.putString("state", "PENDING")
+                    emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                  } else {
+                    eventParams.putString("error",errorMessage)
+                    emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                  }
+                }
+
+                WorkInfo.State.BLOCKED -> {
+                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                }
+
+                WorkInfo.State.CANCELLED -> {
+                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                }
               }
             }
           }
-        } else {
-        }
-      })
+        })
+    }
     workerListenerInitialized = true
   }
 

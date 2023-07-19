@@ -17,13 +17,14 @@ written in full Kotlin, using latest sdk, and modern language like coroutines et
  ```
 
 ## Feature
-- [ ] Scan Local Network using Socket
+- [x] Scan Local Network using Socket
 - [ ] Scan Local Network using Zeroconf
 - [ ] Scan Bluetooth Devices
 - [x] Scan USB Devices
-- [ ] Print to Network Printer
+- [x] Print to Network Printer
 - [ ] Print to Bluetooth Printer
 - [x] Print to USB Printer
+- [x] Queue Job Printing using AndroidWorker 
 
 
 ## Installation
@@ -36,6 +37,9 @@ or
 ```sh
 yarn add @decky.fx/react-native-printer
 ```
+
+## Latest Working Version
+1.0.0-b
 
 ## Development Instructions
 
@@ -84,13 +88,14 @@ DeviceScannerEventEmitter.offEvents();
 
 ## TODO
 - [x] Scan Local Network using Socket
-- [x] Scan Local Network using Zeroconf
-- [X] Scan Bluetooth Devices
+- [ ] Scan Local Network using Zeroconf
+- [ ] Scan Bluetooth Devices
 - [x] Scan USB Devices
 - [x] Print to Network Printer
-- [x] Print to Bluetooth Printer
+- [ ] Print to Bluetooth Printer
 - [x] Print to USB Printer
-- [x] iOS Implementation
+- [x] Queue Job Printing using AndroidWorker
+- [ ] iOS Implementation
 
 
 ## Contributing

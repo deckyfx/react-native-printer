@@ -19,6 +19,7 @@ class PrintingWorkerManager private constructor() {
     private var instance: PrintingWorkerManager? = null
 
     const val PRINTING_JOB_TAG = "printing"
+    const val PRINTING_JOB_NAME_PREFIX = "printing-job-"
 
     fun getInstance() =
       instance ?: synchronized(this) {
@@ -31,8 +32,10 @@ class PrintingWorkerManager private constructor() {
   fun enqueuePrint(
     context: ReactContext,
     config: ReadableMap,
-    text: String
-  ) {
+    text: String,
+    cutPaper: Boolean,
+    openCashBox: Boolean
+  ): UUID? {
     val constraints = Constraints.Builder()
       .setRequiredNetworkType(NetworkType.CONNECTED)
       .setRequiresBatteryNotLow(true)
@@ -40,7 +43,7 @@ class PrintingWorkerManager private constructor() {
 
     val jobId = UUID.randomUUID()
 
-    val jobName = "printing-job-${jobId}"
+    val jobName = "${PRINTING_JOB_NAME_PREFIX}${jobId}"
 
     val jobTag = PRINTING_JOB_TAG
 
@@ -50,6 +53,8 @@ class PrintingWorkerManager private constructor() {
       .putString("jobId", jobId.toString())
       .putString("jobName", jobName)
       .putString("jobTag", jobTag)
+      .putBoolean("cutPaper", cutPaper)
+      .putBoolean("openCashBox", openCashBox)
       .build()
 
     val workRequest: OneTimeWorkRequest =
@@ -66,5 +71,7 @@ class PrintingWorkerManager private constructor() {
       jobName,
       ExistingWorkPolicy.APPEND_OR_REPLACE,
       workRequest)
+
+    return jobId
   }
 }

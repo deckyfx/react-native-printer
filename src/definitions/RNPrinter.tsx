@@ -89,5 +89,11 @@ export type RNPrinter = {
   testConnection(selector: PrinterSelector): void;
   getPrinterModel(selector: PrinterSelector): Promise<string>;
   testPrint(selector: PrinterSelector): Promise<void>;
-  enqueuePrint(selector: PrinterSelector, text: string): void;
+  enqueuePrint(
+    selector: PrinterSelector,
+    text: string,
+    cutPaper?: boolean,
+    openCashBox?: boolean
+  ): Promise<string>;
+  prunePrintingWorks(): void;
 };

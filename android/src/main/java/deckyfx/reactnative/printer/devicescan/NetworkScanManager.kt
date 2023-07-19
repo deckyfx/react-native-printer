@@ -5,10 +5,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
-import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.net.Inet4Address
@@ -17,6 +15,8 @@ import java.net.InetSocketAddress
 import java.net.InterfaceAddress
 import java.net.NetworkInterface
 import java.net.Socket
+import java.nio.charset.StandardCharsets
+
 
 class NetworkScanManager {
   var onNetworkScanListener: OnNetworkScanListener? = null
@@ -75,23 +75,30 @@ class NetworkScanManager {
     } else {
       InetSocketAddress(port!!)
     }
+    var socket: Socket? = null
     return try {
-      val socket = Socket()
+      socket = Socket()
       socket.connect(socketAddress, SOCKET_TIMEOUT)
+      socket.soTimeout = SOCKET_TIMEOUT
+
+      val bufferOut = PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
       PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())),true)
-
       val message = byteArrayOf(0x1d, 0x49, 0x42, 0x1d, 0x49, 0x43)
-      val socketOutputStream = socket.getOutputStream()
-      socketOutputStream.write(message)
-
-      val input = BufferedReader(InputStreamReader(socket.getInputStream()))
-      val buffer = StringBuilder()
-      while (input.ready()) {
-        buffer.append(input.readLine())
+      val payload = String(message, StandardCharsets.UTF_8)
+      bufferOut.println(payload)
+      bufferOut.flush()
+      val inputStream = socket.getInputStream()
+      val buffer = ByteArray(1024)
+      var read: Int
+      while (inputStream.read(buffer).also { read = it } != -1) {
+        val output = String(buffer, 0, read)
+        inputStream.close()
+        socket.close()
+        return output
       }
-      socket.close()
-      buffer.toString()
+      return null
     } catch (e: IOException) {
+      socket?.close()
       onNetworkScanListener?.error(e)
       null
     }
@@ -147,7 +154,7 @@ class NetworkScanManager {
 
   companion object {
     const val PRINTER_PORT = 9100
-    const val SOCKET_TIMEOUT = 50
+    const val SOCKET_TIMEOUT = 200
 
     private val LOG_TAG = NetworkScanManager::class.java.simpleName
     private val DSLITE_LIST = listOf(

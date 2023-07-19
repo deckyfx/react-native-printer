@@ -125,6 +125,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
             putInt("scanType", scanType)
           }
           eventParams.putString("ip", ip)
+          eventParams.putString("address", ip)
           eventParams.putInt("port", port)
           eventParams.putString("deviceName", deviceName)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
@@ -173,7 +174,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
             putInt("scanType", scanType)
           }
           eventParams.putString("name", bluetoothDevice.name)
-          eventParams.putString("macAddress", bluetoothDevice.address)
+          eventParams.putString("address", bluetoothDevice.address)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
         override fun startScan() {

@@ -78,6 +78,7 @@ class USBScanManager(private val context: Context) {
               error.message?.let { Log.d(LOG_TAG, it) }
             }
             eventParams.putString("deviceName", usbDevice.deviceName)
+            eventParams.putString("address", usbDevice.deviceName)
             eventParams.putInt("deviceId", usbDevice.deviceId)
             eventParams.putString("manufacturerName", usbDevice.manufacturerName)
             eventParams.putString("serialNumber", usbDevice.serialNumber)

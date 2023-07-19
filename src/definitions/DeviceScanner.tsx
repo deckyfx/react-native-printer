@@ -54,11 +54,16 @@ export interface DeviceScanPayload {
   [key: string]: any;
 }
 
-export type USBDeviceData = {
+export type DeviceData = DeviceScanPayload & {
+  deviceName: string | undefined;
+  address: string | undefined;
+  port: number | undefined;
+};
+
+export type USBDeviceData = DeviceData & {
   PID: string | undefined;
   VID: string | undefined;
   deviceId: string | undefined;
-  deviceName: string | undefined;
   manufacturerName: string | undefined;
   serialNumber: number | undefined;
   status: string | undefined;
