@@ -1,6 +1,6 @@
 {
   "name": "@decky.fx/react-native-printer",
-  "version": "0.1.0",
+  "version": "1.0.0-a",
   "description": "printing on react native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
