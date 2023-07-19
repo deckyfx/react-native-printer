@@ -18,7 +18,7 @@ import {
   DeviceScanner as DeviceScannerModule,
   DeviceScannerEventEmitter as DeviceScannerEventEmitterModule,
   RNPrinterEventEmitter as RNPrinterEventEmitterModule,
-} from '@decky.fx/react-native-printer';
+} from '../../src/index';
 
 const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
 const DeviceScanner: ReactNativePrinter.DeviceScanner = DeviceScannerModule;
