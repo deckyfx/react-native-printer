@@ -60,11 +60,11 @@ class PrintingWorkerManager private constructor() {
     val workRequest: OneTimeWorkRequest =
       OneTimeWorkRequestBuilder<PrintingWorker>()
         .setInitialDelay(1, TimeUnit.SECONDS)
+        .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.MINUTES)
         .setInputData(data)
         .setConstraints(constraints)
         .addTag(jobTag)
         .setId(jobId)
-        .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
         .build()
 
     WorkManager.getInstance(context).enqueueUniqueWork(

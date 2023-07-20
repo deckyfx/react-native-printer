@@ -74,11 +74,15 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
       // Indicate whether the work finished successfully with the Result
       Result.success(progress)
     } catch (error: Exception) {
-      Result.failure(
-        Data.Builder()
+      if (runAttemptCount >= 3) {
+        return Result.failure(Data.Builder()
+          .putAll(progress)
           .putString("error", error.message)
           .build()
-      )
+        )
+      } else {
+        Result.retry()
+      }
     }
   }
 }

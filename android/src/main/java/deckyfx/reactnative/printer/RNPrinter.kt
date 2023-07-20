@@ -95,6 +95,11 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       "[L]\n" +
       "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
       "[C]<qrcode size='20'>https://dantsu.com/</qrcode>\n" +
+      "[L]\n" +
+      "[L]\n" +
+      "[L]\n" +
+      "[L]\n" +
+      "[L]\n"+
       "[L]\n"
   }
 
@@ -463,15 +468,33 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
           if (works.isNotEmpty()) {
             works.forEach { workInfo ->
               val eventParams = Arguments.createMap().apply {
-                putString("type", workInfo.progress.getString("type"))
-                putString("address", workInfo.progress.getString("address"))
-                putInt("port", workInfo.progress.getInt("port", 0))
-                putInt("dpi", workInfo.progress.getInt("dpi", 0))
-                putDouble("width", workInfo.progress.getFloat("width", 0f).toDouble())
-                putInt("maxChars", workInfo.progress.getInt("maxChars", 0))
-                putString("jobId", workInfo.progress.getString("jobId"))
-                putString("jobName", workInfo.progress.getString("jobName"))
-                putString("jobTag", workInfo.progress.getString("jobTag"))
+                workInfo.progress.getString("type")?.let {
+                  putString("type", it)
+                }
+                workInfo.progress.getString("address")?.let {
+                  putString("address", it)
+                }
+                workInfo.progress.getInt("port", 0).takeIf { it > 0 }?.let {
+                  putInt("port", it)
+                }
+                workInfo.progress.getInt("dpi", 0).takeIf { it > 0 }?.let {
+                  putInt("dpi", it)
+                }
+                workInfo.progress.getFloat("width", 0f).takeIf { it > 0f }?.let {
+                  putDouble("width", it.toDouble())
+                }
+                workInfo.progress.getInt("maxChars", 0).takeIf { it > 0 }?.let {
+                  putInt("maxChars", it)
+                }
+                workInfo.progress.getString("jobId")?.let {
+                  putString("jobId", it)
+                }
+                workInfo.progress.getString("jobName")?.let {
+                  putString("jobName", it)
+                }
+                workInfo.progress.getString("jobTag")?.let {
+                  putString("jobTag", it)
+                }
                 putString("state", workInfo.state.name)
                 putString("id", workInfo.id.toString())
                 val tags = Arguments.createArray()
