@@ -39,7 +39,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-1.0.0-c
+1.0.0-d
 
 ## Tested Printer
  - SEWOO SLK-TS100
@@ -52,6 +52,23 @@ yarn add @decky.fx/react-native-printer
 - if something wrong use `yarn install --ignore-engines`
 - recommmended node version are `v16.16.0` or `v18.16.1`
 - within example directory: `yarn start`
+
+## Torubleshoots
+to use in older react-native project you may need to edit project build.gradle file
+
+edit
+```
+minCompileSdk
+```
+add
+```
+mavenCentral()
+maven { url "https://maven.google.com" }
+```
+and
+```
+classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22"
+```
 
 ## Usage
 
