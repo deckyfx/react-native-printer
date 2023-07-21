@@ -21,9 +21,11 @@ written in full Kotlin, using latest sdk, and modern language like coroutines et
 - [ ] Scan Local Network using Zeroconf
 - [ ] Scan Bluetooth Devices
 - [x] Scan USB Devices
+- [ ] Scan Serial Devices
 - [x] Print to Network Printer
 - [ ] Print to Bluetooth Printer
 - [x] Print to USB Printer
+- [ ] Print to  Serial Devices
 - [x] Queue Job Printing using AndroidWorker 
 
 
@@ -39,7 +41,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-1.0.0-d
+1.1.0-a
 
 ## Tested Printer
  - SEWOO SLK-TS100
@@ -111,9 +113,11 @@ DeviceScannerEventEmitter.offEvents();
 - [ ] Scan Local Network using Zeroconf
 - [ ] Scan Bluetooth Devices
 - [x] Scan USB Devices
+- [ ] Scan Serial Devices
 - [x] Print to Network Printer
 - [ ] Print to Bluetooth Printer
 - [x] Print to USB Printer
+- [ ] Print to  Serial Devices
 - [x] Queue Job Printing using AndroidWorker
 - [ ] iOS Implementation
 

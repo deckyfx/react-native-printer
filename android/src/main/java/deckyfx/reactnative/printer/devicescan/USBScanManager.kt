@@ -75,7 +75,10 @@ class USBScanManager(private val context: Context) {
               deviceStatus = connection.getDeviceStatus()
               connection.disconnect()
             } catch (error: Exception) {
-              error.message?.let { Log.d(LOG_TAG, it) }
+              error.message?.let {
+                Log.d(LOG_TAG, it)
+                onUSBScanListener?.error(error)
+              }
             }
             eventParams.putString("deviceName", usbDevice.deviceName)
             eventParams.putString("address", usbDevice.deviceName)

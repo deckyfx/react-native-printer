@@ -3,6 +3,7 @@ const SCAN_NETWORK = 1;
 const SCAN_ZEROCONF = 2;
 const SCAN_BLUETOOTH = 3;
 const SCAN_USB = 4;
+const SCAN_SERIAL = 5;
 
 const EVENT_START_SCAN = 'START_SCAN';
 const EVENT_STOP_SCAN = 'STOP_SCAN';
@@ -16,6 +17,7 @@ export const Constants = {
   SCAN_ZEROCONF: SCAN_ZEROCONF,
   SCAN_BLUETOOTH: SCAN_BLUETOOTH,
   SCAN_USB: SCAN_USB,
+  SCAN_SERIAL: SCAN_SERIAL,
 
   EVENT_START_SCAN: EVENT_START_SCAN,
   EVENT_STOP_SCAN: EVENT_STOP_SCAN,
@@ -29,7 +31,8 @@ export type SCAN_TYPE =
   | typeof SCAN_NETWORK
   | typeof SCAN_ZEROCONF
   | typeof SCAN_BLUETOOTH
-  | typeof SCAN_USB;
+  | typeof SCAN_USB
+  | typeof SCAN_SERIAL;
 
 export type DeviceScanner = {
   multiply(a: number, b: number): Promise<number>;
@@ -41,6 +44,7 @@ export type DeviceScanner = {
   SCAN_ZEROCONF: typeof SCAN_ZEROCONF;
   SCAN_BLUETOOTH: typeof SCAN_BLUETOOTH;
   SCAN_USB: typeof SCAN_USB;
+  SCAN_SERIAL: typeof SCAN_SERIAL;
 
   EVENT_START_SCAN: typeof EVENT_START_SCAN;
   EVENT_STOP_SCAN: typeof EVENT_STOP_SCAN;
@@ -58,6 +62,7 @@ export type DeviceData = DeviceScanPayload & {
   deviceName: string | undefined;
   address: string | undefined;
   port: number | undefined;
+  baudrate: number | undefined;
 };
 
 export type USBDeviceData = DeviceData & {

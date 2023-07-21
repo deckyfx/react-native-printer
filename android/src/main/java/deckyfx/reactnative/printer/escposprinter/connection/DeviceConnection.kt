@@ -9,9 +9,7 @@ import java.io.OutputStream
 
 abstract class DeviceConnection {
   protected open var outputStream: OutputStream? = null
-
-  @JvmField
-  protected var inputStream: InputStream? = null
+  protected open var inputStream: InputStream? = null
 
   @JvmField
   protected var data: ByteArray

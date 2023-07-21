@@ -9,6 +9,7 @@ import deckyfx.reactnative.printer.RNPrinter
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothPrintersConnectionsManager
+import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
 
@@ -20,7 +21,6 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
   private val cutPaper = inputData.getBoolean("cutPaper", true)
   private val openCashBox = inputData.getBoolean("openCashBox", true)
   private val printer: EscPosPrinter?
-  private val retryCount = 0
 
   init {
     printer = resolvePrinter(config)
@@ -38,6 +38,9 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
       RNPrinter.PRINTER_TYPE_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(context, config.address)
       }
+      RNPrinter.PRINTER_TYPE_SERIAL -> {
+        connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
+      }
     }
     if (connection == null) {
       return null
@@ -51,10 +54,9 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     )
   }
 
-  companion object {
-  }
+  companion object;
 
-  override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result {
     val progress = Data.Builder()
       .putAll(config.data)
       .putString("jobId", inputData.getString("jobId"))

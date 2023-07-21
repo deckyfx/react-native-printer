@@ -24,14 +24,13 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
-import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothPrintersConnectionsManager
+import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
 import deckyfx.reactnative.printer.worker.PrintingWorkerManager
@@ -58,6 +57,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     const val PRINTER_TYPE_NETWORK = "network"
     const val PRINTER_TYPE_BLUETOOTH = "bluetooth"
     const val PRINTER_TYPE_USB = "usb"
+    const val PRINTER_TYPE_SERIAL = "serial"
 
     const val PRINTING_DPI_NORMAL = 210
     const val PRINTING_LINES_MAX_CHAR_33 = 33
@@ -110,6 +110,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     constants["PRINTER_TYPE_NETWORK"] = PRINTER_TYPE_NETWORK
     constants["PRINTER_TYPE_BLUETOOTH"] = PRINTER_TYPE_BLUETOOTH
     constants["PRINTER_TYPE_USB"] = PRINTER_TYPE_USB
+    constants["PRINTER_TYPE_SERIAL"] = PRINTER_TYPE_SERIAL
 
     constants["PRINTING_DPI_NORMAL"] = PRINTING_DPI_NORMAL
 
@@ -153,6 +154,10 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       return
     }
     if (config.type == DeviceScanner.SCAN_USB) {
+      promise.resolve(false)
+      return
+    }
+    if (config.type == DeviceScanner.SCAN_SERIAL) {
       promise.resolve(false)
       return
     }
@@ -230,6 +235,10 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       return
     }
     if (config.type == DeviceScanner.SCAN_USB) {
+      UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
+      promise.resolve(true)
+    }
+    if (config.type == DeviceScanner.SCAN_SERIAL) {
       UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
       promise.resolve(true)
     }
@@ -313,16 +322,62 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun cutPaper(config: ReadableMap, promise: Promise) {}
+  fun cutPaper(config: ReadableMap, promise: Promise) {
+    val printer = resolvePrinter(config)
+    printer?.let {
+      try {
+        printer.cutPaper()
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve(true)
+  }
 
   @ReactMethod
-  fun feedPaper(config: ReadableMap, promise: Promise) {}
+  fun feedPaper(config: ReadableMap, promise: Promise) {
+    val printer = resolvePrinter(config)
+    printer?.let {
+      try {
+        printer.feedPaper(0)
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve(true)
+  }
 
   @ReactMethod
-  fun openCashBox(config: ReadableMap, promise: Promise) {}
+  fun openCashBox(config: ReadableMap, promise: Promise) {
+    val printer = resolvePrinter(config)
+    printer?.let {
+      try {
+        printer.openCashBox()
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve(true)
+  }
 
   @ReactMethod
   fun testConnection(config: ReadableMap, promise: Promise) {
+    val printer = resolvePrinter(config)
+    printer?.let {
+      try {
+        return
+      } catch (e: Exception) {
+        promise.reject(e)
+        return
+      }
+    }
+    promise.resolve(true)
   }
 
   @ReactMethod
@@ -390,6 +445,9 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       }
       PRINTER_TYPE_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(reactContext, config.address)
+      }
+      PRINTER_TYPE_SERIAL -> {
+        connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
       }
     }
     if (connection == null) {
@@ -477,6 +535,9 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
                 workInfo.progress.getInt("port", 0).takeIf { it > 0 }?.let {
                   putInt("port", it)
                 }
+                workInfo.progress.getInt("baudrate", 0).takeIf { it > 0 }?.let {
+                  putInt("baudrate", it)
+                }
                 workInfo.progress.getInt("dpi", 0).takeIf { it > 0 }?.let {
                   putInt("dpi", it)
                 }
@@ -552,6 +613,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     val type: String
     val address: String
     val port: Int
+    val baudrate: Int
     val dpi: Int
     val width: Float
     val maxChars: Int
@@ -559,6 +621,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       type = argv.getString("type")!!
       address = argv.getString("address")!!
       port = argv.getInt("port", 9100)
+      baudrate = argv.getInt("baudrate", 9600)
       dpi = argv.getInt("dpi", PRINTING_DPI_NORMAL)
       width = argv.getFloat("width", PRINTING_WIDTH_80_MM)
       maxChars = argv.getInt("maxChars", PRINTING_LINES_MAX_CHAR_42)
@@ -570,6 +633,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
           .putString("type", type)
           .putString("address", address)
           .putInt("port", port)
+          .putInt("baudrate", baudrate)
           .putInt("dpi", dpi)
           .putFloat("width", width)
           .putInt("maxChars", maxChars)

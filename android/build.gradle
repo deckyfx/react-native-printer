@@ -11,6 +11,7 @@ buildscript {
     classpath "com.android.tools.build:gradle:7.2.2"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20'
   }
 }
 
@@ -48,17 +49,27 @@ android {
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
-    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
-    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    minSdk getExtOrIntegerDefault("minSdkVersion")
+    targetSdk getExtOrIntegerDefault("targetSdkVersion")
     buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+    externalNativeBuild {
+      cmake {
+        cppFlags ""
+      }
+    }
+    ndk {
+      //选择要添加的对应cpu类型的.so库。
+      abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+    }
   }
+
   buildTypes {
     release {
       minifyEnabled false
     }
   }
 
-  lintOptions {
+  lint {
     disable "GradleCompatible"
   }
 
@@ -66,7 +77,21 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
-
+  /*
+  externalNativeBuild {
+    cmake {
+      path "src/main/cpp/CMakeLists.txt"
+      version "3.22.1"
+    }
+  }
+  ndkVersion '25.2.9519653'
+  */
+  
+  sourceSets {
+    main {
+      jniLibs.srcDir 'jniLibs'
+    }
+  }
 }
 
 repositories {
@@ -87,6 +112,7 @@ dependencies {
   implementation 'org.apache.commons:commons-lang3:3.12.0'
   implementation 'androidx.work:work-runtime-ktx:2.8.1'
   implementation 'com.google.zxing:core:3.5.1'
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 if (isNewArchitectureEnabled()) {

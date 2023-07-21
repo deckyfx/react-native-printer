@@ -8,12 +8,13 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 class TcpConnection
-/**
- * Create un instance of TcpConnection.
- *
- * @param address IP address of the device
- * @param port    Port of the device
- */ @JvmOverloads constructor(
+  /**
+   * Create un instance of TcpConnection.
+   *
+   * @param address IP address of the device
+   * @param port    Port of the device
+   */
+    @JvmOverloads constructor(
     private val address: String,
     private val port: Int,
     private val timeout: Int = 30

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.net.nsd.NsdManager
 import android.util.Log
+import android_serialport_api.SerialPortFinder
 import androidx.core.app.ActivityCompat
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -19,6 +20,7 @@ import deckyfx.reactnative.printer.devicescan.BluetoothScanManager.OnBluetoothSc
 import deckyfx.reactnative.printer.devicescan.NetworkScanManager.OnNetworkScanListener
 import deckyfx.reactnative.printer.devicescan.USBScanManager.OnUSBScanListener
 import deckyfx.reactnative.printer.devicescan.ZeroconfScanManager.OnZeroconfScanListener
+import deckyfx.reactnative.printer.devicescan.SerialScanManager.OnSerialScanListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,6 +32,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
   private val mUSBScanManager: USBScanManager = USBScanManager(reactContext)
   private val mBluetoothScanManager: BluetoothScanManager = BluetoothScanManager(reactContext)
   private val mZeroconfScanManager: ZeroconfScanManager
+  private val mSerialScanManager: SerialScanManager = SerialScanManager(reactContext)
   private var mListenerCount: Int = 0
 
   init {
@@ -47,6 +50,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     constants["SCAN_ZEROCONF"] = SCAN_ZEROCONF
     constants["SCAN_BLUETOOTH"] = SCAN_BLUETOOTH
     constants["SCAN_USB"] = SCAN_USB
+    constants["SCAN_SERIAL"] = SCAN_SERIAL
 
     constants["EVENT_START_SCAN"] = EVENT_START_SCAN
     constants["EVENT_STOP_SCAN"] = EVENT_STOP_SCAN
@@ -81,6 +85,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
         doScan(inferredScanType)
         promise.resolve(true)
       } catch (e: Exception) {
+        stop(scanType)
         promise.reject(e)
       }
     }
@@ -108,6 +113,10 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     if (inferredScanType == SCAN_ZEROCONF || inferredScanType == SCAN_ALL) {
       mZeroconfScanManager.stopScan()
       mZeroconfScanManager.onZeroconfScanListener = null
+    }
+    if (inferredScanType == SCAN_SERIAL || inferredScanType == SCAN_ALL) {
+      mSerialScanManager.stopScan()
+      mSerialScanManager.onSerialScanListener = null
     }
   }
 
@@ -212,6 +221,27 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
       }
       mZeroconfScanManager.startScan()
     }
+    if (scanType == SCAN_SERIAL || scanType == SCAN_ALL) {
+      mSerialScanManager.onSerialScanListener = object : OnSerialScanListener {
+        override fun deviceFound(serialDevice: SerialPortFinder.SerialDevice, data: WritableMap) {
+          val eventParams = Arguments.createMap().apply {
+            putInt("scanType", scanType)
+          }
+          eventParams.merge(data)
+          emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
+        }
+        override fun startScan() {
+          emitStartScan(scanType)
+        }
+        override fun stopScan() {
+          emitStopScan(scanType)
+        }
+        override fun error(error: Exception) {
+          emitErrorScan(scanType, error)
+        }
+      }
+      mSerialScanManager.startScan()
+    }
   }
 
   private fun emitStartScan(scanType: Int) {
@@ -278,6 +308,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     const val SCAN_ZEROCONF = 2
     const val SCAN_BLUETOOTH = 3
     const val SCAN_USB = 4
+    const val SCAN_SERIAL = 5
 
     const val EVENT_START_SCAN = "START_SCAN"
     const val EVENT_STOP_SCAN = "STOP_SCAN"

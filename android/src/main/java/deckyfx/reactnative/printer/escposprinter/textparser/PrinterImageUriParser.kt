@@ -161,6 +161,5 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
     return  bitmapToHexadecimalString(this.escPosPrinter, grayscaleImage)
   }
 
-  companion object {
-  }
+  companion object
 }

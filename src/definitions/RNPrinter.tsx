@@ -5,6 +5,7 @@ const EVENT_PRINTING_JOB = 'PRINTING_JOB';
 const PRINTER_TYPE_NETWORK = 'network';
 const PRINTER_TYPE_BLUETOOTH = 'bluetooth';
 const PRINTER_TYPE_USB = 'usb';
+const PRINTER_TYPE_SERIAL = 'serial';
 
 const PRINTING_DPI_NORMAL = 210;
 
@@ -25,6 +26,7 @@ export const Constants = {
   PRINTER_TYPE_NETWORK: PRINTER_TYPE_NETWORK,
   PRINTER_TYPE_BLUETOOTH: PRINTER_TYPE_BLUETOOTH,
   PRINTER_TYPE_USB: PRINTER_TYPE_USB,
+  PRINTER_TYPE_SERIAL: PRINTER_TYPE_SERIAL,
 
   PRINTING_DPI_NORMAL: PRINTING_DPI_NORMAL,
 
@@ -44,7 +46,8 @@ export type PrinterSelector = {
   type:
     | typeof PRINTER_TYPE_NETWORK
     | typeof PRINTER_TYPE_BLUETOOTH
-    | typeof PRINTER_TYPE_USB;
+    | typeof PRINTER_TYPE_USB
+    | typeof PRINTER_TYPE_SERIAL;
   address: string;
   port?: number | undefined;
   dpi?: number | undefined;
@@ -63,6 +66,7 @@ export type RNPrinter = {
   PRINTER_TYPE_NETWORK: typeof PRINTER_TYPE_NETWORK;
   PRINTER_TYPE_BLUETOOTH: typeof PRINTER_TYPE_BLUETOOTH;
   PRINTER_TYPE_USB: typeof PRINTER_TYPE_USB;
+  PRINTER_TYPE_SERIAL: typeof PRINTER_TYPE_SERIAL;
 
   PRINTING_DPI_NORMAL: typeof PRINTING_DPI_NORMAL;
 

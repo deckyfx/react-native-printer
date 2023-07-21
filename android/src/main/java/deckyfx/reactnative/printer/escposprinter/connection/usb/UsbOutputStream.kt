@@ -15,10 +15,9 @@ import java.nio.ByteBuffer
 
 
 class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val readable: Boolean) : OutputStream() {
-  constructor(usbManager: UsbManager, usbDevice: UsbDevice?) : this(usbManager, usbDevice, false) {
-  }
+  constructor(usbManager: UsbManager, usbDevice: UsbDevice?) : this(usbManager, usbDevice, false)
 
-  private var usbConnection: UsbDeviceConnection?
+    private var usbConnection: UsbDeviceConnection?
   private var usbInterface: UsbInterface?
   private var usbOutEndpoint: UsbEndpoint?
   private var usbInEndpoint: UsbEndpoint?
@@ -130,7 +129,7 @@ class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val
     return parseConfigDescriptor(buffer)
   }
 
-  private fun parseConfigDescriptor(buffer: ByteArray): String? {
+  private fun parseConfigDescriptor(buffer: ByteArray): String {
     val sb = StringBuilder()
     //Parse configuration descriptor header
     var totalLength = buffer[3].toInt() and 0xFF shl 8
@@ -219,7 +218,7 @@ class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val
     }
   }
 
-  private fun nameForEndpointType(type: Int): String? {
+  private fun nameForEndpointType(type: Int): String {
     return when (type) {
       UsbConstants.USB_ENDPOINT_XFER_BULK -> "Bulk"
       UsbConstants.USB_ENDPOINT_XFER_CONTROL -> "Control"
@@ -229,7 +228,7 @@ class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val
     }
   }
 
-  private fun nameForDirection(direction: Int): String? {
+  private fun nameForDirection(direction: Int): String {
     return when (direction) {
       UsbConstants.USB_DIR_IN -> "IN"
       UsbConstants.USB_DIR_OUT -> "OUT"

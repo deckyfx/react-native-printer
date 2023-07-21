@@ -51,13 +51,13 @@ class ZeroconfScanManager(private val context: Context,
         mIsRunning = false
         val error =
           "Starting service discovery failed with code: $errorCode"
-        onZeroconfScanListener?.error(java.lang.Exception(error))
+        onZeroconfScanListener?.error(Exception(error))
       }
 
       override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
         val error =
           "Stopping service discovery failed with code: $errorCode"
-        onZeroconfScanListener?.error(java.lang.Exception(error))
+        onZeroconfScanListener?.error(Exception(error))
       }
 
       override fun onDiscoveryStarted(serviceType: String) {
@@ -103,7 +103,7 @@ class ZeroconfScanManager(private val context: Context,
         nsdManager.resolveService(serviceInfo, this)
       } else {
         val error = "Resolving service failed with code: $errorCode"
-        onZeroconfScanListener?.error(java.lang.Exception(error))
+        onZeroconfScanListener?.error(Exception(error))
       }
     }
 
@@ -145,7 +145,7 @@ class ZeroconfScanManager(private val context: Context,
           )
         } catch (e: UnsupportedEncodingException) {
           val error = "Failed to encode txtRecord: $e"
-          onZeroconfScanListener?.error(java.lang.Exception(error))
+          onZeroconfScanListener?.error(Exception(error))
         }
       }
     }
