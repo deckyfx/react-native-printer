@@ -1,7 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.connection.usb
 
 import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException

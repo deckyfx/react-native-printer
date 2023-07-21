@@ -1,8 +1,8 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
+import android_serialport_api.SerialDevice
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import deckyfx.reactnative.printer.serialport.SerialPort
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -10,20 +10,20 @@ import java.io.OutputStream
 
 class SerialConnection
   constructor(
-    private var device: SerialPort?,
+    private var device: SerialDevice?,
   ) : DeviceConnection() {
 
   constructor(
     file: File,
     baudRate: Int = 9600,
     flag: Int = 0
-  ) : this(SerialPort(file, baudRate, flag))
+  ) : this(SerialDevice(file, baudRate, flag))
 
   constructor(
     path: String,
     baudRate: Int = 9600,
     flag: Int = 0
-  ) : this(SerialPort(File(path), baudRate, flag))
+  ) : this(SerialDevice(File(path), baudRate, flag))
 
   override var outputStream: OutputStream?
     get() {
@@ -62,7 +62,6 @@ class SerialConnection
 
   override fun disconnect(): DeviceConnection {
     if (device != null) {
-      device!!.closeIOStream()
       device!!.closeDevice()
       device = null
     }

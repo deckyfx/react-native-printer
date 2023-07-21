@@ -1,8 +1,8 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
+import android_serialport_api.SerialDevice
 import android_serialport_api.SerialPortFinder
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import deckyfx.reactnative.printer.serialport.SerialPort
 import java.io.File
 
 class SerialConnectionsManager {
@@ -20,7 +20,7 @@ class SerialConnectionsManager {
       name: String,
       baudRate: Int = 9600
     ): SerialConnection {
-      val serial = SerialPort(File(name), baudRate, 0)
+      val serial = SerialDevice(File(name), baudRate, 0)
       return SerialConnection(serial)
     }
   }
