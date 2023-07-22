@@ -44,7 +44,10 @@ class SerialPort(val device: File, val baudRate: Int = 9600, val flags: Int = 0)
     val inputStream: InputStream?
         get() = mFileInputStream
     val outputStream: OutputStream?
-        get() = mFileOutputStream
+        get()  {
+          Log.d("A", "B")
+          return mFileOutputStream
+        }
 
     /**
      * 关闭IO流

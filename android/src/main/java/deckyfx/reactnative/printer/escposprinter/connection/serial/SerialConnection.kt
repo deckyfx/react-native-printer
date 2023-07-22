@@ -1,5 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
+import android.util.Log
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
 import deckyfx.reactnative.printer.serialport.SerialPort
@@ -27,6 +28,7 @@ class SerialConnection
 
   override var outputStream: OutputStream?
     get() {
+      Log.d("A", "B")
       return device?.outputStream
     }
     set(stream) {

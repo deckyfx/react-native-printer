@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.net.nsd.NsdManager
 import android.util.Log
-import android_serialport_api.SerialPortFinder
 import androidx.core.app.ActivityCompat
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -21,6 +20,7 @@ import deckyfx.reactnative.printer.devicescan.NetworkScanManager.OnNetworkScanLi
 import deckyfx.reactnative.printer.devicescan.USBScanManager.OnUSBScanListener
 import deckyfx.reactnative.printer.devicescan.ZeroconfScanManager.OnZeroconfScanListener
 import deckyfx.reactnative.printer.devicescan.SerialScanManager.OnSerialScanListener
+import deckyfx.reactnative.printer.serialport.SerialPortFinder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

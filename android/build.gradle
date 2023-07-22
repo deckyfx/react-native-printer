@@ -77,7 +77,7 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
-  /*
+
   externalNativeBuild {
     cmake {
       path "src/main/cpp/CMakeLists.txt"
@@ -85,13 +85,6 @@ android {
     }
   }
   ndkVersion '25.2.9519653'
-  */
-  
-  sourceSets {
-    main {
-      jniLibs.srcDir 'jniLibs'
-    }
-  }
 }
 
 repositories {
@@ -112,7 +105,7 @@ dependencies {
   implementation 'org.apache.commons:commons-lang3:3.12.0'
   implementation 'androidx.work:work-runtime-ktx:2.8.1'
   implementation 'com.google.zxing:core:3.5.1'
-  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation 'io.github.xmaihh:serialport:2.1.1'
 }
 
 if (isNewArchitectureEnabled()) {

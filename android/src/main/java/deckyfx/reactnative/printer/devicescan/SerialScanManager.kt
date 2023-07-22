@@ -2,12 +2,12 @@ package deckyfx.reactnative.printer.devicescan
 
 import android.content.Context
 import android.util.Log
-import android_serialport_api.SerialPortFinder
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnection
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
+import deckyfx.reactnative.printer.serialport.SerialPortFinder
 
 class SerialScanManager(private val context: Context) {
   var onSerialScanListener: OnSerialScanListener? = null
