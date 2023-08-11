@@ -46,7 +46,7 @@ class NetworkScanManager {
             async {
               ipSegments[3] = i.toString()
               val host = ipSegments.joinToString(".")
-              val port = PRINTER_PORT
+              val port = DEFAULT_PRINTER_PORT
               val deviceName = socketConnect(host, port)
               if (!deviceName.isNullOrEmpty()) {
                 onNetworkScanListener?.deviceFound(host, port, deviceName)
@@ -68,7 +68,7 @@ class NetworkScanManager {
   }
 
   @Suppress("SameParameterValue")
-  private fun socketConnect(host: String?, port: Int? = PRINTER_PORT): String? {
+  private fun socketConnect(host: String?, port: Int? = DEFAULT_PRINTER_PORT): String? {
     if (!mIsRunning) return null
     val socketAddress: InetSocketAddress = if (host != null) {
       InetSocketAddress(InetAddress.getByName(host), port!!)
@@ -153,7 +153,7 @@ class NetworkScanManager {
   }
 
   companion object {
-    const val PRINTER_PORT = 9100
+    const val DEFAULT_PRINTER_PORT = 9100
     const val SOCKET_TIMEOUT = 200
 
     private val LOG_TAG = NetworkScanManager::class.java.simpleName

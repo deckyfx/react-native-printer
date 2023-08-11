@@ -2,9 +2,9 @@ package deckyfx.reactnative.printer.devicescan
 
 import android.content.Context
 import android.util.Log
-import android_serialport_api.SerialPortFinder
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
+import deckyfx.reactnative.printer.serialport.SerialPortFinder
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnection
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
@@ -16,7 +16,7 @@ class SerialScanManager(private val context: Context) {
   private var mDetectedDevicesCount: Int = 0
 
   interface OnSerialScanListener {
-    fun deviceFound(device: SerialPortFinder.SerialDevice, data: WritableMap)
+    fun deviceFound(device: SerialPortFinder.SerialDeviceFound, data: WritableMap)
     fun startScan()
     fun stopScan()
     fun error(error: Exception)
@@ -29,7 +29,7 @@ class SerialScanManager(private val context: Context) {
     if (mIsRunning) return
     mIsRunning = true
     onSerialScanListener?.startScan()
-    val list: Array<SerialPortFinder.SerialDevice>
+    val list: Array<SerialPortFinder.SerialDeviceFound>
     try {
       val manager = SerialConnectionsManager()
       list = manager.list
@@ -50,9 +50,10 @@ class SerialScanManager(private val context: Context) {
       val connection = SerialConnection(it.device.absolutePath)
       try {
         connection.connect()
-        if (!connection.connected) {
+        if (!connection.device.isOpen) {
           return
         }
+        connection.device.sendTxt("asasasa")
         val printer = EscPosPrinter(context, connection, 210, 60f, 42)
         printer.printFormattedText("[L]${it.device.absolutePath}\n")
         connection.disconnect()

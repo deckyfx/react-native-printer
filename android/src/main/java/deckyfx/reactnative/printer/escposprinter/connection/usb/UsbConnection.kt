@@ -69,7 +69,7 @@ class UsbConnection
    */
   @Throws(EscPosConnectionException::class)
   override fun send() {
-    this.send(0)
+    send(0)
   }
 
   /**

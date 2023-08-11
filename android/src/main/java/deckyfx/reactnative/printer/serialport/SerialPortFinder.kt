@@ -43,9 +43,9 @@ class SerialPortFinder {
       }
 
     // 解析每个设备
-    val devices: Array<SerialDevice>
+    val devices: Array<SerialDeviceFound>
         get() {
-            val devices = Vector<SerialDevice>()
+            val devices = Vector<SerialDeviceFound>()
             // 解析每个设备
             val itdriv: Iterator<Driver>
             try {
@@ -55,7 +55,7 @@ class SerialPortFinder {
                     val itdev: Iterator<File> = driver.devices.iterator()
                     while (itdev.hasNext()) {
                         val device = itdev.next()
-                        devices.add(SerialDevice(driver, device))
+                        devices.add(SerialDeviceFound(driver, device))
                     }
                 }
             } catch (e: IOException) {
@@ -84,7 +84,7 @@ class SerialPortFinder {
             }
     }
 
-    inner class SerialDevice(val driver: Driver, val device: File) {
+    inner class SerialDeviceFound(val driver: Driver, val device: File) {
     }
 
     companion object {

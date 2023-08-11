@@ -1,8 +1,7 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
-import android_serialport_api.SerialPortFinder
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import deckyfx.reactnative.printer.serialport.SerialPort
+import deckyfx.reactnative.printer.serialport.SerialPortFinder
 import java.io.File
 
 class SerialConnectionsManager {
@@ -11,17 +10,16 @@ class SerialConnectionsManager {
     init {
     }
 
-    val list: Array<SerialPortFinder.SerialDevice>
+    val list: Array<SerialPortFinder.SerialDeviceFound>
       get() = mSerialPortFinder.devices
 
   companion object {
     @Throws(EscPosConnectionException::class)
     fun selectByDeviceName(
       name: String,
-      baudRate: Int = 9600
+      baudRate: Int? = SerialConnection.DEFAULT_BAUD_RATE
     ): SerialConnection {
-      val serial = SerialPort(File(name), baudRate, 0)
-      return SerialConnection(serial)
+      return SerialConnection(name, baudRate)
     }
   }
 }

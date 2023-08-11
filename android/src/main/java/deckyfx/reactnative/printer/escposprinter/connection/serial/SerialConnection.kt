@@ -1,78 +1,75 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
+import android.util.Log
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import deckyfx.reactnative.printer.serialport.SerialPort
-import java.io.File
+import deckyfx.reactnative.printer.serialport.SerialDevice
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
 class SerialConnection
   constructor(
-    private var device: SerialPort?,
+    val path: String,
+    var baudRate: Int? = DEFAULT_BAUD_RATE
   ) : DeviceConnection() {
 
   constructor(
-    file: File,
-    baudRate: Int = 9600,
-    flag: Int = 0
-  ) : this(SerialPort(file, baudRate, flag))
-
-  constructor(
     path: String,
-    baudRate: Int = 9600,
-    flag: Int = 0
-  ) : this(SerialPort(File(path), baudRate, flag))
+  ) : this(path, DEFAULT_BAUD_RATE)
+
+  val device: SerialDevice
+
+  init {
+    if (baudRate == null) {
+      baudRate = DEFAULT_BAUD_RATE
+    }
+    device  = SerialDevice(path, baudRate!!)
+  }
 
   override var outputStream: OutputStream?
     get() {
-      return device?.outputStream
+      return device.outputStream
     }
     set(stream) {
+      Log.d("????", "Attempt to set OutputStream")
     }
 
   override var inputStream: InputStream?
     get() {
-      return device?.inputStream
+      return device.inputStream
     }
     set(stream) {
+      Log.d("????", "Attempt to set InputStream")
     }
-
-  init {
-  }
 
   override fun connect(): DeviceConnection {
     if (isConnected) {
       return this
     }
     try {
-      if (device == null) {
-        throw EscPosConnectionException("Unable to connect to Serial device.")
-      }
-      device?.openDevice()
+      device.open()
       data = ByteArray(0)
     } catch (e: IOException) {
       e.printStackTrace()
-      device?.closeDevice()
+      device.close()
       throw EscPosConnectionException("Unable to connect to Serial device.")
     }
     return this
   }
 
   override fun disconnect(): DeviceConnection {
-    if (device != null) {
-      device!!.closeIOStream()
-      device!!.closeDevice()
-      device = null
-    }
+    device.close()
     return this
   }
 
-  val connected: Boolean
-    get() {
-      return device?.outputStream != null && device?.inputStream != null
-    }
+  /**
+   * Send data to the device.
+   */
+  @Throws(EscPosConnectionException::class)
+  override fun send() {
+    send(0)
+  }
 
   /**
    * Send data to the device.
@@ -80,11 +77,15 @@ class SerialConnection
   @Throws(EscPosConnectionException::class)
   override fun send(addWaitingTime: Int) {
     try {
-      device?.outputStream?.write(data)
+      device?.send(data)
       data = ByteArray(0)
     } catch (e: IOException) {
       e.printStackTrace()
       throw EscPosConnectionException(e.message)
     }
+  }
+
+  companion object {
+    const val DEFAULT_BAUD_RATE = 115200
   }
 }

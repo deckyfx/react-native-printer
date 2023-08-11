@@ -63,7 +63,11 @@ class BluetoothScanManager(
    * You must call this in OnDestroy() to unregister broadcast receiver
    */
   fun unregisterCallback() {
-    context.unregisterReceiver(broadcastReceiver)
+    try {
+      context.unregisterReceiver(broadcastReceiver)
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
   }
 
   /**

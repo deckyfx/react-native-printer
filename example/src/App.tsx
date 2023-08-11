@@ -16,7 +16,7 @@ import SerialPrinter from './SerialPrinter';
 const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
 
 export default function App() {
-  const [address, setAddress] = React.useState<string | undefined>('');
+  const [address] = React.useState<string | undefined>('');
   const [imageUri, setImageUri] = React.useState<string | undefined>('');
 
   React.useEffect(() => {

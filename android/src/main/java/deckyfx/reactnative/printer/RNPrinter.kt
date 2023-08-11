@@ -27,9 +27,11 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
+import deckyfx.reactnative.printer.devicescan.NetworkScanManager
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothPrintersConnectionsManager
+import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnection
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
@@ -620,8 +622,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     init {
       type = argv.getString("type")!!
       address = argv.getString("address")!!
-      port = argv.getInt("port", 9100)
-      baudrate = argv.getInt("baudrate", 9600)
+      port = argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT)
+      baudrate = argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE)
       dpi = argv.getInt("dpi", PRINTING_DPI_NORMAL)
       width = argv.getFloat("width", PRINTING_WIDTH_80_MM)
       maxChars = argv.getInt("maxChars", PRINTING_LINES_MAX_CHAR_42)
