@@ -56,10 +56,13 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
     const val EVENT_PRINTING_JOB = "PRINTING_JOB"
 
-    const val PRINTER_TYPE_NETWORK = "network"
-    const val PRINTER_TYPE_BLUETOOTH = "bluetooth"
-    const val PRINTER_TYPE_USB = "usb"
-    const val PRINTER_TYPE_SERIAL = "serial"
+    const val PRINTER_CONNECTION_NETWORK = "network"
+    const val PRINTER_CONNECTION_BLUETOOTH = "bluetooth"
+    const val PRINTER_CONNECTION_USB = "usb"
+    const val PRINTER_CONNECTION_SERIAL = "serial"
+
+    const val PRINTER_TYPE_THERMAL = "thermal"
+    const val PRINTER_TYPE_DOTMATRIX = "dotmatrix"
 
     const val PRINTING_DPI_NORMAL = 210
     const val PRINTING_LINES_MAX_CHAR_33 = 33
@@ -109,10 +112,14 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     val constants: MutableMap<String, Any> = HashMap()
     constants["EVENT_PRINTING_JOB"] = EVENT_PRINTING_JOB
 
-    constants["PRINTER_TYPE_NETWORK"] = PRINTER_TYPE_NETWORK
-    constants["PRINTER_TYPE_BLUETOOTH"] = PRINTER_TYPE_BLUETOOTH
-    constants["PRINTER_TYPE_USB"] = PRINTER_TYPE_USB
-    constants["PRINTER_TYPE_SERIAL"] = PRINTER_TYPE_SERIAL
+    constants["PRINTER_CONNECTION_NETWORK"] = PRINTER_CONNECTION_NETWORK
+    constants["PRINTER_CONNECTION_BLUETOOTH"] = PRINTER_CONNECTION_BLUETOOTH
+    constants["PRINTER_CONNECTION_USB"] = PRINTER_CONNECTION_USB
+    constants["PRINTER_CONNECTION_SERIAL"] = PRINTER_CONNECTION_SERIAL
+
+
+    constants["PRINTER_TYPE_THERMAL"] = PRINTER_TYPE_THERMAL
+    constants["PRINTER_TYPE_DOTMATRIX"] = PRINTER_TYPE_DOTMATRIX
 
     constants["PRINTING_DPI_NORMAL"] = PRINTING_DPI_NORMAL
 
@@ -135,7 +142,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   fun checkPermissions(args: ReadableMap, promise: Promise) {
     val config = ScanTypeArgument(args)
-    if (config.type == DeviceScanner.SCAN_NETWORK || config.type == DeviceScanner.SCAN_ZEROCONF) {
+    if (config.connection == DeviceScanner.SCAN_NETWORK || config.connection == DeviceScanner.SCAN_ZEROCONF) {
       if (!checkPermission(Manifest.permission.INTERNET)) {
         promise.resolve(false)
         return
@@ -155,15 +162,15 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       promise.resolve(true)
       return
     }
-    if (config.type == DeviceScanner.SCAN_USB) {
+    if (config.connection == DeviceScanner.SCAN_USB) {
       promise.resolve(false)
       return
     }
-    if (config.type == DeviceScanner.SCAN_SERIAL) {
+    if (config.connection == DeviceScanner.SCAN_SERIAL) {
       promise.resolve(false)
       return
     }
-    if (config.type == DeviceScanner.SCAN_BLUETOOTH) {
+    if (config.connection == DeviceScanner.SCAN_BLUETOOTH) {
       if (!checkPermission(Manifest.permission.BLUETOOTH)) {
         promise.resolve(false)
         return
@@ -183,7 +190,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       promise.resolve(true)
       return
     }
-    if (config.type == DeviceScanner.SCAN_ALL) {
+    if (config.connection == DeviceScanner.SCAN_ALL) {
       if (!checkPermission(Manifest.permission.INTERNET)) {
         promise.resolve(false)
         return
@@ -224,7 +231,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   fun requestPermissions(args: ReadableMap, promise: Promise) {
     val config = ScanTypeArgument(args)
-    if (config.type == DeviceScanner.SCAN_NETWORK || config.type == DeviceScanner.SCAN_ZEROCONF) {
+    if (config.connection == DeviceScanner.SCAN_NETWORK || config.connection == DeviceScanner.SCAN_ZEROCONF) {
       val PERMISSION_ALL = 1
       val PERMISSIONS = arrayOf(
         Manifest.permission.INTERNET,
@@ -236,15 +243,15 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       promise.resolve(true)
       return
     }
-    if (config.type == DeviceScanner.SCAN_USB) {
+    if (config.connection == DeviceScanner.SCAN_USB) {
       UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
       promise.resolve(true)
     }
-    if (config.type == DeviceScanner.SCAN_SERIAL) {
+    if (config.connection == DeviceScanner.SCAN_SERIAL) {
       UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
       promise.resolve(true)
     }
-    if (config.type == DeviceScanner.SCAN_BLUETOOTH) {
+    if (config.connection == DeviceScanner.SCAN_BLUETOOTH) {
       val PERMISSION_ALL = 1
       val PERMISSIONS = arrayOf(
         Manifest.permission.BLUETOOTH,
@@ -256,7 +263,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       promise.resolve(true)
       return
     }
-    if (config.type == DeviceScanner.SCAN_ALL) {
+    if (config.connection == DeviceScanner.SCAN_ALL) {
       val PERMISSION_ALL = 1
       val PERMISSIONS = arrayOf(
         Manifest.permission.INTERNET,
@@ -438,17 +445,17 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   private fun resolvePrinter(config: PrinterSelectorArgument): EscPosPrinter? {
     var connection: DeviceConnection? = null
-    when (config.type) {
-      PRINTER_TYPE_NETWORK -> {
+    when (config.connection) {
+      PRINTER_CONNECTION_NETWORK -> {
         connection = TcpConnection(config.address, config.port)
       }
-      PRINTER_TYPE_BLUETOOTH -> {
+      PRINTER_CONNECTION_BLUETOOTH -> {
         connection = BluetoothPrintersConnectionsManager.selectByDeviceAddress(reactContext, config.address)
       }
-      PRINTER_TYPE_USB -> {
+      PRINTER_CONNECTION_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(reactContext, config.address)
       }
-      PRINTER_TYPE_SERIAL -> {
+      PRINTER_CONNECTION_SERIAL -> {
         connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
       }
     }
@@ -528,8 +535,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
           if (works.isNotEmpty()) {
             works.forEach { workInfo ->
               val eventParams = Arguments.createMap().apply {
-                workInfo.progress.getString("type")?.let {
-                  putString("type", it)
+                workInfo.progress.getString("connection")?.let {
+                  putString("connection", it)
                 }
                 workInfo.progress.getString("address")?.let {
                   putString("address", it)
@@ -583,9 +590,9 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
                 WorkInfo.State.FAILED -> {
                   val errorMessage = workInfo.outputData.getString("error")
-                  val type = workInfo.progress.getString("type")
+                  val connection = workInfo.progress.getString("connection")
                   val address = workInfo.progress.getString("address")
-                  if (errorMessage.isNullOrEmpty() && type.isNullOrEmpty() && address.isNullOrEmpty()) {
+                  if (errorMessage.isNullOrEmpty() && connection.isNullOrEmpty() && address.isNullOrEmpty()) {
                     eventParams.putString("state", "PENDING")
                     emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
                   } else {
@@ -612,7 +619,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   class PrinterSelectorArgument(argv: Data) {
     constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
 
-    val type: String
+    val connection: String
     val address: String
     val port: Int
     val baudrate: Int
@@ -620,7 +627,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     val width: Float
     val maxChars: Int
     init {
-      type = argv.getString("type")!!
+      connection = argv.getString("connection")!!
       address = argv.getString("address")!!
       port = argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT)
       baudrate = argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE)
@@ -632,7 +639,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     val data: Data
       get() {
         return Data.Builder()
-          .putString("type", type)
+          .putString("connection", connection)
           .putString("address", address)
           .putInt("port", port)
           .putInt("baudrate", baudrate)
@@ -644,9 +651,9 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   private class ScanTypeArgument(argv: ReadableMap) {
-    val type: Int
+    val connection: Int
     init {
-      type = argv.getInt("type")
+      connection = argv.getInt("connection")
     }
   }
 }

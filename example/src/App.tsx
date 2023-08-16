@@ -72,7 +72,7 @@ export default function App() {
             if (address) {
               RNPrinter.enqueuePrint(
                 {
-                  type: RNPrinter.PRINTER_TYPE_USB,
+                  connection: RNPrinter.PRINTER_CONNECTION_USB,
                   address: address,
                 },
                 `[C]<img>${imageUri}</img>\n"` + '[L]\n'

@@ -2,10 +2,13 @@ import type { SCAN_TYPE } from './DeviceScanner';
 
 const EVENT_PRINTING_JOB = 'PRINTING_JOB';
 
-const PRINTER_TYPE_NETWORK = 'network';
-const PRINTER_TYPE_BLUETOOTH = 'bluetooth';
-const PRINTER_TYPE_USB = 'usb';
-const PRINTER_TYPE_SERIAL = 'serial';
+const PRINTER_CONNECTION_NETWORK = 'network';
+const PRINTER_CONNECTION_BLUETOOTH = 'bluetooth';
+const PRINTER_CONNECTION_USB = 'usb';
+const PRINTER_CONNECTION_SERIAL = 'serial';
+
+const PRINTER_TYPE_THERMAL = 'thermal';
+const PRINTER_TYPE_DOTMATRIX = 'dotmatrix';
 
 const PRINTING_DPI_NORMAL = 210;
 
@@ -23,10 +26,10 @@ const TEST_PRINT_DESIGN = '';
 export const Constants = {
   EVENT_PRINTING_JOB: EVENT_PRINTING_JOB,
 
-  PRINTER_TYPE_NETWORK: PRINTER_TYPE_NETWORK,
-  PRINTER_TYPE_BLUETOOTH: PRINTER_TYPE_BLUETOOTH,
-  PRINTER_TYPE_USB: PRINTER_TYPE_USB,
-  PRINTER_TYPE_SERIAL: PRINTER_TYPE_SERIAL,
+  PRINTER_CONNECTION_NETWORK: PRINTER_CONNECTION_NETWORK,
+  PRINTER_CONNECTION_BLUETOOTH: PRINTER_CONNECTION_BLUETOOTH,
+  PRINTER_CONNECTION_USB: PRINTER_CONNECTION_USB,
+  PRINTER_CONNECTION_SERIAL: PRINTER_CONNECTION_SERIAL,
 
   PRINTING_DPI_NORMAL: PRINTING_DPI_NORMAL,
 
@@ -43,16 +46,24 @@ export const Constants = {
 };
 
 export type PrinterSelector = {
-  type:
-    | typeof PRINTER_TYPE_NETWORK
-    | typeof PRINTER_TYPE_BLUETOOTH
-    | typeof PRINTER_TYPE_USB
-    | typeof PRINTER_TYPE_SERIAL;
+  connection:
+    | typeof PRINTER_CONNECTION_NETWORK
+    | typeof PRINTER_CONNECTION_BLUETOOTH
+    | typeof PRINTER_CONNECTION_USB
+    | typeof PRINTER_CONNECTION_SERIAL;
   address: string;
   port?: number | undefined;
   dpi?: number | undefined;
   width?: number | undefined;
   maxChars?: number | undefined;
+};
+
+export type ConnectionSelector = {
+  connection:
+    | typeof PRINTER_CONNECTION_NETWORK
+    | typeof PRINTER_CONNECTION_BLUETOOTH
+    | typeof PRINTER_CONNECTION_USB
+    | typeof PRINTER_CONNECTION_SERIAL;
 };
 
 export interface RNPrinterPayload {
@@ -63,10 +74,13 @@ export interface RNPrinterPayload {
 export type RNPrinter = {
   EVENT_PRINTING_JOB: typeof EVENT_PRINTING_JOB;
 
-  PRINTER_TYPE_NETWORK: typeof PRINTER_TYPE_NETWORK;
-  PRINTER_TYPE_BLUETOOTH: typeof PRINTER_TYPE_BLUETOOTH;
-  PRINTER_TYPE_USB: typeof PRINTER_TYPE_USB;
-  PRINTER_TYPE_SERIAL: typeof PRINTER_TYPE_SERIAL;
+  PRINTER_CONNECTION_NETWORK: typeof PRINTER_CONNECTION_NETWORK;
+  PRINTER_CONNECTION_BLUETOOTH: typeof PRINTER_CONNECTION_BLUETOOTH;
+  PRINTER_CONNECTION_USB: typeof PRINTER_CONNECTION_USB;
+  PRINTER_CONNECTION_SERIAL: typeof PRINTER_CONNECTION_SERIAL;
+
+  PRINTER_TYPE_THERMAL: typeof PRINTER_TYPE_THERMAL;
+  PRINTER_TYPE_DOTMATRIX: typeof PRINTER_TYPE_DOTMATRIX;
 
   PRINTING_DPI_NORMAL: typeof PRINTING_DPI_NORMAL;
 
@@ -83,8 +97,8 @@ export type RNPrinter = {
 
   multiply(a: number, b: number): Promise<number>;
 
-  checkPermission(scanType: SCAN_TYPE): Promise<boolean>;
-  requestPermissions(scanType: SCAN_TYPE): Promise<boolean>;
+  checkPermission(selector: ConnectionSelector): Promise<boolean>;
+  requestPermissions(selector: ConnectionSelector): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
 
   write(selector: PrinterSelector, text: string): Promise<boolean>;

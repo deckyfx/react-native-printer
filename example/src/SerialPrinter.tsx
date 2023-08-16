@@ -78,7 +78,7 @@ export default function App() {
           if (address) {
             RNPrinter.enqueuePrint(
               {
-                type: RNPrinter.PRINTER_TYPE_SERIAL,
+                connection: RNPrinter.PRINTER_CONNECTION_SERIAL,
                 address: address,
               },
               RNPrinter.TEST_PRINT_DESIGN,

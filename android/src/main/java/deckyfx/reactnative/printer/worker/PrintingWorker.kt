@@ -28,17 +28,17 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
 
   private fun resolvePrinter(config: RNPrinter.PrinterSelectorArgument): EscPosPrinter? {
     var connection: DeviceConnection? = null
-    when (config.type) {
-      RNPrinter.PRINTER_TYPE_NETWORK -> {
+    when (config.connection) {
+      RNPrinter.PRINTER_CONNECTION_NETWORK -> {
         connection = TcpConnection(config.address, config.port)
       }
-      RNPrinter.PRINTER_TYPE_BLUETOOTH -> {
+      RNPrinter.PRINTER_CONNECTION_BLUETOOTH -> {
         connection = BluetoothPrintersConnectionsManager.selectByDeviceAddress(context, config.address)
       }
-      RNPrinter.PRINTER_TYPE_USB -> {
+      RNPrinter.PRINTER_CONNECTION_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(context, config.address)
       }
-      RNPrinter.PRINTER_TYPE_SERIAL -> {
+      RNPrinter.PRINTER_CONNECTION_SERIAL -> {
         connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
       }
     }

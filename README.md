@@ -91,11 +91,11 @@ DeviceScannerEventEmitter.onEvents((event, payload) => {});
 DeviceScanner.scan(DeviceScanner.SCAN_USB);
 
 // Write to usb device 
-RNPrinter.write(RNPrinter.PRINTER_TYPE_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'
+RNPrinter.write(RNPrinter.PRINTER_CONNECTION_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'
 
 // Write to usb device 
 RNPrinter.write({
-  type: RNPrinter.PRINTER_TYPE_USB,
+  connection: RNPrinter.PRINTER_CONNECTION_USB,
   address: '/dev/usb/001/003',
 }, RNPrinter.TEST_PRINT_DESIGN);
 
