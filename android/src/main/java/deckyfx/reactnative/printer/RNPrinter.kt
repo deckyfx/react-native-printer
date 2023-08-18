@@ -599,6 +599,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
                     eventParams.putString("error",errorMessage)
                     emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
                   }
+                  PrintingWorkerManager.getInstance().cancelWork(reactContext, workInfo.id);
                 }
 
                 WorkInfo.State.BLOCKED -> {

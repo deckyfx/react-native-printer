@@ -37,6 +37,10 @@ export default class DesignBuilder {
     this._design.push(...lines);
   }
 
+  public addWhitespace() {
+    this._design.push(TagHelper.line(' '));
+  }
+
   public drawSeparator(char: string = '-') {
     this.addFormatedLine(
       Array(this.maxChar)

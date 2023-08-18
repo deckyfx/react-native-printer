@@ -74,4 +74,7 @@ class PrintingWorkerManager private constructor() {
 
     return jobId
   }
+  fun cancelWork(context: ReactContext, uuid: UUID) {
+    WorkManager.getInstance(context).cancelWorkById(uuid);
+  }
 }

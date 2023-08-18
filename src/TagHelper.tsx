@@ -40,11 +40,11 @@ const Tags = {
       TEXTPOSITION: 'text',
     },
     TYPE: {
-      EAN13: 'ean13',
-      EAN8: 'ean8',
-      UPCA: 'upca',
-      UPCE: 'upce',
-      B128: '128',
+      EAN13: 'ean13', // 12 Numeric char
+      EAN8: 'ean8', // 7 Numeric char
+      UPCA: 'upca', // 11 Numeric char
+      UPCE: 'upce', // 6 Numeric char
+      B128: '128', // strings
     },
     TEXTPOSITION: {
       NONE: 'none',
