@@ -15,7 +15,6 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.facebook.react.bridge.Arguments
@@ -27,11 +26,11 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
-import deckyfx.reactnative.printer.devicescan.NetworkScanManager
+import deckyfx.reactnative.printer.devicescan.ScanTypeArgument
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
+import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothPrintersConnectionsManager
-import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnection
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
@@ -39,6 +38,7 @@ import deckyfx.reactnative.printer.worker.PrintingWorkerManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 class RNPrinter(private val reactContext: ReactApplicationContext) :
@@ -421,22 +421,22 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun enqueuePrint(config: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
+  fun enqueuePrint(selector: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
     initWorkerListener()
-    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, config, text, cutPaper, openCashBox)
-    promise.resolve(uuid?.toString())
+    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, selector, text, cutPaper, openCashBox)
+    promise.resolve(uuid.toString())
+  }
+
+  @ReactMethod
+  fun enqueuePrint(jobId: String, promise:Promise) {
+    initWorkerListener()
+    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, jobId)
+    promise.resolve(uuid.toString())
   }
 
   @ReactMethod
   fun prunePrintingWorks() {
     WorkManager.getInstance(reactContext).pruneWork()
-  }
-
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  @ReactMethod
-  fun multiply(a: Double, b: Double, promise: Promise) {
-    promise.resolve(a * b * 0)
   }
 
   private fun resolvePrinter(config: ReadableMap): EscPosPrinter? {
@@ -534,6 +534,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         .observe(currentActivity as LifecycleOwner, Observer { works: List<WorkInfo> ->
           if (works.isNotEmpty()) {
             works.forEach { workInfo ->
+              var file: String? = null
               val eventParams = Arguments.createMap().apply {
                 workInfo.progress.getString("connection")?.let {
                   putString("connection", it)
@@ -555,6 +556,10 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
                 }
                 workInfo.progress.getInt("maxChars", 0).takeIf { it > 0 }?.let {
                   putInt("maxChars", it)
+                }
+                workInfo.progress.getString("file")?.let {
+                  file = it
+                  putString("file", it)
                 }
                 workInfo.progress.getString("jobId")?.let {
                   putString("jobId", it)
@@ -586,6 +591,12 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
                 WorkInfo.State.SUCCEEDED -> {
                   emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
+                  if (file != null) {
+                    val fileD = File(file!!)
+                    if (fileD.exists()) {
+                      fileD.delete()
+                    }
+                  }
                 }
 
                 WorkInfo.State.FAILED -> {
@@ -599,7 +610,13 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
                     eventParams.putString("error",errorMessage)
                     emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
                   }
-                  PrintingWorkerManager.getInstance().cancelWork(reactContext, workInfo.id);
+                  PrintingWorkerManager.getInstance().cancelWork(reactContext, workInfo.id)
+                  if (file != null) {
+                    val fileD = File(file!!)
+                    if (fileD.exists()) {
+                      fileD.delete()
+                    }
+                  }
                 }
 
                 WorkInfo.State.BLOCKED -> {
@@ -615,46 +632,5 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         })
     }
     workerListenerInitialized = true
-  }
-
-  class PrinterSelectorArgument(argv: Data) {
-    constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
-
-    val connection: String
-    val address: String
-    val port: Int
-    val baudrate: Int
-    val dpi: Int
-    val width: Float
-    val maxChars: Int
-    init {
-      connection = argv.getString("connection")!!
-      address = argv.getString("address")!!
-      port = argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT)
-      baudrate = argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE)
-      dpi = argv.getInt("dpi", PRINTING_DPI_NORMAL)
-      width = argv.getFloat("width", PRINTING_WIDTH_80_MM)
-      maxChars = argv.getInt("maxChars", PRINTING_LINES_MAX_CHAR_42)
-    }
-
-    val data: Data
-      get() {
-        return Data.Builder()
-          .putString("connection", connection)
-          .putString("address", address)
-          .putInt("port", port)
-          .putInt("baudrate", baudrate)
-          .putInt("dpi", dpi)
-          .putFloat("width", width)
-          .putInt("maxChars", maxChars)
-          .build()
-      }
-  }
-
-  private class ScanTypeArgument(argv: ReadableMap) {
-    val connection: Int
-    init {
-      connection = argv.getInt("connection")
-    }
   }
 }

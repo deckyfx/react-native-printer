@@ -1,6 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
 
-import type { ReactNativePrinter } from './definitions/index';
+import type { NativeModule } from 'react-native';
+
+import type { RNPrinter as RNPrinterTypes } from './RNPrinter';
+import type { DeviceScanner as DeviceScannerTypes } from './DeviceScanner';
+import { type JobBuilderInterface } from './JobBuilder';
+
+export declare module ReactNativePrinter {
+  type RNPrinter = RNPrinterTypes & NativeModule;
+  type DeviceScanner = DeviceScannerTypes & NativeModule;
+  type JobBuilder = JobBuilderInterface & NativeModule;
+}
 
 import DSEventEmitter from './DeviceScannerEventEmitter';
 import RNPEventEmitter from './RNPrinterEventEmitter';
@@ -35,6 +45,17 @@ export const DeviceScanner: ReactNativePrinter.DeviceScanner =
           },
         }
       );
+
+export const JobBuilder: ReactNativePrinter.JobBuilder = NativeModules.JobBuilder
+  ? NativeModules.JobBuilder
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 export const DesignBuilder = DesignBuilderModule;
 export const TagHelper = TagHelperModule;

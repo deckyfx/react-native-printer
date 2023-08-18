@@ -1,7 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.textparser
 
 import android.content.Context
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -9,13 +8,10 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
-import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.webkit.URLUtil
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
 import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParserImg.Companion.bitmapToHexadecimalString
-import java.io.File
 import java.util.Locale
 
 

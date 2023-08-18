@@ -12,7 +12,12 @@ buildscript {
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20'
+    classpath 'org.jetbrains.kotlin:kotlin-serialization:1.9.0'
   }
+}
+
+plugins {
+  id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.0' apply true
 }
 
 def isNewArchitectureEnabled() {
@@ -21,6 +26,7 @@ def isNewArchitectureEnabled() {
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
+apply plugin: 'kotlinx-serialization'
 
 def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
 
@@ -89,6 +95,7 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-native:+'
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2'
   implementation 'org.apache.commons:commons-lang3:3.12.0'
   implementation 'androidx.work:work-runtime-ktx:2.8.1'

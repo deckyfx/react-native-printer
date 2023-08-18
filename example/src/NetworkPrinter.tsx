@@ -13,7 +13,7 @@ import {
 import type {
   DeviceScanPayload,
   DeviceData,
-} from '@decky.fx/react-native-printer/definitions/DeviceScanner';
+} from '@decky.fx/react-native-printer/DeviceScanner';
 
 export default function App() {
   const [address, setAddress] = React.useState<string | undefined>('');

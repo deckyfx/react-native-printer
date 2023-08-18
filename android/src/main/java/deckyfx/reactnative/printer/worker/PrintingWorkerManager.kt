@@ -29,51 +29,63 @@ class PrintingWorkerManager private constructor() {
 
   fun doSomething() = "Doing something"
 
+  private fun enqueuePrint(
+    context: ReactContext,
+    data: Data,
+    jobId: UUID = UUID.randomUUID(),
+  ): UUID {
+    val constraints = Constraints.Builder()
+      .setRequiredNetworkType(NetworkType.CONNECTED)
+      .setRequiresBatteryNotLow(true)
+      .build()
+    val jobName = "${PRINTING_JOB_NAME_PREFIX}${jobId}"
+    val jobTag = PRINTING_JOB_TAG
+    val inputData = Data.Builder()
+      .putAll(data)
+      .putString("jobId", jobId.toString())
+      .putString("jobName", jobName)
+      .putString("jobTag", jobTag)
+      .build()
+    val workRequest: OneTimeWorkRequest =
+      OneTimeWorkRequestBuilder<PrintingWorker>()
+        .setInitialDelay(1, TimeUnit.SECONDS)
+        .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.MINUTES)
+        .setInputData(inputData)
+        .setConstraints(constraints)
+        .addTag(jobTag)
+        .setId(jobId)
+        .build()
+    WorkManager.getInstance(context).enqueueUniqueWork(
+      jobName,
+      ExistingWorkPolicy.APPEND_OR_REPLACE,
+      workRequest)
+    return jobId
+  }
+
   fun enqueuePrint(
     context: ReactContext,
     config: ReadableMap,
     text: String,
     cutPaper: Boolean,
     openCashBox: Boolean
-  ): UUID? {
-    val constraints = Constraints.Builder()
-      .setRequiredNetworkType(NetworkType.CONNECTED)
-      .setRequiresBatteryNotLow(true)
-      .build()
-
-    val jobId = UUID.randomUUID()
-
-    val jobName = "${PRINTING_JOB_NAME_PREFIX}${jobId}"
-
-    val jobTag = PRINTING_JOB_TAG
-
+  ): UUID {
     val data = Data.Builder()
       .putAll(config.toHashMap())
       .putString("text", text)
-      .putString("jobId", jobId.toString())
-      .putString("jobName", jobName)
-      .putString("jobTag", jobTag)
       .putBoolean("cutPaper", cutPaper)
       .putBoolean("openCashBox", openCashBox)
       .build()
-
-    val workRequest: OneTimeWorkRequest =
-      OneTimeWorkRequestBuilder<PrintingWorker>()
-        .setInitialDelay(1, TimeUnit.SECONDS)
-        .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.MINUTES)
-        .setInputData(data)
-        .setConstraints(constraints)
-        .addTag(jobTag)
-        .setId(jobId)
-        .build()
-
-    WorkManager.getInstance(context).enqueueUniqueWork(
-      jobName,
-      ExistingWorkPolicy.APPEND_OR_REPLACE,
-      workRequest)
-
-    return jobId
+    return enqueuePrint(context, data)
   }
+
+  fun enqueuePrint(context: ReactContext, jobId: String): UUID {
+    val jobId = UUID.fromString(jobId)
+    val data = Data.Builder()
+      .putString("file", jobId.toString())
+      .build()
+    return  enqueuePrint(context, data, jobId)
+  }
+
   fun cancelWork(context: ReactContext, uuid: UUID) {
     WorkManager.getInstance(context).cancelWorkById(uuid);
   }

@@ -1,6 +1,5 @@
 package deckyfx.reactnative.printer.escposprinter.textparser
 
-import android.content.Context
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinterCommands
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosBarcodeException

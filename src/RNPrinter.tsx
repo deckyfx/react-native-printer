@@ -107,8 +107,6 @@ export type RNPrinter = {
 
   TEST_PRINT_DESIGN: typeof TEST_PRINT_DESIGN;
 
-  multiply(a: number, b: number): Promise<number>;
-
   checkPermission(selector: ConnectionSelector): Promise<boolean>;
   requestPermissions(selector: ConnectionSelector): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
@@ -124,6 +122,9 @@ export type RNPrinter = {
     text: string,
     cutPaper?: boolean,
     openCashBox?: boolean
+  ): Promise<string>;
+  enqueuePrint(
+    jobId: string,
   ): Promise<string>;
   prunePrintingWorks(): void;
 };

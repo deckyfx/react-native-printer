@@ -35,7 +35,6 @@ export type SCAN_TYPE =
   | typeof SCAN_SERIAL;
 
 export type DeviceScanner = {
-  multiply(a: number, b: number): Promise<number>;
   scan(scanType: SCAN_TYPE): Promise<void>;
   stop(scanType: SCAN_TYPE): void;
 

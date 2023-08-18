@@ -42,7 +42,7 @@ export default function App() {
     design.addFormatedLine(TagHelper.center('Center'));
     design.addFormatedLine(TagHelper.left('Left'));
     design.addFormatedLine(TagHelper.right('Right'));
-    design.addFormatedLine(TagHelper.image("file://hajsajkjsajs/uiasauis/kjsa.jpg"));
+    // design.addFormatedLine(TagHelper.image("file://hajsajkjsajs/uiasauis/kjsa.jpg"));
     design.addFormatedLines(design.columns(columnData));
     design.drawSeparator('-');
     design.addFormatedLine(TagHelper.qrcode('something', 30));

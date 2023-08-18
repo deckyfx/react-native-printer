@@ -2,7 +2,7 @@ import { NativeEventEmitter, type NativeModule } from 'react-native';
 import {
   Constants as DeviceScanner,
   type DeviceScanPayload,
-} from './definitions/DeviceScanner';
+} from './DeviceScanner';
 
 export default class DeviceScannerEventEmitter extends NativeEventEmitter {
   constructor(nativeModule?: NativeModule) {

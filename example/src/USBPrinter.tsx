@@ -6,6 +6,7 @@ import { View, Text, TouchableHighlight } from 'react-native';
 import {
   RNPrinter,
   DeviceScanner,
+  JobBuilder,
   DeviceScannerEventEmitter,
   RNPrinterEventEmitter,
 } from '@decky.fx/react-native-printer';
@@ -13,7 +14,7 @@ import {
 import type {
   DeviceScanPayload,
   DeviceData,
-} from '@decky.fx/react-native-printer/definitions/DeviceScanner';
+} from '@decky.fx/react-native-printer/DeviceScanner';
 
 export default function App() {
   const [address, setAddress] = React.useState<string | undefined>('');
@@ -80,6 +81,27 @@ export default function App() {
         }}
       >
         <Text>Print Receipt</Text>
+      </TouchableHighlight>
+      <TouchableHighlight
+        style={{
+          alignItems: 'center',
+          backgroundColor: '#DDDDDD',
+          padding: 10,
+          marginRight: 5,
+        }}
+        onPress={async () => {
+          if (address) {
+            await JobBuilder.begin();
+            await JobBuilder.addLine('Test Print 1');
+            await JobBuilder.addLine('Test Print 2');
+            await JobBuilder.feedPaper();
+            await JobBuilder.cutPaper();
+            const job = await JobBuilder.build();
+            RNPrinter.enqueuePrint(job);
+          }
+        }}
+      >
+        <Text>Print Receipt 2</Text>
       </TouchableHighlight>
       <TouchableHighlight
         style={{

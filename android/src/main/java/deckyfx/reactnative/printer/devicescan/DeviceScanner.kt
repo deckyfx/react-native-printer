@@ -17,9 +17,9 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.BluetoothScanManager.OnBluetoothScanListener
 import deckyfx.reactnative.printer.devicescan.NetworkScanManager.OnNetworkScanListener
+import deckyfx.reactnative.printer.devicescan.SerialScanManager.OnSerialScanListener
 import deckyfx.reactnative.printer.devicescan.USBScanManager.OnUSBScanListener
 import deckyfx.reactnative.printer.devicescan.ZeroconfScanManager.OnZeroconfScanListener
-import deckyfx.reactnative.printer.devicescan.SerialScanManager.OnSerialScanListener
 import deckyfx.reactnative.printer.serialport.SerialPortFinder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,11 +64,6 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
    */
   override fun getName(): String {
     return LOG_TAG
-  }
-
-  @ReactMethod
-  fun multiply(a: Double, b: Double, promise: Promise) {
-    promise.resolve(a * b * 0)
   }
 
   // Exposed react-methods cannot receive Int arguments, we must receive it as Double
