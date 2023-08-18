@@ -80,27 +80,34 @@ const attr = (attribute: string, value: string | number) => {
 const wraptag = (
   text: string,
   tag: string,
-  attributes: Array<[string, string | number | null]>
+  attributes: Array<[string, string | number | undefined | null]>
 ) => {
-  const modifier = attributes
-    .filter((attribute) => attribute[0] !== null && attribute[1] !== null)
+  const modifiers = attributes
+    .filter(
+      (attribute) =>
+        attribute[0] !== null &&
+        attribute[1] !== null &&
+        attribute[0] !== undefined &&
+        attribute[1] !== undefined
+    )
     .map((attribute) => {
       return attr(attribute[0], attribute[1] as string | number);
     })
     .join(' ');
-  return wrap(text, `<${tag} ${modifier}>`, `</${tag}>`);
+  const modifier = modifiers.length > 0 ? ` ${modifiers}` : '';
+  return wrap(text, `<${tag}${modifier}>`, `</${tag}>`);
 };
 
 export default {
   ...Tags,
-  allignLeft: (text: string) => {
-    return prepend(Tags.ALLIGNMENT.LEFT, text);
+  left: (text: string) => {
+    return prepend(text, Tags.ALLIGNMENT.LEFT);
   },
-  allignCenter: (text: string) => {
-    return prepend(Tags.ALLIGNMENT.CENTER, text);
+  center: (text: string) => {
+    return prepend(text, Tags.ALLIGNMENT.CENTER);
   },
-  allignRight: (text: string) => {
-    return prepend(Tags.ALLIGNMENT.RIGHT, text);
+  right: (text: string) => {
+    return prepend(text, Tags.ALLIGNMENT.RIGHT);
   },
   font: (
     text: string,
@@ -123,11 +130,17 @@ export default {
   },
   barcode: (
     text: string,
-    type: string = Tags.BARCODE.TYPE.EAN13,
-    height: number | null,
-    width: number | null,
-    text_position: string = Tags.BARCODE.TEXTPOSITION.NONE
+    type?: string | undefined,
+    height?: number | undefined,
+    width?: number | undefined,
+    text_position?: string | undefined
   ) => {
+    if (!type) {
+      type = Tags.BARCODE.TYPE.EAN13;
+    }
+    if (!text_position) {
+      text_position = Tags.BARCODE.TEXTPOSITION.NONE;
+    }
     return wraptag(text, Tags.BARCODE.TAG, [
       [Tags.BARCODE.ATTRIBUTES.TYPE, type],
       [Tags.BARCODE.ATTRIBUTES.HEIGHT, height],

@@ -2,7 +2,8 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "react-native-printer": ["./src/index"]
+      "@decky.fx/react-native-printer": ["./src/index"],
+      "@decky.fx/react-native-printer/*": ["./src/*"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

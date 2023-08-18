@@ -1,6 +1,6 @@
 {
   "name": "@decky.fx/react-native-printer",
-  "version": "1.0.1-b",
+  "version": "1.0.1-c",
   "description": "printing on react native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -54,6 +54,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/eslint-parser": "^7.22.10",
+    "@babel/preset-react": "^7.22.5",
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.2.2",
     "@react-native-community/eslint-config": "^3.0.2",

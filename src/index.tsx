@@ -5,6 +5,7 @@ import type { ReactNativePrinter } from './definitions/index';
 import DSEventEmitter from './DeviceScannerEventEmitter';
 import RNPEventEmitter from './RNPrinterEventEmitter';
 import DesignBuilderModule from './DesignBuilder';
+import TagHelperModule from './TagHelper';
 
 const LINKING_ERROR =
   `The package 'react-native-printer' doesn't seem to be linked. Make sure: \n\n` +
@@ -36,6 +37,7 @@ export const DeviceScanner: ReactNativePrinter.DeviceScanner =
       );
 
 export const DesignBuilder = DesignBuilderModule;
+export const TagHelper = TagHelperModule;
 
 // Register API here
 export const DeviceScannerEventEmitter = new DSEventEmitter(DeviceScanner);

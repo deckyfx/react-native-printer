@@ -3,26 +3,17 @@ import * as React from 'react';
 
 import { View, Text, TouchableHighlight } from 'react-native';
 
-import type { ReactNativePrinter } from '../../src/definitions/index';
+import {
+  RNPrinter,
+  DeviceScanner, 
+  DeviceScannerEventEmitter,
+  RNPrinterEventEmitter,
+} from '@decky.fx/react-native-printer';
+
 import type {
   DeviceScanPayload,
   DeviceData,
-} from 'src/definitions/DeviceScanner';
-import type DSEventEmitter from '../../src/DeviceScannerEventEmitter';
-import type RNPEventEmitter from '../../src/RNPrinterEventEmitter';
-
-import {
-  RNPrinter as RNPrinterModule,
-  DeviceScanner as DeviceScannerModule,
-  DeviceScannerEventEmitter as DeviceScannerEventEmitterModule,
-  RNPrinterEventEmitter as RNPrinterEventEmitterModule,
-} from '../../src/index';
-
-const RNPrinter: ReactNativePrinter.RNPrinter = RNPrinterModule;
-const DeviceScanner: ReactNativePrinter.DeviceScanner = DeviceScannerModule;
-const RNPrinterEventEmitter: RNPEventEmitter = RNPrinterEventEmitterModule;
-const DeviceScannerEventEmitter: DSEventEmitter =
-  DeviceScannerEventEmitterModule;
+} from '@decky.fx/react-native-printer/definitions/DeviceScanner';
 
 export default function App() {
   const [address, setAddress] = React.useState<string | undefined>('');

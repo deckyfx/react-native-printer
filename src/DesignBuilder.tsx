@@ -3,9 +3,10 @@ import TagHelper from './TagHelper';
 export type ColumnConfiguration = {
   width: number;
   text: string;
-  allignment: string | undefined;
-  underline: boolean | undefined;
-  bold: boolean | undefined;
+  allignment?: string | undefined;
+  underline?: boolean | undefined;
+  bold?: boolean | undefined;
+  spacer?: boolean | undefined;
 };
 
 export default class DesignBuilder {
@@ -24,21 +25,27 @@ export default class DesignBuilder {
     return this._design.join('\n');
   }
 
+  public get preview(): string {
+    return `\n${this.design}`;
+  }
+
   public addFormatedLine(line: string) {
     this._design.push(line);
   }
 
   public addFormatedLines(lines: string[]) {
-    this._design = this._design.concat(lines);
+    this._design.push(...lines);
   }
 
-  public drawLine(char: string = '-') {
+  public drawSeparator(char: string = '-') {
     this.addFormatedLine(
-      TagHelper.line(Array(this.maxChar).fill(char).join(''))
+      Array(this.maxChar)
+        .fill(char[0] || ' ')
+        .join('')
     );
   }
 
-  private testWhite(char: string): boolean {
+  private testWhitespace(char: string): boolean {
     var white = new RegExp(/^\s$/);
     return white.test(char.charAt(0));
   }
@@ -58,7 +65,7 @@ export default class DesignBuilder {
       } else {
         // Inserts new line at first whitespace of the line
         for (let i = maxLength - 1; i >= 0; i--) {
-          if (this.testWhite(text.charAt(i))) {
+          if (this.testWhitespace(text.charAt(i))) {
             // check from back to front for a space
             updatedStr = updatedStr + [text.slice(0, i), newLineStr].join('');
             text = text.slice(i + 1);
@@ -78,6 +85,7 @@ export default class DesignBuilder {
   }
 
   public columns(columns: Array<ColumnConfiguration>): Array<string> {
+    const hasSpacer = columns.some((config) => config.spacer);
     const configs = columns.slice(0, 3); // only take maximum three columns
     const totalWidth = configs.reduce((total, column) => {
       return total + column.width;
@@ -88,29 +96,39 @@ export default class DesignBuilder {
       );
       return [];
     }
-
     let result: Array<Array<string>> = [];
     let chunkedNums = 0;
-    configs.forEach((config) => {
-      const chunked = this.chuckLines(config.text, config.width);
+    // Chunks all texts
+    configs.forEach((config, index) => {
+      const width =
+        hasSpacer && index < configs.length - 1
+          ? config.width - 1
+          : config.width;
+      const chunked = this.chuckLines(config.text, width);
       if (chunked.length > chunkedNums) {
         chunkedNums = chunked.length;
       }
       result.push(chunked);
     });
-    result = result.map((chunked, index) => {
+    // Pad result so all chunked array has same size
+    // Also pad line with whitespaces to emulate allignment
+    result = result.map((chunkeds, index) => {
       const config = configs[index]!;
-      if (chunked.length < chunkedNums) {
-        const diff = chunkedNums - chunked.length;
+      const width =
+        hasSpacer && index < configs.length - 1
+          ? config.width - 1
+          : config.width;
+      if (chunkeds.length < chunkedNums) {
+        const diff = chunkedNums - chunkeds.length;
         const fill = Array(diff).fill(' '.repeat(config.width));
-        chunked.push(...fill);
+        chunkeds.push(...fill);
       }
-      chunked = chunked
+      chunkeds = chunkeds
         .map((line) => {
-          if (line.length >= config.width) {
+          if (line.length >= width) {
             return line;
           }
-          const diff = config.width - line.length;
+          const diff = width - line.length;
           const fill = ' '.repeat(diff);
           switch (configs[index]?.allignment) {
             case TagHelper.ALLIGNMENT.LEFT:
@@ -135,15 +153,19 @@ export default class DesignBuilder {
           }
           return line;
         });
-      return chunked;
+      return chunkeds;
     });
-    return Array(chunkedNums)
-      .fill(null)
-      .map((_) => {
-        const lines = result.map((chunked, i) => {
-          return chunked[i];
-        });
-        return lines.join('');
-      });
+    // Transpose array;
+    result = Array.from(result[0]!).map((_, i) => result.map((row) => row[i]!));
+    const result2 = result.map((_) => _.join(hasSpacer ? ' ' : ''));
+    return result2;
+  }
+
+  public addPrintableCharacters() {
+   this.addFormatedLines(
+    this.chuckLines(
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-='
+      )
+    );
   }
 }
