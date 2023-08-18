@@ -45,25 +45,37 @@ export const Constants = {
   TEST_PRINT_DESIGN: TEST_PRINT_DESIGN,
 };
 
-export type PrinterSelector = {
-  connection:
-    | typeof PRINTER_CONNECTION_NETWORK
-    | typeof PRINTER_CONNECTION_BLUETOOTH
-    | typeof PRINTER_CONNECTION_USB
-    | typeof PRINTER_CONNECTION_SERIAL;
+export type PrinterConnectionType =
+  | typeof PRINTER_CONNECTION_NETWORK
+  | typeof PRINTER_CONNECTION_BLUETOOTH
+  | typeof PRINTER_CONNECTION_USB
+  | typeof PRINTER_CONNECTION_SERIAL;
+
+export type PrinterType =
+  | typeof PRINTER_TYPE_THERMAL
+  | typeof PRINTER_TYPE_DOTMATRIX;
+
+export type PrintingLinesMaxCharType =
+  | typeof PRINTING_LINES_MAX_CHAR_33
+  | typeof PRINTING_LINES_MAX_CHAR_40
+  | typeof PRINTING_LINES_MAX_CHAR_42
+  | typeof PRINTING_LINES_MAX_CHAR_56;
+
+export type PrintingWidthType =
+  | typeof PRINTING_WIDTH_58_MM
+  | typeof PRINTING_WIDTH_76_MM
+  | typeof PRINTING_WIDTH_80_MM;
+
+export type ConnectionSelector = {
+  connection: PrinterConnectionType;
+};
+
+export type PrinterSelector = ConnectionSelector & {
   address: string;
   port?: number | undefined;
   dpi?: number | undefined;
   width?: number | undefined;
   maxChars?: number | undefined;
-};
-
-export type ConnectionSelector = {
-  connection:
-    | typeof PRINTER_CONNECTION_NETWORK
-    | typeof PRINTER_CONNECTION_BLUETOOTH
-    | typeof PRINTER_CONNECTION_USB
-    | typeof PRINTER_CONNECTION_SERIAL;
 };
 
 export interface RNPrinterPayload {
