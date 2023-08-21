@@ -1,7 +1,7 @@
 import { NativeEventEmitter, type NativeModule } from 'react-native';
 import {
   Constants as DeviceScanner,
-  type DeviceScanPayload,
+  type DeviceScanEventPayload,
 } from './DeviceScanner';
 
 export default class DeviceScannerEventEmitter extends NativeEventEmitter {
@@ -9,7 +9,10 @@ export default class DeviceScannerEventEmitter extends NativeEventEmitter {
     super(nativeModule);
   }
 
-  onEvents(listener: (even: string, payload: DeviceScanPayload) => void) {
+  /**
+   * Set all event listeners
+   */
+  onEvents(listener: (even: string, payload: DeviceScanEventPayload) => void) {
     [
       DeviceScanner.EVENT_START_SCAN,
       DeviceScanner.EVENT_STOP_SCAN,
@@ -23,6 +26,9 @@ export default class DeviceScannerEventEmitter extends NativeEventEmitter {
     });
   }
 
+  /**
+   * Remove all event listeners
+   */
   offEvents() {
     [
       DeviceScanner.EVENT_START_SCAN,

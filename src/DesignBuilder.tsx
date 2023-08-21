@@ -9,10 +9,21 @@ export type ColumnConfiguration = {
   spacer?: boolean | undefined;
 };
 
+/**
+ * Helper calss to create printable design foor RNPrinter
+ *
+ * @export
+ * @class DesignBuilder
+ */
 export default class DesignBuilder {
   private maxChar: number;
   private _design: string[] = [];
 
+  /**
+   * Creates an instance of DesignBuilder.
+   * @param {number} maxChar Max char per line during printing
+   * @memberof DesignBuilder
+   */
   constructor(maxChar: number) {
     this.maxChar = maxChar;
   }
@@ -21,26 +32,54 @@ export default class DesignBuilder {
     this._design = lines.split('\n');
   }
 
+  /**
+   * Get design result
+   *
+   * @readonly
+   */
   public get design(): string {
     return this._design.join('\n');
   }
 
+  /**
+   * Get design preview
+   *
+   * @readonly
+   */
   public get preview(): string {
     return `\n${this.design}`;
   }
 
+  /**
+   * Add formated line using TagHelper
+   *
+   * @param {string} line
+   */
   public addFormatedLine(line: string) {
     this._design.push(line);
   }
 
+  /**
+   * Add array of formated line using TagHelper
+   *
+   * @param {string} lines
+   */
   public addFormatedLines(lines: string[]) {
     this._design.push(...lines);
   }
 
+  /**
+   * Add blank white space
+   */
   public addWhitespace() {
     this._design.push(TagHelper.line(' '));
   }
 
+  /**
+   * Repeat single char for one row
+   *
+   * @param {string} [char='-'] char to repeat, default is **-**
+   */
   public drawSeparator(char: string = '-') {
     this.addFormatedLine(
       Array(this.maxChar)
@@ -54,6 +93,13 @@ export default class DesignBuilder {
     return white.test(char.charAt(0));
   }
 
+  /**
+   * Split text so it can fit into max char config
+   *
+   * @param {string} text text to plit
+   * @param {*} [maxLength=this.maxChar] max char, default is current max char
+   * @return {*}  {Array<string>} chunked text
+   */
   public chuckLines(text: string, maxLength = this.maxChar): Array<string> {
     // most of this function is credited too
     // https://stackoverflow.com/a/14487422/4825796
@@ -88,6 +134,12 @@ export default class DesignBuilder {
     return updatedStr.split('\n').map((l) => l.trim());
   }
 
+  /**
+   * Create columned text, chuck each column
+   *
+   * @param {Array<ColumnConfiguration>} columns columns configuration
+   * @return {*}  {Array<string>} chunked text
+   */
   public columns(columns: Array<ColumnConfiguration>): Array<string> {
     const hasSpacer = columns.some((config) => config.spacer);
     const configs = columns.slice(0, 3); // only take maximum three columns
@@ -165,12 +217,14 @@ export default class DesignBuilder {
     return result2;
   }
 
+  /**
+   * Add standard printable characters 
+   */
   public addPrintableCharacters() {
-   this.addFormatedLines(
-    this.chuckLines(
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-='
+    this.addFormatedLines(
+      this.chuckLines(
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-='
       )
     );
   }
 }
-

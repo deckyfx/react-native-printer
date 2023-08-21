@@ -5,7 +5,6 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
-import deckyfx.reactnative.printer.RNPrinter
 import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import java.io.File
 import java.io.FileOutputStream
@@ -24,8 +23,6 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
 
   companion object {
     private val LOG_TAG = JobBuilder::class.java.simpleName
-    const val FILE_PATH = "/data/printjob/"
-
     const val COMMAND_SELECT_PRINTER = "SELECT_PRINTER:"
     const val COMMAND_PRINT = "PRINT:"
     const val COMMAND_FEED_PRINTER = "FEED_PRINTER:"
@@ -39,15 +36,24 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     return constants
   }
 
-  private val filename: String
+  private val dirpath: String
     get() {
-      return "${FILE_PATH}${uuid.toString()}"
+      return "${reactContext.filesDir.absolutePath}/printing"
+    }
+
+  private val filepath: String
+    get() {
+      return "${dirpath}/${uuid}"
     }
 
   @ReactMethod
   fun begin(promise: Promise) {
     uuid = UUID.randomUUID()
-    val file = File(reactContext.filesDir, filename)
+    val directory = File(dirpath)
+    if (!directory.exists()) {
+      directory.mkdirs()
+    }
+    val file = File(filepath)
     // If the file doesn't exist, create it.
     if (!file.exists()) {
       file.createNewFile()
@@ -67,13 +73,13 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   fun build(promise: Promise) {
     fileos.close()
     building = false
-    promise.resolve(uuid.toString())
+    promise.resolve(JobBuilderData(uuid.toString(), filepath).readableMap)
   }
 
   @ReactMethod
   fun discard(promise: Promise) {
     fileos.close()
-    val file = File(reactContext.filesDir, filename)
+    val file = File(filepath)
     if (file.exists()) {
       file.delete()
     }
@@ -88,7 +94,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
       return promise.resolve(false)
     }
     val selector = PrinterSelectorArgument(selector)
-    fileos.write("${COMMAND_SELECT_PRINTER}${selector.json}".toByteArray())
+    fileos.write("${COMMAND_SELECT_PRINTER}${selector.json}\n".toByteArray())
     promise.resolve(true)
   }
 
@@ -97,16 +103,20 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     if (!building) {
       return promise.resolve(false)
     }
-    fileos.write("${COMMAND_PRINT}${line}".toByteArray())
+    var lineAdd = line
+    if (!line.endsWith("\n")) {
+      lineAdd += "\n"
+    }
+    fileos.write("${COMMAND_PRINT}${lineAdd}".toByteArray())
     promise.resolve(true)
   }
 
   @ReactMethod
-  fun feedPaper(promise: Promise) {
+  fun feedPaper(dots: Int = 0, promise: Promise) {
     if (!building) {
       return promise.resolve(false)
     }
-    fileos.write(COMMAND_FEED_PRINTER.toByteArray())
+    fileos.write("${COMMAND_FEED_PRINTER}${dots}\n".toByteArray())
     promise.resolve(true)
   }
 
@@ -115,7 +125,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     if (!building) {
       return promise.resolve(false)
     }
-    fileos.write(COMMAND_CUT_PAPER.toByteArray())
+    fileos.write("${COMMAND_CUT_PAPER}\n".toByteArray())
     promise.resolve(true)
   }
 
@@ -124,7 +134,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     if (!building) {
       return promise.resolve(false)
     }
-    fileos.write(COMMAND_OPEN_CASHBOX.toByteArray())
+    fileos.write("${COMMAND_OPEN_CASHBOX}\n".toByteArray())
     promise.resolve(true)
   }
 

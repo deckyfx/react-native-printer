@@ -102,7 +102,7 @@ export default function App() {
           }}
           onPress={async () => {
             if (address) {
-              RNPrinter.enqueuePrint(
+              RNPrinter.enqueuePrint2(
                 {
                   connection: RNPrinter.PRINTER_CONNECTION_USB,
                   address: address,

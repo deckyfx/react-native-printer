@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.facebook.react.bridge.Arguments
@@ -34,11 +35,16 @@ import deckyfx.reactnative.printer.escposprinter.connection.bluetooth.BluetoothP
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
+import deckyfx.reactnative.printer.worker.JobBuilderData
 import deckyfx.reactnative.printer.worker.PrintingWorkerManager
+import deckyfx.reactnative.printer.worker.WorkerArgument
+import deckyfx.reactnative.printer.worker.WorkerEventData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.IOException
+import java.util.UUID
 
 
 class RNPrinter(private val reactContext: ReactApplicationContext) :
@@ -420,17 +426,24 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     promise.resolve(true)
   }
 
+  @Deprecated("Use enqueuePrint(jobData: JobData) is preferred")
   @ReactMethod
-  fun enqueuePrint(selector: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
-    initWorkerListener()
-    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, selector, text, cutPaper, openCashBox)
+  fun enqueuePrint2(selector: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
+    val printerSelector = PrinterSelectorArgument(selector)
+    val argument = WorkerArgument.text(text, cutPaper, openCashBox)
+    val data = Data.Builder()
+      .putAll(printerSelector.data)
+      .putAll(argument.data)
+      .build()
+    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, data)
     promise.resolve(uuid.toString())
   }
 
   @ReactMethod
-  fun enqueuePrint(jobId: String, promise:Promise) {
-    initWorkerListener()
-    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, jobId)
+  fun enqueuePrint(config: ReadableMap, promise:Promise) {
+    val jobBuilderData = JobBuilderData(config)
+    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, jobBuilderData)
+    observeWork(uuid)
     promise.resolve(uuid.toString())
   }
 
@@ -520,117 +533,72 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     }
   }
 
-  private fun initWorkerListener() {
-    if (currentActivity == null) {
-      return
+  @ReactMethod
+  fun getAllJobs(promise: Promise) {
+    val list = WorkManager.getInstance(reactContext).getWorkInfosByTag(PrintingWorkerManager.PRINTING_JOB_TAG)
+    val array = Arguments.createArray().apply {
+      list.get().forEach { workInfo ->
+        pushMap(WorkerEventData.fromWorkInfo(workInfo).writableMap)
+      }
     }
-    if (workerListenerInitialized) {
-      return
-    }
+    promise.resolve(array)
+  }
+
+  private fun observeWork(uuid: UUID) {
     GlobalScope.launch(Dispatchers.Main) {
       WorkManager.getInstance(reactContext)
         // requestId is the WorkRequest id
-        .getWorkInfosByTagLiveData(PrintingWorkerManager.PRINTING_JOB_TAG)
-        .observe(currentActivity as LifecycleOwner, Observer { works: List<WorkInfo> ->
-          if (works.isNotEmpty()) {
-            works.forEach { workInfo ->
-              var file: String? = null
-              val eventParams = Arguments.createMap().apply {
-                workInfo.progress.getString("connection")?.let {
-                  putString("connection", it)
-                }
-                workInfo.progress.getString("address")?.let {
-                  putString("address", it)
-                }
-                workInfo.progress.getInt("port", 0).takeIf { it > 0 }?.let {
-                  putInt("port", it)
-                }
-                workInfo.progress.getInt("baudrate", 0).takeIf { it > 0 }?.let {
-                  putInt("baudrate", it)
-                }
-                workInfo.progress.getInt("dpi", 0).takeIf { it > 0 }?.let {
-                  putInt("dpi", it)
-                }
-                workInfo.progress.getFloat("width", 0f).takeIf { it > 0f }?.let {
-                  putDouble("width", it.toDouble())
-                }
-                workInfo.progress.getInt("maxChars", 0).takeIf { it > 0 }?.let {
-                  putInt("maxChars", it)
-                }
-                workInfo.progress.getString("file")?.let {
-                  file = it
-                  putString("file", it)
-                }
-                workInfo.progress.getString("jobId")?.let {
-                  putString("jobId", it)
-                }
-                workInfo.progress.getString("jobName")?.let {
-                  putString("jobName", it)
-                }
-                workInfo.progress.getString("jobTag")?.let {
-                  putString("jobTag", it)
-                }
-                putString("state", workInfo.state.name)
-                putString("id", workInfo.id.toString())
-                val tags = Arguments.createArray()
-                workInfo.tags.forEach {
-                  tags.pushString(it)
-                }
-                putArray("tags", tags)
-                putInt("generation", workInfo.generation)
-                putInt("runAttemptCount", workInfo.runAttemptCount)
+        .getWorkInfoByIdLiveData(uuid)
+        .observe(currentActivity as LifecycleOwner, Observer { workInfo ->
+          val workerData = WorkerEventData.fromWorkInfo(workInfo)
+          val eventData =  workerData.writableMap
+          when (workInfo.state) {
+            WorkInfo.State.ENQUEUED -> {
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
+            }
+
+            WorkInfo.State.RUNNING -> {
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
+            }
+
+            WorkInfo.State.SUCCEEDED -> {
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
+              removeWork(workInfo.id, workerData.file)
+            }
+
+            WorkInfo.State.FAILED -> {
+              if (workerData.error.isNullOrEmpty() && workerData.connection.isNullOrEmpty() && workerData.address.isNullOrEmpty()) {
+                emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
+              } else {
+                emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
               }
-              when (workInfo.state) {
-                WorkInfo.State.ENQUEUED -> {
-                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                }
+              removeWork(workInfo.id, workerData.file)
+            }
 
-                WorkInfo.State.RUNNING -> {
-                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                }
+            WorkInfo.State.BLOCKED -> {
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
+            }
 
-                WorkInfo.State.SUCCEEDED -> {
-                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                  if (file != null) {
-                    val fileD = File(file!!)
-                    if (fileD.exists()) {
-                      fileD.delete()
-                    }
-                  }
-                }
-
-                WorkInfo.State.FAILED -> {
-                  val errorMessage = workInfo.outputData.getString("error")
-                  val connection = workInfo.progress.getString("connection")
-                  val address = workInfo.progress.getString("address")
-                  if (errorMessage.isNullOrEmpty() && connection.isNullOrEmpty() && address.isNullOrEmpty()) {
-                    eventParams.putString("state", "PENDING")
-                    emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                  } else {
-                    eventParams.putString("error",errorMessage)
-                    emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                  }
-                  PrintingWorkerManager.getInstance().cancelWork(reactContext, workInfo.id)
-                  if (file != null) {
-                    val fileD = File(file!!)
-                    if (fileD.exists()) {
-                      fileD.delete()
-                    }
-                  }
-                }
-
-                WorkInfo.State.BLOCKED -> {
-                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                }
-
-                WorkInfo.State.CANCELLED -> {
-                  emitEventToRNSide(EVENT_PRINTING_JOB, eventParams)
-                }
-              }
+            WorkInfo.State.CANCELLED -> {
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
             }
           }
         })
     }
-    workerListenerInitialized = true
+  }
+
+  private fun removeWork(id: UUID, file: String?) {
+    PrintingWorkerManager.getInstance().cancelWork(reactContext, id)
+    if (file.isNullOrEmpty()) {
+      return;
+    }
+    try {
+      val fileD = File(file)
+      if (fileD.exists()) {
+        fileD.delete()
+      }
+    } catch (error: IOException) {
+      error.printStackTrace()
+    }
   }
 }

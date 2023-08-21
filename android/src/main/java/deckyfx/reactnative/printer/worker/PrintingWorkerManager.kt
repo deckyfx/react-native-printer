@@ -9,7 +9,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.facebook.react.bridge.ReactContext
-import com.facebook.react.bridge.ReadableMap
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -29,7 +28,7 @@ class PrintingWorkerManager private constructor() {
 
   fun doSomething() = "Doing something"
 
-  private fun enqueuePrint(
+  fun enqueuePrint(
     context: ReactContext,
     data: Data,
     jobId: UUID = UUID.randomUUID(),
@@ -62,28 +61,9 @@ class PrintingWorkerManager private constructor() {
     return jobId
   }
 
-  fun enqueuePrint(
-    context: ReactContext,
-    config: ReadableMap,
-    text: String,
-    cutPaper: Boolean,
-    openCashBox: Boolean
-  ): UUID {
-    val data = Data.Builder()
-      .putAll(config.toHashMap())
-      .putString("text", text)
-      .putBoolean("cutPaper", cutPaper)
-      .putBoolean("openCashBox", openCashBox)
-      .build()
-    return enqueuePrint(context, data)
-  }
-
-  fun enqueuePrint(context: ReactContext, jobId: String): UUID {
-    val jobId = UUID.fromString(jobId)
-    val data = Data.Builder()
-      .putString("file", jobId.toString())
-      .build()
-    return  enqueuePrint(context, data, jobId)
+  fun enqueuePrint(context: ReactContext, jobBuilderData: JobBuilderData): UUID {
+    val argument = WorkerArgument.file(jobBuilderData.file)
+    return  enqueuePrint(context, argument.data, jobBuilderData.uuid)
   }
 
   fun cancelWork(context: ReactContext, uuid: UUID) {

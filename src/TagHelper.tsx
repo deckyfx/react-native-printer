@@ -100,15 +100,44 @@ const wraptag = (
 
 export default {
   ...Tags,
+  /**
+   * Create left aligned text
+   *
+   * @param {string} text text to be formated
+   * @return formated text
+   */
   left: (text: string) => {
     return prepend(text, Tags.ALLIGNMENT.LEFT);
   },
+
+  /**
+   * Create left aligned text
+   *
+   * @param {string} text text to be formated
+   * @return formated text
+   */
   center: (text: string) => {
     return prepend(text, Tags.ALLIGNMENT.CENTER);
   },
+
+  /**
+   * Create right aligned text
+   *
+   * @param {string} text text to be formated
+   * @return formated text
+   */
   right: (text: string) => {
     return prepend(text, Tags.ALLIGNMENT.RIGHT);
   },
+
+  /**
+   * Create text with custom font
+   *
+   * @param {string} text text to be formated
+   * @param {string} [size=Tags.FONT.SIZE.NORMAL] Select text size from **.FONT.SIZE.???** default is **.FONT.SIZE.NORMAL**
+   * @param {string} [color=Tags.FONT.COLOR.BLACK] Select text color from **.FONT.COLOR.???** default is **.FONT.SIZE.BLACK**
+   * @return formated text
+   */
   font: (
     text: string,
     size: string = Tags.FONT.SIZE.NORMAL,
@@ -119,15 +148,47 @@ export default {
       [Tags.FONT.ATTRIBUTES.COLOR, color],
     ]);
   },
+
+  /**
+   * Create bold text
+   *
+   * @param {string} text text to be formated
+   * @return formated text
+   */
   bold: (text: string) => {
     return wraptag(text, Tags.BOLD, []);
   },
+
+  /**
+   * Create underlined text
+   *
+   * @param {string} text text to be formated
+   * @return formated text
+   */
   underline: (text: string) => {
     return wraptag(text, Tags.UNDERLINE, []);
   },
+
+  /**
+   * Add image
+   *
+   * @param {string} source image source, protocol must be **file://** or **http[s]://**, remote file willbe downloaded
+   * @return image tag text
+   */
   image: (source: string) => {
     return wraptag(source, Tags.IMAGE, []);
   },
+
+  /**
+   * Create barcode tag
+   *
+   * @param {string} text barcode payload data
+   * @param {(string | undefined)} [type] Select barcode type from **.BARCODE.TYPE.???** default is **.BARCODE.TYPE.EAN13**
+   * @param {(number | undefined)} [height] Set barcode height
+   * @param {(number | undefined)} [width] Set barcode width
+   * @param {(string | undefined)} [text_position] Select text position from **.BARCODE.TEXTPOSITION.???** default is **.BARCODE.TEXTPOSITION.NONE**
+   * @return barcode tag text
+   */
   barcode: (
     text: string,
     type?: string | undefined,
@@ -148,11 +209,26 @@ export default {
       [Tags.BARCODE.ATTRIBUTES.TEXTPOSITION, text_position],
     ]);
   },
+
+  /**
+   * Create QRCode tag
+   *
+   * @param {string} text qrcode payload data
+   * @param {number} [size=25] Set qrcode size, default is 25
+   * @return barcode tag text
+   */
   qrcode: (text: string, size: number = 25) => {
     return wraptag(text, Tags.QRCODE.TAG, [
       [Tags.QRCODE.ATTRIBUTES.SIZE, size],
     ]);
   },
+
+  /**
+   * Create a line
+   *
+   * @param {string} text input
+   * @return formated text
+   */
   line: (text: string) => {
     return append(text, Tags.BREAKLINE);
   },

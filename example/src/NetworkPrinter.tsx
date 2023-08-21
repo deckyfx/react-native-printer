@@ -5,15 +5,16 @@ import { View, Text, TouchableHighlight } from 'react-native';
 
 import {
   RNPrinter,
-  DeviceScanner, 
+  DeviceScanner,
   DeviceScannerEventEmitter,
   RNPrinterEventEmitter,
 } from '@decky.fx/react-native-printer';
 
 import type {
-  DeviceScanPayload,
+  DeviceScanEventPayload,
   DeviceData,
 } from '@decky.fx/react-native-printer/DeviceScanner';
+import type { RNPrinterEventPayload } from '@decky.fx/react-native-printer/RNPrinter';
 
 export default function App() {
   const [address, setAddress] = React.useState<string | undefined>('');
@@ -41,11 +42,13 @@ export default function App() {
           marginRight: 5,
         }}
         onPress={async () => {
-          RNPrinterEventEmitter.onEvents((event: string, payload: any) => {
-            console.log('RNPrinterEventEmitter', event, payload);
-          });
+          RNPrinterEventEmitter.onEvents(
+            (event: string, payload: RNPrinterEventPayload) => {
+              console.log('RNPrinterEventEmitter', event, payload);
+            }
+          );
           DeviceScannerEventEmitter.onEvents(
-            (event: string, payload: DeviceScanPayload) => {
+            (event: string, payload: DeviceScanEventPayload) => {
               console.log('DeviceScannerEventEmitter', event, payload);
               if (event === 'DEVICE_FOUND') {
                 const device = payload as DeviceData;
@@ -71,7 +74,7 @@ export default function App() {
         }}
         onPress={async () => {
           if (address) {
-            RNPrinter.enqueuePrint(
+            RNPrinter.enqueuePrint2(
               {
                 connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
                 address: address,

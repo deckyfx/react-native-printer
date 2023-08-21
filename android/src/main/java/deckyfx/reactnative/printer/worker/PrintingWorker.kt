@@ -17,11 +17,7 @@ import java.io.FileReader
 
 class PrintingWorker(private val context: Context, workerParams: WorkerParameters):
   CoroutineWorker(context, workerParams) {
-
-  private val text = inputData.getString("text")
-  private val file = inputData.getString("file")
-  private val cutPaper = inputData.getBoolean("cutPaper", true)
-  private val openCashBox = inputData.getBoolean("openCashBox", true)
+  private val argument = WorkerArgument(inputData)
   private var printerSelector: PrinterSelectorArgument? = null
   private var printer: EscPosPrinter? = null
 
@@ -64,40 +60,40 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
   private fun processText() {
     printerSelector = PrinterSelectorArgument(inputData)
     printer = resolvePrinter(printerSelector!!)
-    printer?.printFormattedText(text, 0)
-    if (cutPaper) {
+    printer?.printFormattedText(argument.text, 0)
+    if (argument.cutPaper) {
       printer?.cutPaper()
     }
-    if (openCashBox) {
+    if (argument.openCashBox) {
       printer?.openCashBox()
     }
   }
 
   private fun processFile() {
     // Create a FileReader object.
-    val fileReader = FileReader("$JobBuilder.FILE_PATH}${file}")
+    val fileReader = FileReader(argument.file)
     // Create a BufferedReader object.
     val bufferedReader = BufferedReader(fileReader)
     // Create a list to store the lines of the file.
     // Read each line of the file.
-    var line: String? = bufferedReader.readLine()
-    while (line != null) {
-      line = bufferedReader.readLine()
+    var line: String?
+    while (bufferedReader.readLine().also { line = it } != null) {
       if (printer == null) {
-        if (line.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
-          resolvePrinterFromJSON(line.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
+        if (line!!.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
+          resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
         }
         continue
       } else {
-        if (line.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
-          resolvePrinterFromJSON(line.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
-        } else if (line.startsWith(JobBuilder.COMMAND_PRINT)) {
-          printer!!.printFormattedText(line.replace(JobBuilder.COMMAND_PRINT, ""))
-        } else if (line.startsWith(JobBuilder.COMMAND_FEED_PRINTER)) {
-          printer!!.feedPaper(0)
-        } else if (line.startsWith(JobBuilder.COMMAND_CUT_PAPER)) {
+        if (line!!.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
+          resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
+        } else if (line!!.startsWith(JobBuilder.COMMAND_PRINT)) {
+          printer!!.printFormattedText(line!!.replace(JobBuilder.COMMAND_PRINT, ""), 0)
+        } else if (line!!.startsWith(JobBuilder.COMMAND_FEED_PRINTER)) {
+          val feed = line!!.replace(JobBuilder.COMMAND_FEED_PRINTER, "").toFloat()
+          printer!!.feedPaper(printer!!.mmToPx(feed))
+        } else if (line!!.startsWith(JobBuilder.COMMAND_CUT_PAPER)) {
           printer!!.cutPaper()
-        } else if (line.startsWith(JobBuilder.COMMAND_OPEN_CASHBOX)) {
+        } else if (line!!.startsWith(JobBuilder.COMMAND_OPEN_CASHBOX)) {
           printer!!.openCashBox()
         }
       }
@@ -113,15 +109,15 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     setProgress(progress)
     // Do the work here
     return try {
-      if (!text.isNullOrEmpty()) {
+      if (argument.isText) {
         processText()
-      } else if (file.isNullOrEmpty()) {
+      } else if (argument.isFile) {
         processFile()
       }
       // Indicate whether the work finished successfully with the Result
       Result.success(progress)
     } catch (error: Exception) {
-      if (file != null) {
+      if (argument.isFile) {
         return Result.failure(
           Data.Builder()
             .putAll(progress)

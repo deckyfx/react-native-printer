@@ -35,7 +35,20 @@ export type SCAN_TYPE =
   | typeof SCAN_SERIAL;
 
 export type DeviceScanner = {
+  /**
+   * Start scan nearby devices
+   *
+   * @param {SCAN_TYPE} scanType What to scan
+   * @return {*}  {Promise<void>} Promise Void
+   */
   scan(scanType: SCAN_TYPE): Promise<void>;
+
+  /**
+   * Stop scan nearby devices
+   *
+   * @param {SCAN_TYPE} scanType What scan process to stop
+   * @return {*}  {Promise<void>} Promise Void
+   */
   stop(scanType: SCAN_TYPE): void;
 
   SCAN_ALL: typeof SCAN_ALL;
@@ -52,14 +65,14 @@ export type DeviceScanner = {
   EVENT_OTHER: typeof EVENT_OTHER;
 };
 
-export interface DeviceScanPayload {
+export interface DeviceScanEventPayload {
   scanType: SCAN_TYPE;
+  address: string | undefined;
   [key: string]: any;
 }
 
-export type DeviceData = DeviceScanPayload & {
+export type DeviceData = DeviceScanEventPayload & {
   deviceName: string | undefined;
-  address: string | undefined;
   port: number | undefined;
   baudrate: number | undefined;
 };

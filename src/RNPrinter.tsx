@@ -1,5 +1,7 @@
 import type { SCAN_TYPE } from './DeviceScanner';
 
+import type { JobData } from './JobBuilder';
+
 const EVENT_PRINTING_JOB = 'PRINTING_JOB';
 
 const PRINTER_CONNECTION_NETWORK = 'network';
@@ -83,6 +85,27 @@ export interface RNPrinterPayload {
   [key: string]: any;
 }
 
+export type RNPrinterEventPayload = {
+  connection?: string | null;
+  address?: string | null;
+  port?: number;
+  baudrate?: number;
+  dpi?: number;
+  width?: number;
+  maxChars?: number;
+  file?: string | null;
+  jobId?: string | null;
+  jobName?: string | null;
+  jobTag?: string | null;
+  state?: string | null;
+  id?: string | null;
+  tags?: Array<string>;
+  generation?: number;
+  runAttemptCount?: number;
+  error?: string | null;
+};
+
+
 export type RNPrinter = {
   EVENT_PRINTING_JOB: typeof EVENT_PRINTING_JOB;
 
@@ -117,14 +140,25 @@ export type RNPrinter = {
   testConnection(selector: PrinterSelector): void;
   getPrinterModel(selector: PrinterSelector): Promise<string>;
   testPrint(selector: PrinterSelector): Promise<void>;
-  enqueuePrint(
+
+  /**
+   * Enqueue printing job
+   *
+   * @param {JobData} jobData data yielded by JobBuilder.build()
+   * @return {*}  {Promise<string>}
+   */
+  enqueuePrint(jobData: JobData): Promise<string>;
+
+  /**
+   * @deprecated use enqueuePrint(jobData: JobData) is preferred
+   */
+  enqueuePrint2(
     selector: PrinterSelector,
     text: string,
     cutPaper?: boolean,
     openCashBox?: boolean
   ): Promise<string>;
-  enqueuePrint(
-    jobId: string,
-  ): Promise<string>;
+
+  getAllJobs(): Promise<Array<RNPrinterEventPayload>>;
   prunePrintingWorks(): void;
 };
