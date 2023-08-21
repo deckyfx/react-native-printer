@@ -12,13 +12,13 @@ import kotlinx.serialization.serializer
 
 @Serializable
 class PrinterSelectorArgument(
-  val connection: String,
-  val address: String,
-  val port: Int,
-  val baudrate: Int,
-  val dpi: Int,
-  val width: Float,
-  val maxChars: Int
+  var connection: String,
+  var address: String,
+  var port: Int,
+  var baudrate: Int,
+  var dpi: Int,
+  var width: Float,
+  var maxChars: Int
 ) {
   constructor(argv: Data) : this(
       argv.getString("connection")!!,
@@ -31,6 +31,10 @@ class PrinterSelectorArgument(
   )
 
   constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
+  constructor() : this("", "", 0, 0, 0, 0f, 0)
+
+  val ready: Boolean
+    get() = !connection.isNullOrEmpty() && !address.isNullOrEmpty()
 
   val data: Data
     get() {

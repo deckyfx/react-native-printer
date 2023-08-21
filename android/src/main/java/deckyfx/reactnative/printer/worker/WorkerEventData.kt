@@ -4,19 +4,14 @@ import androidx.work.WorkInfo
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
+import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
 @Serializable
 class WorkerEventData(
-  var connection: String? = null,
-  var address: String? = null,
-  var port: Int = 0,
-  var baudrate: Int = 0,
-  var dpi: Int = 0,
-  var width: Float = 0f,
-  var maxChars: Int = 0,
+  var selector: PrinterSelectorArgument? = null,
   var file: String? = null,
   var jobId: String? = null,
   var jobName: String? = null,
@@ -31,13 +26,7 @@ class WorkerEventData(
   val writableMap: WritableMap
     get() {
       return Arguments.createMap().apply {
-        putString("connection", connection)
-        putString("address", address)
-        putInt("port", port)
-        putInt("baudrate", baudrate)
-        putInt("dpi", dpi)
-        putDouble("width", width.toDouble())
-        putInt("maxChars", maxChars)
+        putMap("selector", selector?.readableMap)
         putString("file", file)
         putString("jobId", jobId)
         putString("jobName", jobName)
@@ -67,27 +56,29 @@ class WorkerEventData(
       val data = WorkerEventData()
       val result = Arguments.createMap().apply {
         if (workInfo.progress.keyValueMap.isNotEmpty()) {
+          val selector = PrinterSelectorArgument()
           workInfo.progress.getString("connection")?.let {
-            data.connection = it
+            selector.connection = it
           }
           workInfo.progress.getString("address")?.let {
-            data.address = it
+            selector.address = it
           }
           workInfo.progress.getInt("port", 0).takeIf { it > 0 }?.let {
-            data.port = it
+            selector.port = it
           }
           workInfo.progress.getInt("baudrate", 0).takeIf { it > 0 }?.let {
-            data.baudrate = it
+            selector.baudrate = it
           }
           workInfo.progress.getInt("dpi", 0).takeIf { it > 0 }?.let {
-            data.dpi = it
+            selector.dpi = it
           }
           workInfo.progress.getFloat("width", 0f).takeIf { it > 0f }?.let {
-            data.width = it
+            selector.width = it
           }
           workInfo.progress.getInt("maxChars", 0).takeIf { it > 0 }?.let {
-            data.maxChars = it
+            selector.maxChars = it
           }
+          data.selector = selector
           workInfo.progress.getString("file")?.let {
             data.file = it
           }
@@ -102,27 +93,29 @@ class WorkerEventData(
           }
         }
         if (workInfo.outputData.keyValueMap.isNotEmpty()) {
+          val selector = PrinterSelectorArgument()
           workInfo.outputData.getString("connection")?.let {
-            data.connection = it
+            selector.connection = it
           }
           workInfo.outputData.getString("address")?.let {
-            data.address = it
+            selector.address = it
           }
           workInfo.outputData.getInt("port", 0).takeIf { it > 0 }?.let {
-            data.port = it
+            selector.port = it
           }
           workInfo.outputData.getInt("baudrate", 0).takeIf { it > 0 }?.let {
-            data.baudrate = it
+            selector.baudrate = it
           }
           workInfo.outputData.getInt("dpi", 0).takeIf { it > 0 }?.let {
-            data.dpi = it
+            selector.dpi = it
           }
           workInfo.outputData.getFloat("width", 0f).takeIf { it > 0f }?.let {
-            data.width = it
+            selector.width = it
           }
           workInfo.outputData.getInt("maxChars", 0).takeIf { it > 0 }?.let {
-            data.maxChars = it
+            selector.maxChars = it
           }
+          data.selector = selector
           workInfo.outputData.getString("file")?.let {
             data.file = it
           }
@@ -158,12 +151,7 @@ class WorkerEventData(
 
         WorkInfo.State.FAILED -> {
           val errorMessage = workInfo.outputData.getString("error")
-          if (errorMessage.isNullOrEmpty() && data.connection.isNullOrEmpty() && data.address.isNullOrEmpty()) {
-            data.state = "PENDING"
-          } else {
-            data.error = "PENDING"
-            result.putString("error", errorMessage)
-          }
+          data.error = errorMessage
         }
 
         WorkInfo.State.BLOCKED -> {

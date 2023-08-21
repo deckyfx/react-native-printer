@@ -13,12 +13,35 @@ class WorkerArgument(
   val cutPaper: Boolean,
   val openCashBox: Boolean,
   val file: String?,
+
+  @Deprecated("deprecated field")
+  val connection: String? = null,
+  @Deprecated("deprecated field")
+  val address: String? = null,
+  @Deprecated("deprecated field")
+  val port: Int = 0,
+  @Deprecated("deprecated field")
+  val baudrate: Int = 0,
+  @Deprecated("deprecated field")
+  val dpi: Int = 0,
+  @Deprecated("deprecated field")
+  val width: Float = 0f,
+  @Deprecated("deprecated field")
+  val maxChars: Int = 0,
 ) {
   constructor(argv: Data) : this(
     argv.getString("text"),
     argv.getBoolean("cutPaper", false),
     argv.getBoolean("openCashBox", false),
-    argv.getString("file")
+    argv.getString("file"),
+
+    argv.getString("connection"),
+    argv.getString("address"),
+    argv.getInt("port", 0),
+    argv.getInt("baudrate", 0),
+    argv.getInt("dpi", 0),
+    argv.getFloat("width", 0f),
+    argv.getInt("maxChars", 0)
   )
 
   constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
@@ -40,6 +63,14 @@ class WorkerArgument(
         .putBoolean("cutPaper", cutPaper)
         .putBoolean("openCashBox", openCashBox)
         .putString("file", file)
+
+        .putString("connection", connection)
+        .putString("address", address)
+        .putInt("port", port)
+        .putInt("baudrate", baudrate)
+        .putInt("dpi", dpi)
+        .putFloat("width", width)
+        .putInt("maxChars", maxChars)
         .build()
     }
 
@@ -50,6 +81,14 @@ class WorkerArgument(
         putBoolean("cutPaper", cutPaper)
         putBoolean("openCashBox", openCashBox)
         putString("file", file)
+
+        putString("connection", connection)
+        putString("address", address)
+        putInt("port", port)
+        putInt("baudrate", baudrate)
+        putInt("dpi", dpi)
+        putDouble("width", width.toDouble())
+        putInt("maxChars", maxChars)
       }
     }
 

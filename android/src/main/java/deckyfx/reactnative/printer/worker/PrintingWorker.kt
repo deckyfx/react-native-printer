@@ -52,9 +52,15 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     )
   }
 
-  private fun resolvePrinterFromJSON(line: String) {
+  private suspend fun resolvePrinterFromJSON(line: String) {
     printerSelector = PrinterSelectorArgument.fromJson(line)
     printer = resolvePrinter(printerSelector!!)
+    val progress = Data.Builder()
+      .putAll(inputData)
+    if (printerSelector != null) {
+      progress.putAll(printerSelector!!.data)
+    }
+    setProgress(progress.build())
   }
 
   private fun processText() {
@@ -69,7 +75,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     }
   }
 
-  private fun processFile() {
+  private suspend fun processFile() {
     // Create a FileReader object.
     val fileReader = FileReader(argument.file)
     // Create a BufferedReader object.
@@ -105,33 +111,28 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
   override suspend fun doWork(): Result {
     val progress = Data.Builder()
       .putAll(inputData)
-      .build()
-    setProgress(progress)
-    // Do the work here
+    if (printerSelector != null) {
+      progress.putAll(printerSelector!!.data)
+    }
     return try {
       if (argument.isText) {
+        setProgress(progress.build())
         processText()
       } else if (argument.isFile) {
         processFile()
       }
-      // Indicate whether the work finished successfully with the Result
-      Result.success(progress)
-    } catch (error: Exception) {
-      if (argument.isFile) {
-        return Result.failure(
-          Data.Builder()
-            .putAll(progress)
-            .putString("error", error.message)
-            .build()
-        )
+      if (printerSelector != null) {
+        progress.putAll(printerSelector!!.data)
       }
-      if (runAttemptCount >= 3) {
-        return Result.failure(
-          Data.Builder()
-            .putAll(progress)
-            .putString("error", error.message)
-            .build()
-        )
+      setProgress(progress.build())
+      Result.success(progress.build())
+    } catch (error: Exception) {
+      if (printerSelector != null) {
+        progress.putAll(printerSelector!!.data)
+      }
+      progress.putString("error", error.message)
+      if (argument.isFile || runAttemptCount >= 3) {
+        return Result.failure(progress.build())
       } else {
         return Result.retry()
       }

@@ -567,11 +567,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
             }
 
             WorkInfo.State.FAILED -> {
-              if (workerData.error.isNullOrEmpty() && workerData.connection.isNullOrEmpty() && workerData.address.isNullOrEmpty()) {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
-              } else {
-                emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
-              }
+              emitEventToRNSide(EVENT_PRINTING_JOB, eventData)
               removeWork(workInfo.id, workerData.file)
             }
 
