@@ -55,7 +55,10 @@ export default class DesignBuilder {
    *
    * @param {string} line
    */
-  public addFormatedLine(line: string) {
+  public addLine(line: string) {
+    if (!line.endsWith('\n')) {
+      line = TagHelper.line(line);
+    }
     this._design.push(line);
   }
 
@@ -64,14 +67,14 @@ export default class DesignBuilder {
    *
    * @param {string} lines
    */
-  public addFormatedLines(lines: string[]) {
-    this._design.push(...lines);
+  public addLines(lines: string[]) {
+    lines.forEach((line) => this.addLine(line));
   }
 
   /**
    * Add blank white space
    */
-  public addWhitespace() {
+  public addBlankLine() {
     this._design.push(TagHelper.line(' '));
   }
 
@@ -81,7 +84,7 @@ export default class DesignBuilder {
    * @param {string} [char='-'] char to repeat, default is **-**
    */
   public drawSeparator(char: string = '-') {
-    this.addFormatedLine(
+    this.addLine(
       Array(this.maxChar)
         .fill(char[0] || ' ')
         .join('')
@@ -221,7 +224,7 @@ export default class DesignBuilder {
    * Add standard printable characters
    */
   public addPrintableCharacters() {
-    this.addFormatedLines(
+    this.addLines(
       this.chuckLines(
         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-='
       )

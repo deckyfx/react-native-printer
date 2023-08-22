@@ -44,16 +44,16 @@ const App = () => {
       },
     ];
     design.drawSeparator('-');
-    design.addFormatedLine(TagHelper.center('Center'));
-    design.addFormatedLine(TagHelper.left('Left'));
-    design.addFormatedLine(TagHelper.right('Right'));
+    design.addLine(TagHelper.center('Center'));
+    design.addLine(TagHelper.left('Left'));
+    design.addLine(TagHelper.right('Right'));
     // design.addFormatedLine(TagHelper.image("file://hajsajkjsajs/uiasauis/kjsa.jpg"));
-    design.addFormatedLines(design.columns(columnData));
+    design.addLines(design.columns(columnData));
     design.drawSeparator('-');
-    design.addFormatedLine(TagHelper.qrcode('something', 30));
+    design.addLine(TagHelper.qrcode('something', 30));
     design.addPrintableCharacters();
     design.drawSeparator('-');
-    design.addFormatedLine(TagHelper.barcode('something'));
+    design.addLine(TagHelper.barcode('something'));
   };
 
   const selectImage = async () => {
