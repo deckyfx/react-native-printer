@@ -2,8 +2,7 @@ module.exports = {
   root: true,
   extends: '@react-native',
   plugins: ['react-hooks'],
-  parser: '@babel/eslint-parser',
-  presets: ['@babel/preset-env', '@babel/preset-react'],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     requireConfigFile: false,
   },
