@@ -7,7 +7,7 @@ import {
   DesignBuilder,
   RNPrinter,
 } from '@decky.fx/react-native-printer';
-import type { ColumnConfiguration } from '@decky.fx/react-native-printer/DesignBuilder';
+import type { RowConfig } from '@decky.fx/react-native-printer/ColumnConfig';
 
 import DocumentPicker from 'react-native-document-picker';
 
@@ -23,7 +23,7 @@ const App = () => {
 
   const buildDesign = () => {
     const design = new DesignBuilder(RNPrinter.PRINTING_LINES_MAX_CHAR_56);
-    const columnData: ColumnConfiguration[] = [
+    const columnData: RowConfig = [
       {
         width: 26,
         text: 'Product Name with very long name that it should break line',
