@@ -218,7 +218,7 @@ export default class DesignBuilder {
   }
 
   /**
-   * Add standard printable characters 
+   * Add standard printable characters
    */
   public addPrintableCharacters() {
     this.addFormatedLines(

@@ -1,6 +1,9 @@
 import { NativeEventEmitter, type NativeModule } from 'react-native';
 
-import { Constants as RNPrinter, type RNPrinterEventPayload } from './RNPrinter';
+import {
+  Constants as RNPrinter,
+  type RNPrinterEventPayload,
+} from './RNPrinter';
 
 export default class RNPrinterEventEmitter extends NativeEventEmitter {
   constructor(nativeModule?: NativeModule) {

@@ -105,7 +105,6 @@ export type RNPrinterEventPayload = {
   error?: string | null;
 };
 
-
 export type RNPrinter = {
   EVENT_PRINTING_JOB: typeof EVENT_PRINTING_JOB;
 
@@ -134,12 +133,10 @@ export type RNPrinter = {
   requestPermissions(selector: ConnectionSelector): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
 
-  write(selector: PrinterSelector, text: string): Promise<boolean>;
-  cutPaper(selector: PrinterSelector): void;
-  openCashBox(selector: PrinterSelector): void;
   testConnection(selector: PrinterSelector): void;
   getPrinterModel(selector: PrinterSelector): Promise<string>;
-  testPrint(selector: PrinterSelector): Promise<void>;
+  getAllJobs(): Promise<Array<RNPrinterEventPayload>>;
+  prunePrintingWorks(): void;
 
   /**
    * Enqueue printing job
@@ -152,13 +149,30 @@ export type RNPrinter = {
   /**
    * @deprecated use enqueuePrint(jobData: JobData) is preferred
    */
+  write(selector: PrinterSelector, text: string): Promise<boolean>;
+
+  /**
+   * @deprecated use enqueuePrint(jobData: JobData) is preferred
+   */
+  cutPaper(selector: PrinterSelector): void;
+
+  /**
+   * @deprecated use enqueuePrint(jobData: JobData) is preferred
+   */
+  openCashBox(selector: PrinterSelector): void;
+
+  /**
+   * @deprecated use enqueuePrint(jobData: JobData) is preferred
+   */
+  testPrint(selector: PrinterSelector): Promise<void>;
+
+  /**
+   * @deprecated use enqueuePrint(jobData: JobData) is preferred
+   */
   enqueuePrint2(
     selector: PrinterSelector,
     text: string,
     cutPaper?: boolean,
     openCashBox?: boolean
   ): Promise<string>;
-
-  getAllJobs(): Promise<Array<RNPrinterEventPayload>>;
-  prunePrintingWorks(): void;
 };

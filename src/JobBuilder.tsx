@@ -1,9 +1,9 @@
 import type { PrinterSelector } from './RNPrinter';
 
 export type JobData = {
-  id: string,
-  file: string,
-}
+  id: string;
+  file: string;
+};
 
 export interface JobBuilderInterface {
   /**

@@ -12,7 +12,7 @@ export default class DeviceScannerEventEmitter extends NativeEventEmitter {
   /**
    * Set all event listeners
    */
-  onEvents(listener: (even: string, payload: DeviceScanEventPayload) => void) {
+  onEvents(listener: (event: string, payload: DeviceScanEventPayload) => void) {
     [
       DeviceScanner.EVENT_START_SCAN,
       DeviceScanner.EVENT_STOP_SCAN,
@@ -20,8 +20,16 @@ export default class DeviceScannerEventEmitter extends NativeEventEmitter {
       DeviceScanner.EVENT_OTHER,
       DeviceScanner.EVENT_ERROR,
     ].forEach((eventName) => {
-      this.addListener(eventName, (...args: any[]) => {
-        listener.apply(this, [eventName, args[0]]);
+      this.addListener(eventName, (payload: DeviceScanEventPayload) => {
+        // Bypass scan network error due to ping connection failed
+        if (
+          eventName === DeviceScanner.EVENT_ERROR &&
+          payload.scanType === DeviceScanner.SCAN_NETWORK &&
+          payload.message?.startsWith('failed to connect to')
+        ) {
+          return;
+        }
+        listener.apply(this, [eventName, payload]);
       });
     });
   }

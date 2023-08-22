@@ -1,9 +1,12 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState } from 'react';
 
-import { StyleSheet, View, Text, TouchableHighlight } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 
-import { TagHelper, DesignBuilder, RNPrinter } from '@decky.fx/react-native-printer';
+import {
+  TagHelper,
+  DesignBuilder,
+  RNPrinter,
+} from '@decky.fx/react-native-printer';
 import type { ColumnConfiguration } from '@decky.fx/react-native-printer/DesignBuilder';
 
 import DocumentPicker from 'react-native-document-picker';
@@ -11,8 +14,10 @@ import DocumentPicker from 'react-native-document-picker';
 import USBPrinter from './USBPrinter';
 import NetworkPrinter from './NetworkPrinter';
 import SerialPrinter from './SerialPrinter';
+import Row from './Row';
+import Button from './Button';
 
-export default function App() {
+const App = () => {
   const [address] = useState<string | undefined>('');
   const [imageUri, setImageUri] = useState<string | undefined>('');
 
@@ -30,7 +35,7 @@ export default function App() {
         width: 15,
         text: '20x',
         allignment: TagHelper.ALLIGNMENT.CENTER,
-        underline: true
+        underline: true,
       },
       {
         width: 15,
@@ -49,7 +54,33 @@ export default function App() {
     design.addPrintableCharacters();
     design.drawSeparator('-');
     design.addFormatedLine(TagHelper.barcode('something'));
-  }
+  };
+
+  const selectImage = async () => {
+    DocumentPicker.pickSingle({
+      presentationStyle: 'fullScreen',
+      copyTo: 'cachesDirectory',
+      type: ['image/jpg', 'image/png'],
+    }).then((_result) => {
+      setImageUri(_result.fileCopyUri!!);
+    });
+  };
+
+  const printImage = async () => {
+    if (address) {
+      RNPrinter.enqueuePrint2(
+        {
+          connection: RNPrinter.PRINTER_CONNECTION_USB,
+          address: address,
+        },
+        `[C]<img>${imageUri}</img>\n"` + '[L]\n'
+      );
+    }
+  };
+
+  const pruneJobs = async () => {
+    RNPrinter.prunePrintingWorks();
+  };
 
   useEffect(() => {
     return () => {};
@@ -60,95 +91,20 @@ export default function App() {
       <USBPrinter />
       <NetworkPrinter />
       <SerialPrinter />
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 5,
-        }}
-      >
-        <TouchableHighlight
-          style={{
-            alignItems: 'center',
-            backgroundColor: '#DDDDDD',
-            padding: 10,
-            marginRight: 5,
-          }}
-          onPress={async () => {
-            DocumentPicker.pickSingle({
-              presentationStyle: 'fullScreen',
-              copyTo: 'cachesDirectory',
-              type: ['image/jpg', 'image/png'],
-            }).then((_result) => {
-              setImageUri(_result.fileCopyUri!!);
-            });
-          }}
-        >
-          <Text>Select Image</Text>
-        </TouchableHighlight>
+      <Row>
+        <Button text={'Select Image'} onClick={selectImage} />
         <Text>{imageUri}</Text>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 5,
-        }}
-      >
-        <TouchableHighlight
-          style={{
-            alignItems: 'center',
-            backgroundColor: '#DDDDDD',
-            padding: 10,
-            marginRight: 5,
-          }}
-          onPress={async () => {
-            if (address) {
-              RNPrinter.enqueuePrint2(
-                {
-                  connection: RNPrinter.PRINTER_CONNECTION_USB,
-                  address: address,
-                },
-                `[C]<img>${imageUri}</img>\n"` + '[L]\n'
-              );
-            }
-          }}
-        >
-          <Text>Print With Image</Text>
-        </TouchableHighlight>
-        <TouchableHighlight
-          style={{
-            alignItems: 'center',
-            backgroundColor: '#DDDDDD',
-            padding: 10,
-            marginRight: 5,
-          }}
-          onPress={async () => {
-            RNPrinter.prunePrintingWorks();
-          }}
-        >
-          <Text>Prune Jobs</Text>
-        </TouchableHighlight>
-      </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 5,
-        }}
-      >
-        <TouchableHighlight
-          style={{
-            alignItems: 'center',
-            backgroundColor: '#DDDDDD',
-            padding: 10,
-            marginRight: 5,
-          }}
-          onPress={buildDesign}
-        >
-          <Text>Test Design</Text>
-        </TouchableHighlight>
-      </View>
+      </Row>
+      <Row>
+        <Button text={'Print With Image'} onClick={printImage} />
+        <Button text={'Prune Jobs'} onClick={pruneJobs} />
+      </Row>
+      <Row>
+        <Button text={'Test Design'} onClick={buildDesign} />
+      </Row>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -162,3 +118,4 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
 });
+export default App;

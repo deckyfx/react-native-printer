@@ -67,22 +67,23 @@ export type DeviceScanner = {
 
 export interface DeviceScanEventPayload {
   scanType: SCAN_TYPE;
-  address: string | undefined;
+  address?: string | undefined;
+  message?: string | undefined;
   [key: string]: any;
 }
 
 export type DeviceData = DeviceScanEventPayload & {
-  deviceName: string | undefined;
-  port: number | undefined;
-  baudrate: number | undefined;
+  deviceName?: string | undefined;
+  port?: number | undefined;
+  baudrate?: number | undefined;
 };
 
 export type USBDeviceData = DeviceData & {
-  PID: string | undefined;
-  VID: string | undefined;
-  deviceId: string | undefined;
-  manufacturerName: string | undefined;
-  serialNumber: number | undefined;
-  status: string | undefined;
+  PID?: string | undefined;
+  VID?: string | undefined;
+  deviceId?: string | undefined;
+  manufacturerName?: string | undefined;
+  serialNumber?: number | undefined;
+  status?: string | undefined;
   scanType: SCAN_TYPE;
 };
