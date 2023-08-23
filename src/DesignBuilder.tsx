@@ -1,4 +1,4 @@
-import type { RowConfig, TableConfig } from './ColumnConfig';
+import type { ColumnConfig, RowConfig, TableConfig } from './ColumnConfig';
 import TagHelper from './TagHelper';
 
 /**
@@ -69,7 +69,7 @@ export default class DesignBuilder {
    * Add blank white space
    */
   public addBlankLine() {
-    this._design.push(TagHelper.line(' '));
+    this._design.push(' ');
     return this;
   }
 
@@ -226,6 +226,33 @@ export default class DesignBuilder {
     rows.forEach((row) => {
       this.addLines(this.columns(row));
     });
+    return this;
+  }
+
+  /**
+   * Add automated columned line the split width will be equal / automated and handled by the native side
+   *
+   * @param {RowConfig} columns the required attributes is { allignment, text }
+   * @memberof DesignBuilder
+   */
+  public addAutoColumn(columns: RowConfig) {
+    const configs = columns.slice(0, 3); // only take maximum three columns
+    const line = configs.reduce<string>(
+      (construct: string, config: ColumnConfig) => {
+        const text = config.text || '';
+        switch (config.allignment) {
+          case TagHelper.ALLIGNMENT.LEFT:
+            return construct + TagHelper.left(text);
+          case TagHelper.ALLIGNMENT.CENTER:
+            return construct + TagHelper.center(text);
+          case TagHelper.ALLIGNMENT.RIGHT:
+            return construct + TagHelper.right(text);
+        }
+        return '';
+      },
+      ''
+    );
+    this.addLine(line);
     return this;
   }
 
