@@ -1,4 +1,9 @@
-import type { ColumnConfig, RowConfig, TableConfig } from './ColumnConfig';
+import type {
+  AutoColumnConfig,
+  AutoRowConfig,
+  RowConfig,
+  TableConfig,
+} from './ColumnConfig';
 import TagHelper from './TagHelper';
 
 /**
@@ -235,10 +240,10 @@ export default class DesignBuilder {
    * @param {RowConfig} columns the required attributes is { allignment, text }
    * @memberof DesignBuilder
    */
-  public addAutoColumn(columns: RowConfig) {
+  public addAutoColumn(columns: AutoRowConfig) {
     const configs = columns.slice(0, 3); // only take maximum three columns
     const line = configs.reduce<string>(
-      (construct: string, config: ColumnConfig) => {
+      (construct: string, config: AutoColumnConfig) => {
         const text = config.text || '';
         switch (config.allignment) {
           case TagHelper.ALLIGNMENT.LEFT:

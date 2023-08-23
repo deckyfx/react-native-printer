@@ -14,3 +14,10 @@ export type TableConfig = RowConfig[];
 export type RowData = Array<string | null | undefined>;
 
 export type TableData = RowData[];
+
+export type AutoColumnConfig = Omit<
+  ColumnConfig,
+  'width' | 'underline' | 'bold' | 'spacer'
+>;
+
+export type AutoRowConfig = AutoColumnConfig[];
