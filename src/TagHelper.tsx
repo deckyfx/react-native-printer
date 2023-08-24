@@ -1,32 +1,64 @@
+const Allignments = {
+  LEFT: '[L]',
+  CENTER: '[C]',
+  RIGHT: '[R]',
+} as const;
+const AllignmentArray = [...Object.values(Allignments)] as const;
+export type Allignment = (typeof AllignmentArray)[number];
+
+const FontSizes = {
+  NORMAL: 'normal',
+  WIDE: 'wide',
+  TALL: 'tall',
+  BIG: 'big',
+  BIG2: 'big-2',
+  BIG3: 'big-3',
+  BIG4: 'big-4',
+  BIG5: 'big-5',
+  BIG6: 'big-6',
+} as const;
+const FontSizeArray = [...Object.values(FontSizes)] as const;
+export type FontSize = (typeof FontSizeArray)[number];
+
+const FontColors = {
+  BLACK: 'black',
+  BLACKBG: 'bg-black',
+  RED: 'red',
+  REDBG: 'bg-red',
+} as const;
+const FontColorArray = [...Object.values(FontColors)] as const;
+export type FontColor = (typeof FontColorArray)[number];
+
+const BarCodeTypes = {
+  EAN13: 'ean13', // 12 Numeric char
+  EAN8: 'ean8', // 7 Numeric char
+  UPCA: 'upca', // 11 Numeric char
+  UPCE: 'upce', // 6 Numeric char
+  B128: '128', // strings
+} as const;
+const BarCodeTypeArray = [...Object.values(BarCodeTypes)] as const;
+export type BarCodeType = (typeof BarCodeTypeArray)[number];
+
+const BarCodeTextPositions = {
+  NONE: 'none',
+  ABOVE: 'above',
+  BELOW: 'below',
+} as const;
+const BarCodeTextPositionArray = [
+  ...Object.values(BarCodeTextPositions),
+] as const;
+export type BarCodeTextPosition = (typeof BarCodeTextPositionArray)[number];
+
 const Tags = {
-  ALLIGNMENT: {
-    LEFT: '[L]',
-    CENTER: '[C]',
-    RIGHT: '[R]',
-  },
+  ALLIGNMENT: Allignments,
   FONT: {
     TAG: 'font',
     ATTRIBUTES: {
       SIZE: 'size',
       COLOR: 'color',
     },
-    SIZE: {
-      NORMAL: 'normal',
-      WIDE: 'wide',
-      TALL: 'tall',
-      BIG: 'big',
-      BIG2: 'big-2',
-      BIG3: 'big-3',
-      BIG4: 'big-4',
-      BIG5: 'big-5',
-      BIG6: 'big-6',
-    },
-    COLOR: {
-      BLACK: 'black',
-      BLACKBG: 'bg-black',
-      RED: 'red',
-      REDBG: 'bg-red',
-    },
+    SIZE: FontSizes,
+    COLOR: FontColors,
   },
   BOLD: 'b',
   UNDERLINE: 'u',
@@ -39,18 +71,8 @@ const Tags = {
       WIDTH: 'width',
       TEXTPOSITION: 'text',
     },
-    TYPE: {
-      EAN13: 'ean13', // 12 Numeric char
-      EAN8: 'ean8', // 7 Numeric char
-      UPCA: 'upca', // 11 Numeric char
-      UPCE: 'upce', // 6 Numeric char
-      B128: '128', // strings
-    },
-    TEXTPOSITION: {
-      NONE: 'none',
-      ABOVE: 'above',
-      BELOW: 'below',
-    },
+    TYPE: BarCodeTypes,
+    TEXT_POSITION: BarCodeTextPositions,
   },
   QRCODE: {
     TAG: 'qrcode',
@@ -67,6 +89,10 @@ const prepend = (text: string, extra: string) => {
 
 const append = (text: string, extra: string) => {
   return text + extra;
+};
+
+const align = (text: string, direction: Allignment) => {
+  return prepend(text, direction);
 };
 
 const wrap = (text: string, extra1: string, extra2: string) => {
@@ -99,7 +125,13 @@ const wraptag = (
 };
 
 export default {
-  ...Tags,
+  ...{
+    ALLIGNMENT: Allignments,
+    FONT_SIZE: FontSizes,
+    FONT_COLOR: FontSizes,
+    BARCODE_TYPE: BarCodeTypes,
+    BARCODE_TEXT_POSITION: BarCodeTextPositions,
+  },
   /**
    * Create left aligned text
    *
@@ -107,7 +139,7 @@ export default {
    * @return formated text
    */
   left: (text: string) => {
-    return prepend(text, Tags.ALLIGNMENT.LEFT);
+    return align(text, Tags.ALLIGNMENT.CENTER);
   },
 
   /**
@@ -117,7 +149,7 @@ export default {
    * @return formated text
    */
   center: (text: string) => {
-    return prepend(text, Tags.ALLIGNMENT.CENTER);
+    return align(text, Tags.ALLIGNMENT.CENTER);
   },
 
   /**
@@ -127,21 +159,30 @@ export default {
    * @return formated text
    */
   right: (text: string) => {
-    return prepend(text, Tags.ALLIGNMENT.RIGHT);
+    return align(text, Tags.ALLIGNMENT.RIGHT);
   },
+
+  /**
+   * Create aligned text
+   *
+   * @param {string} text text to be formated
+   * @param {string} direction Select direction size from **.ALLIGNMENT.???**
+   * @return formated text
+   */
+  align: align,
 
   /**
    * Create text with custom font
    *
    * @param {string} text text to be formated
-   * @param {string} [size=Tags.FONT.SIZE.NORMAL] Select text size from **.FONT.SIZE.???** default is **.FONT.SIZE.NORMAL**
-   * @param {string} [color=Tags.FONT.COLOR.BLACK] Select text color from **.FONT.COLOR.???** default is **.FONT.SIZE.BLACK**
+   * @param {FontSize} [size=Tags.FONT.SIZE.NORMAL] Select text size from **.FONT.SIZE.???** default is **.FONT.SIZE.NORMAL**
+   * @param {FontColor} [color=Tags.FONT.COLOR.BLACK] Select text color from **.FONT.COLOR.???** default is **.FONT.SIZE.BLACK**
    * @return formated text
    */
   font: (
     text: string,
-    size: string = Tags.FONT.SIZE.NORMAL,
-    color: string = Tags.FONT.COLOR.BLACK
+    size: FontSize = Tags.FONT.SIZE.NORMAL,
+    color: FontColor = Tags.FONT.COLOR.BLACK
   ) => {
     return wraptag(text, Tags.FONT.TAG, [
       [Tags.FONT.ATTRIBUTES.SIZE, size],
@@ -183,24 +224,24 @@ export default {
    * Create barcode tag
    *
    * @param {string} text barcode payload data
-   * @param {(string | undefined)} [type] Select barcode type from **.BARCODE.TYPE.???** default is **.BARCODE.TYPE.EAN13**
-   * @param {(number | undefined)} [height] Set barcode height
-   * @param {(number | undefined)} [width] Set barcode width
-   * @param {(string | undefined)} [text_position] Select text position from **.BARCODE.TEXTPOSITION.???** default is **.BARCODE.TEXTPOSITION.NONE**
+   * @param {(BarCodeType | null | undefined)} [type] Select barcode type from **.BARCODE.TYPE.???** default is **.BARCODE.TYPE.EAN13**
+   * @param {(number | null | undefined)} [height] Set barcode height
+   * @param {(number | null | undefined)} [width] Set barcode width
+   * @param {(BarCodeTextPosition | null | undefined)} [text_position] Select text position from **.BARCODE.TEXTPOSITION.???** default is **.BARCODE.TEXTPOSITION.NONE**
    * @return barcode tag text
    */
   barcode: (
     text: string,
-    type?: string | undefined,
-    height?: number | undefined,
-    width?: number | undefined,
-    text_position?: string | undefined
+    type?: BarCodeType | null | undefined,
+    height?: number | null | undefined,
+    width?: number | null | undefined,
+    text_position?: BarCodeTextPosition | null | undefined
   ) => {
     if (!type) {
       type = Tags.BARCODE.TYPE.EAN13;
     }
     if (!text_position) {
-      text_position = Tags.BARCODE.TEXTPOSITION.NONE;
+      text_position = Tags.BARCODE.TEXT_POSITION.NONE;
     }
     return wraptag(text, Tags.BARCODE.TAG, [
       [Tags.BARCODE.ATTRIBUTES.TYPE, type],

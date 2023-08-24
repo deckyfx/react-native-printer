@@ -76,8 +76,8 @@ export type PrinterSelector = ConnectionSelector & {
   address: string;
   port?: number | undefined;
   dpi?: number | undefined;
-  width?: number | undefined;
-  maxChars?: number | undefined;
+  width?: PrintingWidthType | undefined;
+  maxChars?: PrintingLinesMaxCharType | undefined;
 };
 
 export interface RNPrinterPayload {
@@ -86,23 +86,23 @@ export interface RNPrinterPayload {
 }
 
 export type RNPrinterEventPayload = {
-  connection?: string | null;
-  address?: string | null;
-  port?: number;
-  baudrate?: number;
-  dpi?: number;
-  width?: number;
-  maxChars?: number;
-  file?: string | null;
-  jobId?: string | null;
-  jobName?: string | null;
-  jobTag?: string | null;
-  state?: string | null;
-  id?: string | null;
-  tags?: Array<string>;
-  generation?: number;
-  runAttemptCount?: number;
-  error?: string | null;
+  connection?: PrinterConnectionType | null | undefined;
+  address?: string | null | undefined;
+  port?: number | null | undefined;
+  baudrate?: number | null | undefined;
+  dpi?: number | null | undefined;
+  width?: PrintingWidthType | null | undefined;
+  maxChars?: PrintingLinesMaxCharType | null | undefined;
+  file?: string | null | undefined;
+  jobId?: string | null | undefined;
+  jobName?: string | null | undefined;
+  jobTag?: string | null | undefined;
+  state?: string | null | undefined;
+  id?: string | null | undefined;
+  tags?: Array<string> | null | undefined;
+  generation?: number | null | undefined;
+  runAttemptCount?: number | null | undefined;
+  error?: string | null | undefined;
 };
 
 export type RNPrinter = {
