@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.net.nsd.NsdManager
+import android.os.Build
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.facebook.react.bridge.Arguments
@@ -26,7 +27,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class DeviceScanner(private val reactContext: ReactApplicationContext) :
+  ReactContextBaseJavaModule(reactContext) {
   private val mNetworkScanManager: NetworkScanManager = NetworkScanManager()
   private val mUSBScanManager: USBScanManager = USBScanManager(reactContext)
   private val mBluetoothScanManager: BluetoothScanManager = BluetoothScanManager(reactContext)
@@ -68,18 +70,19 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
 
   // Exposed react-methods cannot receive Int arguments, we must receive it as Double
   @ReactMethod
-  fun scan(scanType: Double, promise: Promise) {
-    var inferredScanType  = SCAN_ALL
-    if (scanType > 0.0) {
-      inferredScanType = scanType.toInt()
+  @Suppress("unused")
+  fun scan(scanTypeArgument: Double, promise: Promise) {
+    var scanType = SCAN_ALL
+    if (scanTypeArgument > 0.0) {
+      scanType = scanTypeArgument.toInt()
     }
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     scope.launch {
       try {
-        doScan(inferredScanType)
+        doScan(scanType)
         promise.resolve(true)
       } catch (e: Exception) {
-        stop(scanType)
+        stop(scanTypeArgument)
         promise.reject(e)
       }
     }
@@ -87,8 +90,9 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
 
   // Exposed react-methods cannot receive Int arguments, we must receive it as Double
   @ReactMethod
+  @Suppress("unused")
   fun stop(scanType: Double) {
-    var inferredScanType  = SCAN_ALL
+    var inferredScanType = SCAN_ALL
     if (scanType > 0.0) {
       inferredScanType = scanType.toInt()
     }
@@ -133,12 +137,15 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
           eventParams.putString("deviceName", deviceName)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
+
         override fun startScan() {
           emitStartScan(scanType)
         }
+
         override fun stopScan() {
           emitStopScan(scanType)
         }
+
         override fun error(error: Exception) {
           emitErrorScan(scanType, error)
         }
@@ -147,19 +154,22 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     }
     if (scanType == SCAN_USB || scanType == SCAN_ALL) {
       mUSBScanManager.onUSBScanListener = object : OnUSBScanListener {
-        override fun deviceFound(usbDevice: UsbDevice,  data: WritableMap) {
+        override fun deviceFound(usbDevice: UsbDevice, data: WritableMap) {
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)
           }
           eventParams.merge(data)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
+
         override fun startScan() {
           emitStartScan(scanType)
         }
+
         override fun stopScan() {
           emitStopScan(scanType)
         }
+
         override fun error(error: Exception) {
           emitErrorScan(scanType, error)
         }
@@ -167,11 +177,29 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
       mUSBScanManager.startScan()
     }
     if (scanType == SCAN_BLUETOOTH || scanType == SCAN_ALL) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (ActivityCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+        ) {
+          emitErrorScan(
+            scanType, java.lang.Exception(
+              "BLUETOOTH Scan in Android SDK >= 33 requires permission Manifest.permission.BLUETOOTH_CONNECT"
+            )
+          )
+          stop(scanType.toDouble())
+          return
+        }
+      }
       mBluetoothScanManager.registerCallback(object : OnBluetoothScanListener {
         override fun deviceFound(bluetoothDevice: BluetoothDevice?) {
           if (bluetoothDevice == null) return
-          if (ActivityCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            return
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ActivityCompat.checkSelfPermission(
+                reactContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+              ) != PackageManager.PERMISSION_GRANTED
+            ) {
+              return
+            }
           }
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)
@@ -180,12 +208,15 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
           eventParams.putString("address", bluetoothDevice.address)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
+
         override fun startScan() {
           emitStartScan(scanType)
         }
+
         override fun stopScan() {
           emitStopScan(scanType)
         }
+
         override fun error(error: Exception) {
           emitErrorScan(scanType, error)
         }
@@ -197,18 +228,23 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
         override fun serviceFound(serviceName: String?) {
           emitScanOtherEvent(scanType, "serviceLost", serviceName)
         }
+
         override fun serviceLost(serviceName: String?) {
           emitScanOtherEvent(scanType, "serviceLost", serviceName)
         }
+
         override fun serviceResolved(service: WritableMap) {
           emitScanOtherEvent(scanType, "serviceResolved", service)
         }
+
         override fun startScan() {
           emitStartScan(scanType)
         }
+
         override fun stopScan() {
           emitStopScan(scanType)
         }
+
         override fun error(error: Exception) {
           emitErrorScan(scanType, error)
         }
@@ -217,19 +253,25 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
     }
     if (scanType == SCAN_SERIAL || scanType == SCAN_ALL) {
       mSerialScanManager.onSerialScanListener = object : OnSerialScanListener {
-        override fun deviceFound(serialDevice: SerialPortFinder.SerialDeviceFound, data: WritableMap) {
+        override fun deviceFound(
+          serialDevice: SerialPortFinder.SerialDeviceFound,
+          data: WritableMap
+        ) {
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)
           }
           eventParams.merge(data)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }
+
         override fun startScan() {
           emitStartScan(scanType)
         }
+
         override fun stopScan() {
           emitStopScan(scanType)
         }
+
         override fun error(error: Exception) {
           emitErrorScan(scanType, error)
         }
@@ -280,6 +322,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
 
   // Required for rn built in EventEmitter Calls.
   @ReactMethod
+  @Suppress("unused")
   fun addListener(eventName: String) {
     if (mListenerCount == 0) {
       Log.d(LOG_TAG, "Does Nothing")
@@ -288,8 +331,9 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) : ReactCo
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun removeListeners(count: Int) {
-    if (mListenerCount > 0 ) mListenerCount -= count
+    if (mListenerCount > 0) mListenerCount -= count
     if (mListenerCount == 0) {
       Log.d(LOG_TAG, "Does Nothing")
     }

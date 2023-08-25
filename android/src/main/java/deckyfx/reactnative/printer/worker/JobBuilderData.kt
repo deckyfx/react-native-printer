@@ -9,15 +9,14 @@ import kotlinx.serialization.serializer
 import java.util.UUID
 
 
-
 @Serializable
 class JobBuilderData(
   val id: String,
   val file: String,
 ) {
   constructor(argv: Data) : this(
-      argv.getString("id")!!,
-      argv.getString("file")!!
+    argv.getString("id")!!,
+    argv.getString("file")!!
   )
 
   constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())

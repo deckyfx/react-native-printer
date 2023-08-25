@@ -13,6 +13,7 @@ import DocumentPicker from 'react-native-document-picker';
 
 import USBPrinter from './USBPrinter';
 import NetworkPrinter from './NetworkPrinter';
+import BluetoothPrinter from './BluetoothPrinter';
 import SerialPrinter from './SerialPrinter';
 import Row from './Row';
 import Button from './Button';
@@ -90,6 +91,7 @@ const App = () => {
     <View style={styles.container}>
       <USBPrinter />
       <NetworkPrinter />
+      <BluetoothPrinter />
       <SerialPrinter />
       <Row>
         <Button text={'Select Image'} onClick={selectImage} />

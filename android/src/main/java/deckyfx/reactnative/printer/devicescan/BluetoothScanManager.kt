@@ -26,6 +26,7 @@ class BluetoothScanManager(
    */
   fun startScan() {
     if (mIsRunning) return
+    onBluetoothScanListener?.startScan()
     val list = BluetoothPrintersConnectionsManager(context).list
     if (list.isNullOrEmpty()) {
       stopScan()

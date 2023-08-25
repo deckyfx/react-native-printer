@@ -57,13 +57,14 @@ class PrintingWorkerManager private constructor() {
     WorkManager.getInstance(context).enqueueUniqueWork(
       jobName,
       ExistingWorkPolicy.APPEND_OR_REPLACE,
-      workRequest)
+      workRequest
+    )
     return jobId
   }
 
   fun enqueuePrint(context: ReactContext, jobBuilderData: JobBuilderData): UUID {
     val argument = WorkerArgument.file(jobBuilderData.file)
-    return  enqueuePrint(context, argument.data, jobBuilderData.uuid)
+    return enqueuePrint(context, argument.data, jobBuilderData.uuid)
   }
 
   fun cancelWork(context: ReactContext, uuid: UUID) {

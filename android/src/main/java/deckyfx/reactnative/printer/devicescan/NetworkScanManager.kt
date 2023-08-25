@@ -36,10 +36,11 @@ class NetworkScanManager {
     if (mIsRunning) return
     mIsRunning = true
     onNetworkScanListener?.startScan()
-    withContext(Dispatchers.IO) { Dispatchers.IO
+    withContext(Dispatchers.IO) {
+      Dispatchers.IO
       val job = async { getIPV4Address() }
       val ip = job.await()
-      ip?.let{ _ip ->
+      ip?.let { _ip ->
         val ipSegments = _ip.split(".").toMutableList()
         coroutineScope {
           (1..254).map { i ->
@@ -81,8 +82,9 @@ class NetworkScanManager {
       socket.connect(socketAddress, SOCKET_TIMEOUT)
       socket.soTimeout = SOCKET_TIMEOUT
 
-      val bufferOut = PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
-      PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())),true)
+      val bufferOut =
+        PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
+      PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
       val message = byteArrayOf(0x1d, 0x49, 0x42, 0x1d, 0x49, 0x43)
       val payload = String(message, StandardCharsets.UTF_8)
       bufferOut.println(payload)
@@ -165,6 +167,7 @@ class NetworkScanManager {
       "192.0.0.4",
       "192.0.0.5",
       "192.0.0.6",
-      "192.0.0.7")
+      "192.0.0.7"
+    )
   }
 }

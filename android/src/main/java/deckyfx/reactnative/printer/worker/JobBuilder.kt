@@ -10,7 +10,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 
-class JobBuilder (private val reactContext: ReactApplicationContext) :
+class JobBuilder(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
   private lateinit var uuid: UUID
@@ -47,6 +47,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     }
 
   @ReactMethod
+  @Suppress("unused")
   fun begin(promise: Promise) {
     uuid = UUID.randomUUID()
     val directory = File(dirpath)
@@ -69,7 +70,8 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
     promise.resolve(true)
   }
 
-  @ReactMethod()
+  @ReactMethod
+  @Suppress("unused")
   fun build(promise: Promise) {
     fileos.close()
     building = false
@@ -77,6 +79,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun discard(promise: Promise) {
     fileos.close()
     val file = File(filepath)
@@ -89,6 +92,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun selectPrinter(selector: ReadableMap, promise: Promise) {
     if (!building) {
       return promise.resolve(false)
@@ -99,6 +103,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun printLine(line: String, promise: Promise) {
     if (!building) {
       return promise.resolve(false)
@@ -112,6 +117,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun feedPaper(dots: Int = 0, promise: Promise) {
     if (!building) {
       return promise.resolve(false)
@@ -121,6 +127,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun cutPaper(promise: Promise) {
     if (!building) {
       return promise.resolve(false)
@@ -130,6 +137,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun openCashBox(promise: Promise) {
     if (!building) {
       return promise.resolve(false)
@@ -139,6 +147,7 @@ class JobBuilder (private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
+  @Suppress("unused")
   fun building(promise: Promise): Boolean {
     return building
   }

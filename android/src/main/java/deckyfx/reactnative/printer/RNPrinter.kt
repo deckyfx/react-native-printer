@@ -27,7 +27,6 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import deckyfx.reactnative.printer.devicescan.DeviceScanner
-import deckyfx.reactnative.printer.devicescan.ScanTypeArgument
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
@@ -61,6 +60,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     private val LOG_TAG = RNPrinter::class.java.simpleName
 
     const val EVENT_PRINTING_JOB = "PRINTING_JOB"
+    const val EVENT_PERMISSION_CHANGED = "PERMISSION_CHANGED"
 
     const val PRINTER_CONNECTION_NETWORK = "network"
     const val PRINTER_CONNECTION_BLUETOOTH = "bluetooth"
@@ -80,38 +80,38 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     const val PRINTING_WIDTH_80_MM = 60f
 
     const val TEST_PRINT_DESIGN =
-       // "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, this.getApplicationContext().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM))+"</img>\n" +
+      // "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, this.getApplicationContext().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM))+"</img>\n" +
       "[L]\n" +
-      "[C]<u><font size='big'>ORDER N°045</font></u>\n" +
-      "[L]\n" +
-      "[C]================================\n" +
-      "[L]\n" +
-      "[L]<b>BEAUTIFUL SHIRT</b>[R]9.99e\n" +
-      "[L]  + Size : S\n" +
-      "[L]\n" +
-      "[L]<b>AWESOME HAT</b>[R]24.99e\n" +
-      "[L]  + Size : 57/58\n" +
-      "[L]\n" +
-      "[C]--------------------------------\n" +
-      "[R]TOTAL PRICE :[R]34.98e\n" +
-      "[R]TAX :[R]4.23e\n" +
-      "[L]\n" +
-      "[C]================================\n" +
-      "[L]\n" +
-      "[L]<font size='tall'>Customer :</font>\n" +
-      "[L]Raymond DUPONT\n" +
-      "[L]5 rue des girafes\n" +
-      "[L]31547 PERPETES\n" +
-      "[L]Tel : +33801201456\n" +
-      "[L]\n" +
-      "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
-      "[C]<qrcode size='20'>https://dantsu.com/</qrcode>\n" +
-      "[L]\n" +
-      "[L]\n" +
-      "[L]\n" +
-      "[L]\n" +
-      "[L]\n"+
-      "[L]\n"
+        "[C]<u><font size='big'>ORDER N°045</font></u>\n" +
+        "[L]\n" +
+        "[C]================================\n" +
+        "[L]\n" +
+        "[L]<b>BEAUTIFUL SHIRT</b>[R]9.99e\n" +
+        "[L]  + Size : S\n" +
+        "[L]\n" +
+        "[L]<b>AWESOME HAT</b>[R]24.99e\n" +
+        "[L]  + Size : 57/58\n" +
+        "[L]\n" +
+        "[C]--------------------------------\n" +
+        "[R]TOTAL PRICE :[R]34.98e\n" +
+        "[R]TAX :[R]4.23e\n" +
+        "[L]\n" +
+        "[C]================================\n" +
+        "[L]\n" +
+        "[L]<font size='tall'>Customer :</font>\n" +
+        "[L]Raymond DUPONT\n" +
+        "[L]5 rue des girafes\n" +
+        "[L]31547 PERPETES\n" +
+        "[L]Tel : +33801201456\n" +
+        "[L]\n" +
+        "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
+        "[C]<qrcode size='20'>https://dantsu.com/</qrcode>\n" +
+        "[L]\n" +
+        "[L]\n" +
+        "[L]\n" +
+        "[L]\n" +
+        "[L]\n" +
+        "[L]\n"
   }
 
   override fun getConstants(): Map<String, Any> {
@@ -122,7 +122,6 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     constants["PRINTER_CONNECTION_BLUETOOTH"] = PRINTER_CONNECTION_BLUETOOTH
     constants["PRINTER_CONNECTION_USB"] = PRINTER_CONNECTION_USB
     constants["PRINTER_CONNECTION_SERIAL"] = PRINTER_CONNECTION_SERIAL
-
 
     constants["PRINTER_TYPE_THERMAL"] = PRINTER_TYPE_THERMAL
     constants["PRINTER_TYPE_DOTMATRIX"] = PRINTER_TYPE_DOTMATRIX
@@ -142,13 +141,17 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     return constants
   }
 
-  init {
-  }
-
   @ReactMethod
-  fun checkPermissions(args: ReadableMap, promise: Promise) {
-    val config = ScanTypeArgument(args)
-    if (config.connection == DeviceScanner.SCAN_NETWORK || config.connection == DeviceScanner.SCAN_ZEROCONF) {
+  @Suppress("unused")
+  fun checkPermissions(scanTypeArgument: Double, promise: Promise) {
+    var scanType = DeviceScanner.SCAN_ALL
+    if (scanTypeArgument > 0.0) {
+      scanType = scanTypeArgument.toInt()
+    }
+    if (scanType == DeviceScanner.SCAN_NETWORK ||
+      scanType == DeviceScanner.SCAN_ZEROCONF ||
+      scanType == DeviceScanner.SCAN_ALL
+    ) {
       if (!checkPermission(Manifest.permission.INTERNET)) {
         promise.resolve(false)
         return
@@ -165,18 +168,18 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         promise.resolve(false)
         return
       }
-      promise.resolve(true)
-      return
     }
-    if (config.connection == DeviceScanner.SCAN_USB) {
-      promise.resolve(false)
-      return
+    if (scanType == DeviceScanner.SCAN_USB ||
+      scanType == DeviceScanner.SCAN_ALL
+    ) {
     }
-    if (config.connection == DeviceScanner.SCAN_SERIAL) {
-      promise.resolve(false)
-      return
+    if (scanType == DeviceScanner.SCAN_SERIAL ||
+      scanType == DeviceScanner.SCAN_ALL
+    ) {
     }
-    if (config.connection == DeviceScanner.SCAN_BLUETOOTH) {
+    if (scanType == DeviceScanner.SCAN_BLUETOOTH ||
+      scanType == DeviceScanner.SCAN_ALL
+    ) {
       if (!checkPermission(Manifest.permission.BLUETOOTH)) {
         promise.resolve(false)
         return
@@ -185,92 +188,75 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         promise.resolve(false)
         return
       }
-      if (!checkPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-        promise.resolve(false)
-        return
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (!checkPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
+          promise.resolve(false)
+          return
+        }
+        if (!checkPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+          promise.resolve(false)
+          return
+        }
       }
-      if (!checkPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-        promise.resolve(false)
-        return
-      }
-      promise.resolve(true)
-      return
     }
-    if (config.connection == DeviceScanner.SCAN_ALL) {
-      if (!checkPermission(Manifest.permission.INTERNET)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.ACCESS_WIFI_STATE)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.BLUETOOTH)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.BLUETOOTH_ADMIN)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
-        promise.resolve(false)
-        return
-      }
-      if (!checkPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-        promise.resolve(false)
-        return
-      }
-      promise.resolve(true)
-      return
-    }
+
+    promise.resolve(true)
+    return
   }
 
   @ReactMethod
-  fun requestPermissions(args: ReadableMap, promise: Promise) {
-    val config = ScanTypeArgument(args)
-    if (config.connection == DeviceScanner.SCAN_NETWORK || config.connection == DeviceScanner.SCAN_ZEROCONF) {
-      val PERMISSION_ALL = 1
+  @Suppress("unused")
+  fun requestPermissions(scanTypeArgument: Double, promise: Promise) {
+    var scanType = DeviceScanner.SCAN_ALL
+    if (scanTypeArgument > 0.0) {
+      scanType = scanTypeArgument.toInt()
+    }
+    if (scanType == DeviceScanner.SCAN_NETWORK || scanType == DeviceScanner.SCAN_ZEROCONF) {
+      val REQUEST_PERMISSION_CODE = 1
       val PERMISSIONS = arrayOf(
         Manifest.permission.INTERNET,
         Manifest.permission.ACCESS_WIFI_STATE,
         Manifest.permission.ACCESS_NETWORK_STATE,
         Manifest.permission.CHANGE_WIFI_MULTICAST_STATE,
       )
-      ActivityCompat.requestPermissions(reactContext.currentActivity!!, PERMISSIONS, PERMISSION_ALL)
+      reactContext.currentActivity?.let {
+        ActivityCompat.requestPermissions(it, PERMISSIONS, REQUEST_PERMISSION_CODE)
+      }
       promise.resolve(true)
       return
     }
-    if (config.connection == DeviceScanner.SCAN_USB) {
+    if (scanType == DeviceScanner.SCAN_USB) {
       UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
       promise.resolve(true)
     }
-    if (config.connection == DeviceScanner.SCAN_SERIAL) {
-      UsbPrintersConnectionsManager(reactContext).requestUSBPermissions(reactContext, usbReceiver)
+    if (scanType == DeviceScanner.SCAN_SERIAL) {
       promise.resolve(true)
+      return
     }
-    if (config.connection == DeviceScanner.SCAN_BLUETOOTH) {
-      val PERMISSION_ALL = 1
+    if (scanType == DeviceScanner.SCAN_BLUETOOTH) {
+      val REQUEST_PERMISSION_CODE = 100
       val PERMISSIONS = arrayOf(
         Manifest.permission.BLUETOOTH,
         Manifest.permission.BLUETOOTH_ADMIN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_SCAN,
       )
-      ActivityCompat.requestPermissions(reactContext.currentActivity!!, PERMISSIONS, PERMISSION_ALL)
+      reactContext.currentActivity?.let {
+        ActivityCompat.requestPermissions(it, PERMISSIONS, REQUEST_PERMISSION_CODE)
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        reactContext.currentActivity?.let {
+          ActivityCompat.requestPermissions(
+            it, arrayOf(
+              Manifest.permission.BLUETOOTH_CONNECT,
+              Manifest.permission.BLUETOOTH_SCAN,
+            ), REQUEST_PERMISSION_CODE
+          )
+        }
+      }
       promise.resolve(true)
       return
     }
-    if (config.connection == DeviceScanner.SCAN_ALL) {
-      val PERMISSION_ALL = 1
+    if (scanType == DeviceScanner.SCAN_ALL) {
+      val REQUEST_PERMISSION_CODE = 1
       val PERMISSIONS = arrayOf(
         Manifest.permission.INTERNET,
         Manifest.permission.ACCESS_WIFI_STATE,
@@ -278,11 +264,20 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         Manifest.permission.CHANGE_WIFI_MULTICAST_STATE,
         Manifest.permission.BLUETOOTH,
         Manifest.permission.BLUETOOTH_ADMIN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_SCAN,
       )
-      ActivityCompat.requestPermissions(reactContext.currentActivity!!, PERMISSIONS, PERMISSION_ALL)
-
+      reactContext.currentActivity?.let {
+        ActivityCompat.requestPermissions(it, PERMISSIONS, REQUEST_PERMISSION_CODE)
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        reactContext.currentActivity?.let {
+          ActivityCompat.requestPermissions(
+            it, arrayOf(
+              Manifest.permission.BLUETOOTH_CONNECT,
+              Manifest.permission.BLUETOOTH_SCAN,
+            ), REQUEST_PERMISSION_CODE
+          )
+        }
+      }
       val usbManager = reactContext.getSystemService(Context.USB_SERVICE) as UsbManager
       UsbPrintersConnectionsManager(reactContext).list?.forEach {
         if (it != null) {
@@ -292,19 +287,18 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
             Intent(DeviceScanner.ACTION_USB_PERMISSION),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
           )
-          val filter: IntentFilter = IntentFilter(DeviceScanner.ACTION_USB_PERMISSION)
+          val filter = IntentFilter(DeviceScanner.ACTION_USB_PERMISSION)
           reactContext.registerReceiver(usbReceiver, filter)
           usbManager.requestPermission(it.device, permissionIntent)
         }
       }
-
       promise.resolve(true)
       return
     }
-    promise.resolve(false)
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun getUsbPrintersCount(promise: Promise) {
     val usbManager = reactContext.getSystemService(Context.USB_SERVICE) as UsbManager
     UsbPrintersConnectionsManager(reactContext).list?.size?.let {
@@ -315,14 +309,19 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   private fun checkPermission(permission: String): Boolean {
-    if (ActivityCompat.checkSelfPermission(reactContext, permission) != PackageManager.PERMISSION_GRANTED) {
+    if (ActivityCompat.checkSelfPermission(
+        reactContext,
+        permission
+      ) != PackageManager.PERMISSION_GRANTED
+    ) {
       return false
     }
     return true
   }
 
   @ReactMethod
-  fun write(config: ReadableMap, text:String, promise: Promise) {
+  @Suppress("unused")
+  fun write(config: ReadableMap, text: String, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
       try {
@@ -337,6 +336,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun cutPaper(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -352,6 +352,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun feedPaper(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -367,6 +368,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun openCashBox(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -382,6 +384,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun testConnection(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -396,6 +399,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun getPrinterModel(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -412,6 +416,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun testPrint(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -428,7 +433,14 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   @Deprecated("Use enqueuePrint(jobData: JobData) is preferred")
   @ReactMethod
-  fun enqueuePrint2(selector: ReadableMap, text:String, cutPaper: Boolean = true, openCashBox: Boolean = true, promise:Promise) {
+  @Suppress("unused")
+  fun enqueuePrint2(
+    selector: ReadableMap,
+    text: String,
+    cutPaper: Boolean = true,
+    openCashBox: Boolean = true,
+    promise: Promise
+  ) {
     val printerSelector = PrinterSelectorArgument(selector)
     val argument = WorkerArgument.text(text, cutPaper, openCashBox)
     val data = Data.Builder()
@@ -440,7 +452,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun enqueuePrint(config: ReadableMap, promise:Promise) {
+  @Suppress("unused")
+  fun enqueuePrint(config: ReadableMap, promise: Promise) {
     val jobBuilderData = JobBuilderData(config)
     val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, jobBuilderData)
     observeWork(uuid)
@@ -448,6 +461,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun prunePrintingWorks() {
     WorkManager.getInstance(reactContext).pruneWork()
   }
@@ -462,12 +476,16 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       PRINTER_CONNECTION_NETWORK -> {
         connection = TcpConnection(config.address, config.port)
       }
+
       PRINTER_CONNECTION_BLUETOOTH -> {
-        connection = BluetoothPrintersConnectionsManager.selectByDeviceAddress(reactContext, config.address)
+        connection =
+          BluetoothPrintersConnectionsManager.selectByDeviceAddress(reactContext, config.address)
       }
+
       PRINTER_CONNECTION_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(reactContext, config.address)
       }
+
       PRINTER_CONNECTION_SERIAL -> {
         connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
       }
@@ -505,7 +523,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
       if (DeviceScanner.ACTION_USB_PERMISSION == action) {
         synchronized(this) {
           val usbManager = reactContext.getSystemService(Context.USB_SERVICE) as UsbManager?
-          val usbDevice = intent.getParcelableExtra<Parcelable>(UsbManager.EXTRA_DEVICE) as UsbDevice?
+          val usbDevice =
+            intent.getParcelableExtra<Parcelable>(UsbManager.EXTRA_DEVICE) as UsbDevice?
           if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
             emitScanOtherEvent(DeviceScanner.SCAN_USB, "permissionGranted", usbDevice?.deviceName)
           } else {
@@ -518,6 +537,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   // Required for rn built in EventEmitter Calls.
   @ReactMethod
+  @Suppress("unused")
   fun addListener(eventName: String) {
     if (mListenerCount == 0) {
       Log.d(LOG_TAG, "Does Nothing")
@@ -526,16 +546,19 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun removeListeners(count: Int) {
-    if (mListenerCount > 0 ) mListenerCount -= count
+    if (mListenerCount > 0) mListenerCount -= count
     if (mListenerCount == 0) {
       Log.d(LOG_TAG, "Does Nothing")
     }
   }
 
   @ReactMethod
+  @Suppress("unused")
   fun getAllJobs(promise: Promise) {
-    val list = WorkManager.getInstance(reactContext).getWorkInfosByTag(PrintingWorkerManager.PRINTING_JOB_TAG)
+    val list = WorkManager.getInstance(reactContext)
+      .getWorkInfosByTag(PrintingWorkerManager.PRINTING_JOB_TAG)
     val array = Arguments.createArray().apply {
       list.get().forEach { workInfo ->
         pushMap(WorkerEventData.fromWorkInfo(workInfo).writableMap)
@@ -551,7 +574,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         .getWorkInfoByIdLiveData(uuid)
         .observe(currentActivity as LifecycleOwner, Observer { workInfo ->
           val workerData = WorkerEventData.fromWorkInfo(workInfo)
-          val eventData =  workerData.writableMap
+          val eventData = workerData.writableMap
           when (workInfo.state) {
             WorkInfo.State.ENQUEUED -> {
               emitEventToRNSide(EVENT_PRINTING_JOB, eventData)

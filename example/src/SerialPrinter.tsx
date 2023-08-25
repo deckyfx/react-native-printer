@@ -36,6 +36,11 @@ const SerialPrinter = () => {
         }
       }
     );
+    const allowed = await RNPrinter.checkPermissions(DeviceScanner.SCAN_SERIAL);
+    if (!allowed) {
+      RNPrinter.requestPermissions(DeviceScanner.SCAN_SERIAL);
+      return;
+    }
     DeviceScanner.scan(DeviceScanner.SCAN_SERIAL);
   };
 
@@ -85,7 +90,7 @@ const SerialPrinter = () => {
     if (address) {
       RNPrinter.enqueuePrint2(
         {
-          connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
+          connection: RNPrinter.PRINTER_CONNECTION_SERIAL,
           address: address,
         },
         RNPrinter.TEST_PRINT_DESIGN,

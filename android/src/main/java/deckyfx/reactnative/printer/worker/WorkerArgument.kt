@@ -108,7 +108,11 @@ class WorkerArgument(
       return WorkerArgument(null, false, false, file)
     }
 
-    fun text(text: String, cutPaper: Boolean = false, openCashBox: Boolean = false): WorkerArgument {
+    fun text(
+      text: String,
+      cutPaper: Boolean = false,
+      openCashBox: Boolean = false
+    ): WorkerArgument {
       return WorkerArgument(text, cutPaper, openCashBox, null)
     }
   }

@@ -36,21 +36,18 @@ const USBPrinter = () => {
         }
       }
     );
-    const allowed = await RNPrinter.checkPermissions(DeviceScanner.SCAN_USB);
+    const allowed = await RNPrinter.checkPermissions(
+      DeviceScanner.SCAN_BLUETOOTH
+    );
     if (!allowed) {
-      RNPrinter.requestPermissions(DeviceScanner.SCAN_USB);
+      RNPrinter.requestPermissions(DeviceScanner.SCAN_BLUETOOTH);
       return;
     }
-    DeviceScanner.scan(DeviceScanner.SCAN_USB);
+    DeviceScanner.scan(DeviceScanner.SCAN_BLUETOOTH);
   };
 
   const print = async () => {
     if (address) {
-      await JobBuilder.begin();
-      await JobBuilder.selectPrinter({
-        connection: RNPrinter.PRINTER_CONNECTION_USB,
-        address: address,
-      });
       const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
       for (let i = 0; i < designs.length; i++) {
         let line = designs[i]!!;
@@ -90,7 +87,7 @@ const USBPrinter = () => {
     if (address) {
       RNPrinter.enqueuePrint2(
         {
-          connection: RNPrinter.PRINTER_CONNECTION_USB,
+          connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
           address: address,
         },
         RNPrinter.TEST_PRINT_DESIGN,
@@ -101,7 +98,7 @@ const USBPrinter = () => {
   };
 
   const stop = async () => {
-    DeviceScanner.stop(DeviceScanner.SCAN_USB);
+    DeviceScanner.stop(DeviceScanner.SCAN_BLUETOOTH);
   };
 
   React.useEffect(() => {
@@ -113,7 +110,7 @@ const USBPrinter = () => {
 
   return (
     <Row>
-      <Button text="Scan USB Devices" onClick={scan} />
+      <Button text="Scan BT Devices" onClick={scan} />
       <Text>{address}</Text>
       <Button text="Print" onClick={print} />
       <Button text="Print (Deprecated)" onClick={print2} />

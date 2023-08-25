@@ -15,7 +15,10 @@ import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParserImg
 import java.util.Locale
 
 
-class PrinterImageUriParser(private val context: Context?, private val escPosPrinter: EscPosPrinter) {
+class PrinterImageUriParser(
+  private val context: Context?,
+  private val escPosPrinter: EscPosPrinter
+) {
   fun parse(text: String?): String {
     if (text.isNullOrEmpty()) {
       return ""
@@ -51,13 +54,15 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
                     // textAlign
                     // textParserTag
                     // textParserTag.attributes
-                    val imageContents = trimmedTextColumn.substring(openTagEndIndex, closeTagPosition)
+                    val imageContents =
+                      trimmedTextColumn.substring(openTagEndIndex, closeTagPosition)
                     var imageData: String? = null
 
                     var height = 0
                     if (textParserTag.attributes.containsKey(PrinterTextParser.ATTR_BARCODE_HEIGHT)) {
-                      val barCodeAttribute = textParserTag.attributes[PrinterTextParser.ATTR_BARCODE_HEIGHT]
-                        ?: throw EscPosParserException("Invalid barcode attribute: " + PrinterTextParser.ATTR_BARCODE_HEIGHT)
+                      val barCodeAttribute =
+                        textParserTag.attributes[PrinterTextParser.ATTR_BARCODE_HEIGHT]
+                          ?: throw EscPosParserException("Invalid barcode attribute: " + PrinterTextParser.ATTR_BARCODE_HEIGHT)
                       height = try {
                         barCodeAttribute.toInt()
                       } catch (nfe: NumberFormatException) {
@@ -66,8 +71,9 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
                     }
                     var width = 0
                     if (textParserTag.attributes.containsKey(PrinterTextParser.ATTR_BARCODE_WIDTH)) {
-                      val barCodeAttribute = textParserTag.attributes[PrinterTextParser.ATTR_BARCODE_WIDTH]
-                        ?: throw EscPosParserException("Invalid barcode attribute: " + PrinterTextParser.ATTR_BARCODE_WIDTH)
+                      val barCodeAttribute =
+                        textParserTag.attributes[PrinterTextParser.ATTR_BARCODE_WIDTH]
+                          ?: throw EscPosParserException("Invalid barcode attribute: " + PrinterTextParser.ATTR_BARCODE_WIDTH)
                       width = try {
                         barCodeAttribute.toInt()
                       } catch (nfe: NumberFormatException) {
@@ -83,7 +89,8 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
                       imageData = getImageHexadecimalString(imageContents, width, height)
                     }
                     if (!imageData.isNullOrEmpty()) {
-                      resultLines[i] = textAlign + "<" + textParserTag.tagName + ">" + imageData + "</" + textParserTag.tagName + ">"
+                      resultLines[i] =
+                        textAlign + "<" + textParserTag.tagName + ">" + imageData + "</" + textParserTag.tagName + ">"
                     }
                   }
                 }
@@ -142,11 +149,11 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
     if (image == null) {
       return null
     }
-    val width = when(maxWidth > 0) {
+    val width = when (maxWidth > 0) {
       true -> maxWidth
       false -> 250
     }
-    val height = when(maxHeight > 0) {
+    val height = when (maxHeight > 0) {
       true -> maxHeight
       false -> 250
     }
@@ -154,7 +161,7 @@ class PrinterImageUriParser(private val context: Context?, private val escPosPri
     image.recycle()
     val grayscaleImage = toGrayscale(resizedImage)
     resizedImage.recycle()
-    return  bitmapToHexadecimalString(this.escPosPrinter, grayscaleImage)
+    return bitmapToHexadecimalString(this.escPosPrinter, grayscaleImage)
   }
 
   companion object

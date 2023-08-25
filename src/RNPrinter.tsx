@@ -129,8 +129,8 @@ export type RNPrinter = {
 
   TEST_PRINT_DESIGN: typeof TEST_PRINT_DESIGN;
 
-  checkPermission(selector: ConnectionSelector): Promise<boolean>;
-  requestPermissions(selector: ConnectionSelector): Promise<boolean>;
+  checkPermissions(scanType: SCAN_TYPE): Promise<boolean>;
+  requestPermissions(scanType: SCAN_TYPE): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
 
   testConnection(selector: PrinterSelector): void;

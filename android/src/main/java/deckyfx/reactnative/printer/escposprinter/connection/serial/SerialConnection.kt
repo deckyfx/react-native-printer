@@ -9,10 +9,10 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class SerialConnection
-  constructor(
-    val path: String,
-    var baudRate: Int? = DEFAULT_BAUD_RATE
-  ) : DeviceConnection() {
+constructor(
+  val path: String,
+  var baudRate: Int? = DEFAULT_BAUD_RATE
+) : DeviceConnection() {
 
   constructor(
     path: String,
@@ -24,7 +24,7 @@ class SerialConnection
     if (baudRate == null) {
       baudRate = DEFAULT_BAUD_RATE
     }
-    device  = SerialDevice(path, baudRate!!)
+    device = SerialDevice(path, baudRate!!)
   }
 
   override var outputStream: OutputStream?

@@ -63,10 +63,12 @@ class USBScanManager(private val context: Context) {
             return
           }
           val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager?
-          val usbDevice = intent.getParcelableExtra<Parcelable>(UsbManager.EXTRA_DEVICE) as UsbDevice?
+          val usbDevice =
+            intent.getParcelableExtra<Parcelable>(UsbManager.EXTRA_DEVICE) as UsbDevice?
           if (usbDevice != null &&
             usbManager != null &&
-            intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+            intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
+          ) {
             val connection = UsbConnection(usbManager, usbDevice)
             val eventParams = Arguments.createMap()
             var deviceStatus: String? = null

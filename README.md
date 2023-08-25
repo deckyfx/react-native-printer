@@ -19,11 +19,11 @@ written in full Kotlin, using latest sdk, and modern language like coroutines et
 ## Feature
 - [x] Scan Local Network using Socket
 - [ ] Scan Local Network using Zeroconf
-- [ ] Scan Bluetooth Devices
+- [x] Scan Paired Bluetooth Devices
 - [x] Scan USB Devices
 - [ ] Scan Serial Devices
 - [x] Print to Network Printer
-- [ ] Print to Bluetooth Printer
+- [ ] Print to Paired Bluetooth Printer
 - [x] Print to USB Printer
 - [ ] Print to  Serial Devices
 - [x] Queue Job Printing using AndroidWorker 
@@ -41,10 +41,11 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-**1.0.2-j**
+**1.0.3**
 
 ## Tested Printer
- - SEWOO SLK-TS100
+ - [x] SEWOO SLK-TS100
+ - [x] EPPOS EP-RPP02
 
 ## Development Instructions
 
@@ -90,7 +91,38 @@ DeviceScannerEventEmitter.onEvents((event, payload) => {});
 // Scan usb devices
 DeviceScanner.scan(DeviceScanner.SCAN_USB);
 
-// Write to usb device 
+// Design the print output
+const builder = new DesignBuilder(RNPrinter.PRINTING_LINES_MAX_CHAR_42);
+builder.addLine('Print me');
+builder.addLine(TagHelper.left('I am at left'));
+builder.addLine(TagHelper.center('I am centered'));
+builder.addLine(TagHelper.right('I am at right'));
+builder.addLine(TagHelper.center(TagHelper.bold('I am bold')));
+builder.addLine(TagHelper.center(TagHelper.underline('I am underlined')));
+builder.addLine(TagHelper.center(TagHelper.barcode('barcode data')));
+builder.addLine(TagHelper.center(TagHelper.qrcode('qrcode data')));
+builder.addLine(TagHelper.center(TagHelper.image('image source')));
+
+// Build printing job
+await JobBuilder.begin();
+await JobBuilder.selectPrinter({
+  connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
+  address: "00:00:00:00:00",
+});
+
+// Put all design
+for (let i = 0; i < builder.designs.length; i++) {
+  let line = builder.designs[i]!!;
+  await JobBuilder.printLine(line);
+}
+await JobBuilder.cutPaper();
+await JobBuilder.openCashBox();
+
+// execute job
+const job = await JobBuilder.build();
+RNPrinter.enqueuePrint(job);
+
+// Another way
 RNPrinter.write(RNPrinter.PRINTER_CONNECTION_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'
 
 // Write to usb device 
@@ -111,11 +143,11 @@ DeviceScannerEventEmitter.offEvents();
 ## TODO
 - [x] Scan Local Network using Socket
 - [ ] Scan Local Network using Zeroconf
-- [ ] Scan Bluetooth Devices
+- [x] Scan Paired Bluetooth Devices
 - [x] Scan USB Devices
 - [ ] Scan Serial Devices
 - [x] Print to Network Printer
-- [ ] Print to Bluetooth Printer
+- [x] Print Paired to Bluetooth Printer
 - [x] Print to USB Printer
 - [ ] Print to  Serial Devices
 - [x] Queue Job Printing using AndroidWorker

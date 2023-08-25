@@ -33,7 +33,7 @@ class SerialScanManager(private val context: Context) {
     try {
       val manager = SerialConnectionsManager()
       list = manager.list
-    } catch(e: Exception) {
+    } catch (e: Exception) {
       onSerialScanListener?.error(e)
       stopScan()
       return

@@ -3,10 +3,10 @@ package deckyfx.reactnative.printer.escposprinter.connection.bluetooth
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothClass
 import android.content.Context
-import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
 
-class BluetoothPrintersConnectionsManager(private val context: Context) : BluetoothConnections(context) {
+class BluetoothPrintersConnectionsManager(private val context: Context) :
+  BluetoothConnections(context) {
   /**
    * Get a list of bluetooth printers.
    *
@@ -62,24 +62,19 @@ class BluetoothPrintersConnectionsManager(private val context: Context) : Blueto
      *
      * @return an EscPosPrinterCommands instance
      */
-    fun selectByDeviceAddress(context: Context, address: String): UsbConnection? {
+    fun selectByDeviceAddress(context: Context, address: String): BluetoothConnection? {
       val printers = BluetoothPrintersConnectionsManager(context)
-      val bluetoothPrinters = printers.list
-      if (bluetoothPrinters.isNullOrEmpty()) {
-        return null
-      }
-      bluetoothPrinters.filter {
+      return printers.list?.find {
         it?.device?.address == address
-      }.find {
+      }?.let {
         try {
-          it!!.connect()
-          true
+          it.connect()
+          return it
         } catch (e: EscPosConnectionException) {
           e.printStackTrace()
-          false
+          return null
         }
       }
-      return null
     }
   }
 }

@@ -14,10 +14,14 @@ import java.io.OutputStream
 import java.nio.ByteBuffer
 
 
-class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val readable: Boolean) : OutputStream() {
+class UsbOutputStream(
+  usbManager: UsbManager,
+  usbDevice: UsbDevice?,
+  private val readable: Boolean
+) : OutputStream() {
   constructor(usbManager: UsbManager, usbDevice: UsbDevice?) : this(usbManager, usbDevice, false)
 
-    private var usbConnection: UsbDeviceConnection?
+  private var usbConnection: UsbDeviceConnection?
   private var usbInterface: UsbInterface?
   private var usbOutEndpoint: UsbEndpoint?
   private var usbInEndpoint: UsbEndpoint?
@@ -66,7 +70,12 @@ class UsbOutputStream(usbManager: UsbManager, usbDevice: UsbDevice?, private val
 
   @Throws(IOException::class)
   @Suppress("DEPRECATION")
-  fun writeAndWaitResponse(bytes: ByteArray, offset: Int, length: Int, waitResponse: Boolean): ByteArray? {
+  fun writeAndWaitResponse(
+    bytes: ByteArray,
+    offset: Int,
+    length: Int,
+    waitResponse: Boolean
+  ): ByteArray? {
     if (usbInterface == null || usbOutEndpoint == null || usbConnection == null) {
       throw IOException("Unable to connect to USB device.")
     }

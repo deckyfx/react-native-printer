@@ -15,7 +15,7 @@ import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConne
 import java.io.BufferedReader
 import java.io.FileReader
 
-class PrintingWorker(private val context: Context, workerParams: WorkerParameters):
+class PrintingWorker(private val context: Context, workerParams: WorkerParameters) :
   CoroutineWorker(context, workerParams) {
   private val argument = WorkerArgument(inputData)
   private var printerSelector: PrinterSelectorArgument? = null
@@ -30,12 +30,16 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
       RNPrinter.PRINTER_CONNECTION_NETWORK -> {
         connection = TcpConnection(config.address, config.port)
       }
+
       RNPrinter.PRINTER_CONNECTION_BLUETOOTH -> {
-        connection = BluetoothPrintersConnectionsManager.selectByDeviceAddress(context, config.address)
+        connection =
+          BluetoothPrintersConnectionsManager.selectByDeviceAddress(context, config.address)
       }
+
       RNPrinter.PRINTER_CONNECTION_USB -> {
         connection = UsbPrintersConnectionsManager.selectByDeviceName(context, config.address)
       }
+
       RNPrinter.PRINTER_CONNECTION_SERIAL -> {
         connection = SerialConnectionsManager.selectByDeviceName(config.address, config.baudrate)
       }

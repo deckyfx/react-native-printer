@@ -90,8 +90,8 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     this.printerConnection = printerConnection
     this.charsetEncoding =
       charsetEncoding ?: EscPosCharsetEncoding(
-          "windows-1252",
-          6
+        "windows-1252",
+        6
       )
   }
   /**

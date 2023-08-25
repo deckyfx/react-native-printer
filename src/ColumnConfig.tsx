@@ -1,7 +1,9 @@
+import type { Allignment } from './TagHelper';
+
 export type ColumnConfig = {
   width: number;
   text?: string | null | undefined;
-  allignment?: string | undefined;
+  allignment?: Allignment | null | undefined;
   underline?: boolean | undefined;
   bold?: boolean | undefined;
   spacer?: boolean | undefined;

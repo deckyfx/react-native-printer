@@ -30,7 +30,7 @@ open class PrinterTextParserImg(
     hexadecimalString: String
   ) : this(printerTextParserColumn, textAlign, hexadecimalStringToBytes(hexadecimalString))
 
-    /**
+  /**
    * Create new instance of PrinterTextParserImg.
    *
    * @param printerTextParserColumn Parent PrinterTextParserColumn instance.

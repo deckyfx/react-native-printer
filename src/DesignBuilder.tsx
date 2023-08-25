@@ -39,6 +39,15 @@ export default class DesignBuilder {
   }
 
   /**
+   * Get design array
+   *
+   * @readonly
+   */
+  public get designs(): string[] {
+    return this._design;
+  }
+
+  /**
    * Get design preview
    *
    * @readonly

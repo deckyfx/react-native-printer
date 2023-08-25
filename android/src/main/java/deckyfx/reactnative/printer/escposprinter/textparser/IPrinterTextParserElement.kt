@@ -5,9 +5,9 @@ import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionExce
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosEncodingException
 
 interface IPrinterTextParserElement {
-    @Throws(EscPosEncodingException::class)
-    fun length(): Int
+  @Throws(EscPosEncodingException::class)
+  fun length(): Int
 
-    @Throws(EscPosEncodingException::class, EscPosConnectionException::class)
-    fun print(printerSocket: EscPosPrinterCommands?): IPrinterTextParserElement?
+  @Throws(EscPosEncodingException::class, EscPosConnectionException::class)
+  fun print(printerSocket: EscPosPrinterCommands?): IPrinterTextParserElement?
 }

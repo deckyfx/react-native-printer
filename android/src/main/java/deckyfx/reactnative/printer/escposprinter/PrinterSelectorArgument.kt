@@ -21,13 +21,13 @@ class PrinterSelectorArgument(
   var maxChars: Int
 ) {
   constructor(argv: Data) : this(
-      argv.getString("connection")!!,
-      argv.getString("address")!!,
-      argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT),
-      argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE),
-      argv.getInt("dpi", RNPrinter.PRINTING_DPI_NORMAL),
-      argv.getFloat("width", RNPrinter.PRINTING_WIDTH_80_MM),
-      argv.getInt("maxChars", RNPrinter.PRINTING_LINES_MAX_CHAR_42,)
+    argv.getString("connection")!!,
+    argv.getString("address")!!,
+    argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT),
+    argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE),
+    argv.getInt("dpi", RNPrinter.PRINTING_DPI_NORMAL),
+    argv.getFloat("width", RNPrinter.PRINTING_WIDTH_80_MM),
+    argv.getInt("maxChars", RNPrinter.PRINTING_LINES_MAX_CHAR_42)
   )
 
   constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())

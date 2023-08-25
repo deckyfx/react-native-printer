@@ -38,6 +38,13 @@ const NetworkPrinter = () => {
         }
       }
     );
+    const allowed = await RNPrinter.checkPermissions(
+      DeviceScanner.SCAN_NETWORK
+    );
+    if (!allowed) {
+      RNPrinter.requestPermissions(DeviceScanner.SCAN_NETWORK);
+      return;
+    }
     DeviceScanner.scan(DeviceScanner.SCAN_NETWORK);
   };
 
@@ -112,9 +119,7 @@ const NetworkPrinter = () => {
   return (
     <Row>
       <Button text="Scan Network Devices" onClick={scan} />
-      <Text>
-        {address}:{port}
-      </Text>
+      <Text>{address && port ? `${address}:${port}` : ''}</Text>
       <Button text="Print" onClick={print} />
       <Button text="Print (Deprecated)" onClick={print2} />
       <Button text="Stop Scan" onClick={stop} />

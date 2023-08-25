@@ -14,8 +14,9 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.Locale
 
-class ZeroconfScanManager(private val context: Context,
-                          private val nsdManager: NsdManager
+class ZeroconfScanManager(
+  private val context: Context,
+  private val nsdManager: NsdManager
 ) {
   var onZeroconfScanListener: OnZeroconfScanListener? = null
   private var mIsRunning = false
