@@ -72,9 +72,11 @@ class USBScanManager(private val context: Context) {
             val connection = UsbConnection(usbManager, usbDevice)
             val eventParams = Arguments.createMap()
             var deviceStatus: String? = null
+            var deviceName: String? = ""
             try {
               connection.connect()
               deviceStatus = connection.getDeviceStatus()
+              deviceName = connection.getPrinterModel()
               connection.disconnect()
             } catch (error: Exception) {
               error.message?.let {
@@ -82,7 +84,7 @@ class USBScanManager(private val context: Context) {
                 onUSBScanListener?.error(error)
               }
             }
-            eventParams.putString("deviceName", usbDevice.deviceName)
+            eventParams.putString("deviceName", deviceName)
             eventParams.putString("address", usbDevice.deviceName)
             eventParams.putInt("deviceId", usbDevice.deviceId)
             eventParams.putString("manufacturerName", usbDevice.manufacturerName)

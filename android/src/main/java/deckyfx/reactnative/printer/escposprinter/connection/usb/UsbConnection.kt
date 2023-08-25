@@ -5,8 +5,8 @@ import android.hardware.usb.UsbManager
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
 import java.io.IOException
+import java.io.InputStream
 import java.io.OutputStream
-
 
 class UsbConnection
 /**
@@ -24,9 +24,13 @@ class UsbConnection
   val device: UsbDevice
 ) : DeviceConnection() {
   var usbOutputStream: UsbOutputStream? = null
+  var usbInputStream: UsbInputStream? = null
 
   override var outputStream: OutputStream? = null
     get() = usbOutputStream
+
+  override var inputStream: InputStream? = null
+    get() = usbInputStream
 
   /**
    * Start socket connection with the usbDevice.
@@ -37,7 +41,9 @@ class UsbConnection
       return this
     }
     try {
-      usbOutputStream = UsbOutputStream(usbManager, device, true)
+      usbOutputStream = UsbOutputStream(usbManager, device)
+      usbInputStream = UsbInputStream(usbManager, device)
+      usbInputStream!!.startReadThread()
       data = ByteArray(0)
     } catch (e: IOException) {
       e.printStackTrace()
@@ -55,57 +61,14 @@ class UsbConnection
     if (isConnected) {
       try {
         usbOutputStream!!.close()
+        usbInputStream!!.close()
       } catch (e: IOException) {
         e.printStackTrace()
       }
       usbOutputStream = null
+      usbInputStream = null
     }
     return this
-  }
-
-  /**
-   * Send data to the device.
-   */
-  @Throws(EscPosConnectionException::class)
-  override fun send() {
-    send(0)
-  }
-
-  /**
-   * Send data to the device.
-   */
-  @Throws(EscPosConnectionException::class)
-  override fun send(addWaitingTime: Int) {
-    try {
-      usbOutputStream!!.write(data)
-      data = ByteArray(0)
-    } catch (e: IOException) {
-      e.printStackTrace()
-      throw EscPosConnectionException(e.message)
-    }
-  }
-
-
-  /**
-   * Send data to the device.and wait for response
-   */
-  @Throws(EscPosConnectionException::class)
-  override fun sendAndWaitForResponse() {
-    sendAndWaitForResponse(0)
-  }
-
-  /**
-   * Send data to the device.and wait for response
-   */
-  override fun sendAndWaitForResponse(addWaitingTime: Int): String? {
-    try {
-      val result = usbOutputStream!!.write(data, true)
-      data = ByteArray(0)
-      return result?.let { String(it) }
-    } catch (e: IOException) {
-      e.printStackTrace()
-      throw EscPosConnectionException(e.message)
-    }
   }
 
   fun getDeviceStatus(): String? {
@@ -113,9 +76,5 @@ class UsbConnection
       return null
     }
     return usbOutputStream!!.getDeviceStatus()
-  }
-
-  override fun getPrinterModel(): String? {
-    return getDeviceStatus()
   }
 }

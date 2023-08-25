@@ -94,41 +94,4 @@ class TcpConnection
     }
     return this
   }
-
-  /*
-  public int getModel() {
-      byte[] ESCv = new byte[]{27, 118};
-      byte[] szRep = new byte[256];
-
-      try {
-          this.os.write(ESCv);
-          this.os.flush();
-          Thread.sleep(100L);
-          int iLen = this.is.read(szRep);
-          if (iLen > 0) {
-              String strModel = new String(szRep, 0, iLen);
-              if (strModel.indexOf("LK-P") != -1) {
-                  return 2;
-              } else if (strModel.indexOf("LK-B30") != -1) {
-                  return 1;
-              } else {
-                  return strModel.indexOf("B30") != -1 ? 1 : 0;
-              }
-          } else {
-              return -1;
-          }
-      } catch (Exception var5) {
-          return -1;
-      }
-  }
-
-          list_Baudrate.add("9600");
-      list_Baudrate.add("19200");
-      list_Baudrate.add("38400");
-      list_Baudrate.add("57600");
-      list_Baudrate.add("115200");
-
-      // Check Serial Printer: (byte)16, (byte)(char)'\u0004', (byte)2
-      // Check Serial Printer: (byte)16, (byte)(char)'\u0004', (byte)4
-  */
 }

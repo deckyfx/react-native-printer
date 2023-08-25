@@ -204,7 +204,7 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) :
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)
           }
-          eventParams.putString("name", bluetoothDevice.name)
+          eventParams.putString("deviceName", bluetoothDevice.name)
           eventParams.putString("address", bluetoothDevice.address)
           emitEventToRNSide(EVENT_DEVICE_FOUND, eventParams)
         }

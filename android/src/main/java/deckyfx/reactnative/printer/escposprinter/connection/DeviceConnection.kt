@@ -1,11 +1,13 @@
 package deckyfx.reactnative.printer.escposprinter.connection
 
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.io.PrintWriter
+import java.nio.charset.StandardCharsets
 
 abstract class DeviceConnection {
   protected open var outputStream: OutputStream? = null
@@ -79,8 +81,8 @@ abstract class DeviceConnection {
    * Send data to the device. and =wait for response
    */
   @Throws(EscPosConnectionException::class)
-  open fun sendAndWaitForResponse() {
-    sendAndWaitForResponse(0)
+  open fun sendAndWaitForResponse(): String? {
+    return sendAndWaitForResponse(0)
   }
 
   /**
@@ -94,21 +96,24 @@ abstract class DeviceConnection {
       throw EscPosConnectionException("Unable to send data to device.")
     }
     try {
-      outputStream!!.write(data)
-      outputStream!!.flush()
+      val bufferOut = PrintWriter(BufferedWriter(OutputStreamWriter(outputStream!!)), true)
+      val message = data
+      val payload = String(message, StandardCharsets.UTF_8)
+      bufferOut.println(payload)
+      bufferOut.flush()
       val waitingTime = addWaitingTime + data.size / 16
       data = ByteArray(0)
       if (waitingTime > 0) {
         Thread.sleep(waitingTime.toLong())
       }
-
-      // waiting for response
-      val input = BufferedReader(InputStreamReader(inputStream))
-      val buffer = StringBuilder()
-      while (input.ready()) {
-        buffer.append(input.readLine())
+      val buffer = ByteArray(1024)
+      var read: Int
+      while (inputStream!!.read(buffer).also { read = it } != -1) {
+        val output = String(buffer, 0, read)
+        inputStream!!.close()
+        return output
       }
-      buffer.toString()
+      return ""
     } catch (e: IOException) {
       e.printStackTrace()
       throw EscPosConnectionException(e.message)

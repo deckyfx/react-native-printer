@@ -17,24 +17,19 @@ import java.nio.ByteBuffer
 class UsbOutputStream(
   usbManager: UsbManager,
   usbDevice: UsbDevice?,
-  private val readable: Boolean
 ) : OutputStream() {
-  constructor(usbManager: UsbManager, usbDevice: UsbDevice?) : this(usbManager, usbDevice, false)
 
   private var usbConnection: UsbDeviceConnection?
   private var usbInterface: UsbInterface?
-  private var usbOutEndpoint: UsbEndpoint?
-  private var usbInEndpoint: UsbEndpoint?
-
+  private var usbEndpoint: UsbEndpoint?
   init {
     usbInterface = findPrinterInterface(usbDevice)
     if (usbInterface == null) {
       throw IOException("Unable to find USB interface.")
     }
     val endPoints = findEndpointIn(usbInterface)
-    usbOutEndpoint = endPoints?.first
-    usbInEndpoint = endPoints?.second
-    if (usbOutEndpoint == null) {
+    usbEndpoint = endPoints?.first
+    if (usbEndpoint == null) {
       throw IOException("Unable to find USB endpoint.")
     }
     usbConnection = usbManager.openDevice(usbDevice)
@@ -55,58 +50,23 @@ class UsbOutputStream(
 
   @Throws(IOException::class)
   override fun write(bytes: ByteArray, offset: Int, length: Int) {
-    writeAndWaitResponse(bytes, offset, length, false)
-  }
-
-  @Throws(IOException::class)
-  fun write(bytes: ByteArray, waitResponse: Boolean): ByteArray? {
-    return writeAndWaitResponse(bytes, waitResponse)
-  }
-
-  @Throws(IOException::class)
-  fun writeAndWaitResponse(bytes: ByteArray, waitResponse: Boolean): ByteArray? {
-    return writeAndWaitResponse(bytes, 0, bytes.size, waitResponse)
-  }
-
-  @Throws(IOException::class)
-  @Suppress("DEPRECATION")
-  fun writeAndWaitResponse(
-    bytes: ByteArray,
-    offset: Int,
-    length: Int,
-    waitResponse: Boolean
-  ): ByteArray? {
-    if (usbInterface == null || usbOutEndpoint == null || usbConnection == null) {
+    if (usbInterface == null || usbEndpoint == null || usbConnection == null) {
       throw IOException("Unable to connect to USB device.")
     }
     if (!usbConnection!!.claimInterface(usbInterface, true)) {
       throw IOException("Error during claim USB interface.")
     }
     val outBuffer = ByteBuffer.wrap(bytes)
-    val inBuffer = ByteBuffer.allocate(bytes.size)
     val usbRequest = UsbRequest()
     try {
-      usbRequest.initialize(usbConnection, usbOutEndpoint)
+      usbRequest.initialize(usbConnection, usbEndpoint)
       if (!usbRequest.queue(outBuffer, bytes.size)) {
         throw IOException("Error queueing USB request.")
       }
-      if (readable && waitResponse) {
-        // Receive data from device
-        if (usbRequest == usbConnection!!.requestWait()) {
-          val inRequest = UsbRequest()
-          inRequest.initialize(usbConnection, usbInEndpoint)
-          if (inRequest.queue(inBuffer, 100)) {
-            usbConnection!!.requestWait()
-            return inBuffer.array()
-          }
-        }
-      } else {
-        usbConnection!!.requestWait()
-      }
+      usbConnection!!.requestWait()
     } finally {
       usbRequest.close()
     }
-    return null
   }
 
   @Throws(IOException::class)
@@ -118,7 +78,7 @@ class UsbOutputStream(
     if (usbConnection != null) {
       usbConnection!!.close()
       usbInterface = null
-      usbOutEndpoint = null
+      usbEndpoint = null
       usbConnection = null
     }
   }
