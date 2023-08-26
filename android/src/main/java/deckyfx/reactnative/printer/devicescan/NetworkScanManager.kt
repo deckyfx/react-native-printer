@@ -82,9 +82,7 @@ class NetworkScanManager {
       socket.connect(socketAddress, SOCKET_TIMEOUT)
       socket.soTimeout = SOCKET_TIMEOUT
 
-      val bufferOut =
-        PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
-      PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
+      val bufferOut = PrintWriter(BufferedWriter(OutputStreamWriter(socket.getOutputStream())), true)
       val message = byteArrayOf(0x1d, 0x49, 0x42, 0x1d, 0x49, 0x43)
       val payload = String(message, StandardCharsets.UTF_8)
       bufferOut.println(payload)
