@@ -109,9 +109,7 @@ abstract class DeviceConnection {
       val buffer = ByteArray(1024)
       var read: Int
       while (inputStream!!.read(buffer).also { read = it } != -1) {
-        val output = String(buffer, 0, read)
-        inputStream!!.close()
-        return output
+        return String(buffer, 0, read)
       }
       return ""
     } catch (e: IOException) {
@@ -134,6 +132,11 @@ abstract class DeviceConnection {
     }
     // Standard implementation
     write(byteArrayOf(0x1D, 0x49, 0x42, 0x1D, 0x49, 0x43))
-    return sendAndWaitForResponse(100)
+    var s = sendAndWaitForResponse(100)
+    if (!s.isNullOrBlank()) {
+      s = s.removePrefix("_").replace("\u0000", "")
+      s = s.replace("_", " ")
+    }
+    return s
   }
 }

@@ -71,12 +71,12 @@ class USBScanManager(private val context: Context) {
           ) {
             val connection = UsbConnection(usbManager, usbDevice)
             val eventParams = Arguments.createMap()
-            var deviceStatus: String? = null
+            var deviceStatus: WritableMap? = null
             var deviceName: String? = ""
             try {
               connection.connect()
-              deviceStatus = connection.getDeviceStatus()
               deviceName = connection.getPrinterModel()
+              deviceStatus = connection.getDeviceStatusMap()
               connection.disconnect()
             } catch (error: Exception) {
               error.message?.let {
@@ -91,7 +91,7 @@ class USBScanManager(private val context: Context) {
             eventParams.putString("serialNumber", usbDevice.serialNumber)
             eventParams.putString("VID", Integer.toHexString(usbDevice.vendorId).uppercase())
             eventParams.putString("PID", Integer.toHexString(usbDevice.productId).uppercase())
-            eventParams.putString("status", deviceStatus)
+            eventParams.putMap("status", deviceStatus)
             onUSBScanListener?.deviceFound(usbDevice, eventParams)
           }
           mDetectedDevicesCount += 1

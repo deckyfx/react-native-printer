@@ -84,6 +84,26 @@ export type USBDeviceData = DeviceData & {
   deviceId?: string | undefined;
   manufacturerName?: string | undefined;
   serialNumber?: number | undefined;
-  status?: string | undefined;
+  status?:
+    | {
+        attributes?: string[] | undefined;
+        interfaces?:
+          | {
+              no?: number | undefined;
+              class?: string | undefined;
+              endpoints?:
+                | {
+                    no?: number | undefined;
+                    name?: string | undefined;
+                    direction?: string | undefined;
+                  }[]
+                | undefined;
+            }[]
+          | undefined;
+        length?: number | undefined;
+        maxPower?: number | undefined;
+      }[]
+    | undefined;
   scanType: SCAN_TYPE;
+  // "status": {"attributes": ["BusPowered", "SelfPowered", "RemoteWakeup"], "interfaces": [[Object]], "length": 32, "maxPower": 100
 };

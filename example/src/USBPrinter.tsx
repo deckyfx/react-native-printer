@@ -12,6 +12,7 @@ import {
 import type {
   DeviceScanEventPayload,
   DeviceData,
+  USBDeviceData,
 } from '@decky.fx/react-native-printer/DeviceScanner';
 import type { RNPrinterEventPayload } from '@decky.fx/react-native-printer/RNPrinter';
 
@@ -31,7 +32,7 @@ const USBPrinter = () => {
       (event: string, payload: DeviceScanEventPayload) => {
         console.log('DeviceScannerEventEmitter', event, payload);
         if (event === 'DEVICE_FOUND') {
-          const device = payload as DeviceData;
+          const device = payload as USBDeviceData;
           setAddress(device.address);
         }
       }
