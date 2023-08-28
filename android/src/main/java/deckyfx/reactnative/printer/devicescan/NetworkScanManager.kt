@@ -91,7 +91,11 @@ class NetworkScanManager {
       val buffer = ByteArray(1024)
       var read: Int
       while (inputStream.read(buffer).also { read = it } != -1) {
-        val output = String(buffer, 0, read)
+        var output = String(buffer, 0, read)
+        if (!output.isNullOrBlank()) {
+          output = output.removePrefix("_").replace("\u0000", "")
+          output = output.replace("_", " ")
+        }
         inputStream.close()
         socket.close()
         return output
