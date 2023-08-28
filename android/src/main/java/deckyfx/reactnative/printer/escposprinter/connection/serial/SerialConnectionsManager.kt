@@ -1,7 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.connection.serial
 
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
-import deckyfx.reactnative.printer.serialport.SerialPortFinder
 
 class SerialConnectionsManager {
   private val mSerialPortFinder: SerialPortFinder = SerialPortFinder()

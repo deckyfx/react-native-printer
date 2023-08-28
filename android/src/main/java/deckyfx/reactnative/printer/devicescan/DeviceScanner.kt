@@ -21,7 +21,7 @@ import deckyfx.reactnative.printer.devicescan.NetworkScanManager.OnNetworkScanLi
 import deckyfx.reactnative.printer.devicescan.SerialScanManager.OnSerialScanListener
 import deckyfx.reactnative.printer.devicescan.USBScanManager.OnUSBScanListener
 import deckyfx.reactnative.printer.devicescan.ZeroconfScanManager.OnZeroconfScanListener
-import deckyfx.reactnative.printer.serialport.SerialPortFinder
+import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialPortFinder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -254,8 +254,8 @@ class DeviceScanner(private val reactContext: ReactApplicationContext) :
     if (scanType == SCAN_SERIAL || scanType == SCAN_ALL) {
       mSerialScanManager.onSerialScanListener = object : OnSerialScanListener {
         override fun deviceFound(
-          serialDevice: SerialPortFinder.SerialDeviceFound,
-          data: WritableMap
+            serialDevice: SerialPortFinder.SerialDeviceFound,
+            data: WritableMap
         ) {
           val eventParams = Arguments.createMap().apply {
             putInt("scanType", scanType)

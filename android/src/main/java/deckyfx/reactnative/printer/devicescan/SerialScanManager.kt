@@ -7,7 +7,7 @@ import com.facebook.react.bridge.WritableMap
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnection
 import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnectionsManager
-import deckyfx.reactnative.printer.serialport.SerialPortFinder
+import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialPortFinder
 
 class SerialScanManager(private val context: Context) {
   var onSerialScanListener: OnSerialScanListener? = null
@@ -50,10 +50,10 @@ class SerialScanManager(private val context: Context) {
       val connection = SerialConnection(it.device.absolutePath)
       try {
         connection.connect()
-        if (!connection.device.isOpen) {
+        if (!connection.isConnected) {
           return
         }
-        connection.device.sendTxt("asasasa")
+        //connection.getPrinterModel()
         val printer = EscPosPrinter(context, connection, 210, 60f, 42)
         printer.printFormattedText("[L]${it.device.absolutePath}\n")
         connection.disconnect()

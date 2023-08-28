@@ -11,7 +11,6 @@ import {
 } from '@decky.fx/react-native-printer';
 import type {
   DeviceScanEventPayload,
-  DeviceData,
   USBDeviceData,
 } from '@decky.fx/react-native-printer/DeviceScanner';
 import type { RNPrinterEventPayload } from '@decky.fx/react-native-printer/RNPrinter';

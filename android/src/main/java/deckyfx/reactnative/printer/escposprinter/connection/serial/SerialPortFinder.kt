@@ -1,4 +1,4 @@
-package deckyfx.reactnative.printer.serialport
+package deckyfx.reactnative.printer.escposprinter.connection.serial
 
 import java.io.File
 import java.io.FileReader

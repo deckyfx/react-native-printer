@@ -45,6 +45,7 @@ yarn add @decky.fx/react-native-printer
 
 ## Tested Printer
  - [x] SEWOO SLK-TS100
+ - [x] POWERBANK A6
  - [x] EPPOS EP-RPP02
 
 ## Development Instructions
