@@ -21,6 +21,13 @@ export interface JobBuilderInterface {
   selectPrinter(selector: PrinterSelector): Promise<boolean>;
 
   /**
+   * Initialize a printer, reset all settings
+   *
+   * @return {*}  {Promise<boolean>}
+   */
+  initializePrinter(): Promise<boolean>;
+
+  /**
    * Print one line *Must begin job and select a printer first
    *
    * @return {*}  {Promise<boolean>}

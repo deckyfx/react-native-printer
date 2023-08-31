@@ -24,6 +24,7 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
   companion object {
     private val LOG_TAG = JobBuilder::class.java.simpleName
     const val COMMAND_SELECT_PRINTER = "SELECT_PRINTER:"
+    const val COMMAND_INITIALIZE = "INITIALIZE:"
     const val COMMAND_PRINT = "PRINT:"
     const val COMMAND_FEED_PRINTER = "FEED_PRINTER:"
     const val COMMAND_CUT_PAPER = "CUT_PAPER:"
@@ -99,6 +100,16 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     }
     val selector = PrinterSelectorArgument(selector)
     fileos.write("${COMMAND_SELECT_PRINTER}${selector.json}\n".toByteArray())
+    promise.resolve(true)
+  }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun initializePrinter(promise: Promise) {
+    if (!building) {
+      return promise.resolve(false)
+    }
+    fileos.write("${COMMAND_CUT_PAPER}\n".toByteArray())
     promise.resolve(true)
   }
 

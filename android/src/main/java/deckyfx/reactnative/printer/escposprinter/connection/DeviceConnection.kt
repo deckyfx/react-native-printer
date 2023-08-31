@@ -1,5 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.connection
 
+import deckyfx.reactnative.printer.escposprinter.EscPosCommands
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
 import java.io.BufferedWriter
 import java.io.IOException
@@ -123,20 +124,23 @@ abstract class DeviceConnection {
   }
 
   @Throws(EscPosConnectionException::class)
-  open fun getPrinterModel(): String? {
+  fun getPrinterModel(): String? {
     if (!isConnected) {
       throw EscPosConnectionException("Unable to send data to device.")
     }
     if (outputStream == null) {
       return null
     }
-    // Standard implementation
-    write(byteArrayOf(0x1D, 0x49, 0x42, 0x1D, 0x49, 0x43))
-    var s = sendAndWaitForResponse(100)
-    if (!s.isNullOrBlank()) {
-      s = s.removePrefix("_").replace("\u0000", "")
-      s = s.replace("_", " ")
+    write(EscPosCommands.byteArray(EscPosCommands.PRINTER_ID_1))
+    val manufacturer = sendAndWaitForResponse(100)
+    write(EscPosCommands.byteArray(EscPosCommands.PRINTER_ID_2))
+    val model = sendAndWaitForResponse(100)
+    var result = manufacturer + model
+    if (!result.isNullOrBlank()) {
+      val regex = "[^a-zA-Z0-9-]".toRegex()
+      result = result.removePrefix("_").replace("_", " ").replace(regex, "")
+      return result
     }
-    return s
+    return result
   }
 }

@@ -121,27 +121,6 @@ class UsbConnection
     return null
   }
 
-  @Throws(EscPosConnectionException::class)
-  override fun getPrinterModel(): String? {
-    if (!isConnected) {
-      throw EscPosConnectionException("Unable to send data to device.")
-    }
-    if (outputStream == null) {
-      return null
-    }
-    // Standard implementation
-    write(byteArrayOf(0x1D, 0x49, 0x42))
-    val a = sendAndWaitForResponse(100)
-    write(byteArrayOf( 0x1D, 0x49, 0x43))
-    val b = sendAndWaitForResponse(100)
-    var c = a?.replace("\u0000", "") + b?.replace("\u0000", "")
-    if (!c.isNullOrBlank()) {
-      c = c.removePrefix("_")
-      c = c.replace("_", " ")
-    }
-    return c
-  }
-
   fun getDeviceStatusMap(): WritableMap {
     if (usbOutputStream == null) {
       return Arguments.createMap()

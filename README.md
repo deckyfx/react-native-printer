@@ -41,7 +41,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-**1.0.4-a**
+**1.0.4-b**
 
 ## Tested Printer
  - [x] SEWOO SLK-TS100
@@ -110,7 +110,7 @@ await JobBuilder.selectPrinter({
   connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
   address: "00:00:00:00:00",
 });
-
+await JobBuilder.initializePrinter();
 // Put all design
 for (let i = 0; i < builder.designs.length; i++) {
   let line = builder.designs[i]!!;

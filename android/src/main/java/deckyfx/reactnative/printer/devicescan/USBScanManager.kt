@@ -78,21 +78,21 @@ class USBScanManager(private val context: Context) {
               deviceName = connection.getPrinterModel()
               deviceStatus = connection.getDeviceStatusMap()
               connection.disconnect()
+              eventParams.putString("deviceName", deviceName)
+              eventParams.putString("address", usbDevice.deviceName)
+              eventParams.putInt("deviceId", usbDevice.deviceId)
+              eventParams.putString("manufacturerName", usbDevice.manufacturerName)
+              eventParams.putString("serialNumber", usbDevice.serialNumber)
+              eventParams.putString("VID", Integer.toHexString(usbDevice.vendorId).uppercase())
+              eventParams.putString("PID", Integer.toHexString(usbDevice.productId).uppercase())
+              eventParams.putMap("status", deviceStatus)
+              onUSBScanListener?.deviceFound(usbDevice, eventParams)
             } catch (error: Exception) {
               error.message?.let {
                 Log.d(LOG_TAG, it)
                 onUSBScanListener?.error(error)
               }
             }
-            eventParams.putString("deviceName", deviceName)
-            eventParams.putString("address", usbDevice.deviceName)
-            eventParams.putInt("deviceId", usbDevice.deviceId)
-            eventParams.putString("manufacturerName", usbDevice.manufacturerName)
-            eventParams.putString("serialNumber", usbDevice.serialNumber)
-            eventParams.putString("VID", Integer.toHexString(usbDevice.vendorId).uppercase())
-            eventParams.putString("PID", Integer.toHexString(usbDevice.productId).uppercase())
-            eventParams.putMap("status", deviceStatus)
-            onUSBScanListener?.deviceFound(usbDevice, eventParams)
           }
           mDetectedDevicesCount += 1
           if (mDetectedDevicesCount == mDetectedDevicesTotal) {

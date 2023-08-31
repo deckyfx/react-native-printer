@@ -1,10 +1,11 @@
 package deckyfx.reactnative.printer.worker
 
 import android.content.Context
-import androidx.work.CoroutineWorker
 import androidx.work.Data
+import androidx.work.Worker
 import androidx.work.WorkerParameters
 import deckyfx.reactnative.printer.RNPrinter
+import deckyfx.reactnative.printer.escposprinter.EscPosCommands
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import deckyfx.reactnative.printer.escposprinter.connection.DeviceConnection
@@ -16,7 +17,7 @@ import java.io.BufferedReader
 import java.io.FileReader
 
 class PrintingWorker(private val context: Context, workerParams: WorkerParameters) :
-  CoroutineWorker(context, workerParams) {
+  Worker(context, workerParams) {
   private val argument = WorkerArgument(inputData)
   private var printerSelector: PrinterSelectorArgument? = null
   private var printer: EscPosPrinter? = null
@@ -56,7 +57,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     )
   }
 
-  private suspend fun resolvePrinterFromJSON(line: String) {
+  private fun resolvePrinterFromJSON(line: String) {
     printerSelector = PrinterSelectorArgument.fromJson(line)
     printer = resolvePrinter(printerSelector!!)
     val progress = Data.Builder()
@@ -64,7 +65,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     if (printerSelector != null) {
       progress.putAll(printerSelector!!.data)
     }
-    setProgress(progress.build())
+    setProgressAsync(progress.build())
   }
 
   private fun processText() {
@@ -79,7 +80,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     }
   }
 
-  private suspend fun processFile() {
+  private fun processFile() {
     // Create a FileReader object.
     val fileReader = FileReader(argument.file)
     // Create a BufferedReader object.
@@ -96,6 +97,8 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
       } else {
         if (line!!.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
           resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
+        } else if (line!!.startsWith(JobBuilder.COMMAND_INITIALIZE)) {
+          printer!!.write(EscPosCommands.byteArray(EscPosCommands.INITIALIZE))
         } else if (line!!.startsWith(JobBuilder.COMMAND_PRINT)) {
           printer!!.printFormattedText(line!!.replace(JobBuilder.COMMAND_PRINT, ""), 0)
         } else if (line!!.startsWith(JobBuilder.COMMAND_FEED_PRINTER)) {
@@ -112,7 +115,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     bufferedReader.close()
   }
 
-  override suspend fun doWork(): Result {
+  override fun doWork(): Result {
     val progress = Data.Builder()
       .putAll(inputData)
     if (printerSelector != null) {
@@ -120,7 +123,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     }
     return try {
       if (argument.isText) {
-        setProgress(progress.build())
+        setProgressAsync(progress.build())
         processText()
       } else if (argument.isFile) {
         processFile()
@@ -128,7 +131,7 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
       if (printerSelector != null) {
         progress.putAll(printerSelector!!.data)
       }
-      setProgress(progress.build())
+      setProgressAsync(progress.build())
       Result.success(progress.build())
     } catch (error: Exception) {
       if (printerSelector != null) {
