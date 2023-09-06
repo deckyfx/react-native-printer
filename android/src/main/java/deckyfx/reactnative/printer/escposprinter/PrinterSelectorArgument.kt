@@ -21,16 +21,24 @@ class PrinterSelectorArgument(
   var maxChars: Int
 ) {
   constructor(argv: Data) : this(
-    argv.getString("connection")!!,
-    argv.getString("address")!!,
-    argv.getInt("port", NetworkScanManager.DEFAULT_PRINTER_PORT),
-    argv.getInt("baudrate", SerialConnection.DEFAULT_BAUD_RATE),
-    argv.getInt("dpi", RNPrinter.PRINTING_DPI_NORMAL),
-    argv.getFloat("width", RNPrinter.PRINTING_WIDTH_80_MM),
-    argv.getInt("maxChars", RNPrinter.PRINTING_LINES_MAX_CHAR_42)
+    argv.getString(FIELD_CONNECTION)!!,
+    argv.getString(FIELD_ADDRESS)!!,
+    argv.getInt(FIELD_PORT, NetworkScanManager.DEFAULT_PRINTER_PORT),
+    argv.getInt(FIELD_BAUD_RATE, SerialConnection.DEFAULT_BAUD_RATE),
+    argv.getInt(FIELD_DPI, RNPrinter.PRINTING_DPI_NORMAL),
+    argv.getFloat(FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_80_MM),
+    argv.getInt(FIELD_MAX_CHARS, RNPrinter.PRINTING_LINES_MAX_CHAR_42)
   )
 
-  constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
+  constructor(argv: ReadableMap) : this(
+    safeString(argv, FIELD_CONNECTION)!!,
+    safeString(argv,FIELD_ADDRESS)!!,
+    safeInt(argv, FIELD_PORT, NetworkScanManager.DEFAULT_PRINTER_PORT),
+    safeInt(argv, FIELD_BAUD_RATE, SerialConnection.DEFAULT_BAUD_RATE),
+    safeInt(argv, FIELD_DPI, RNPrinter.PRINTING_DPI_NORMAL),
+    safeFloat(argv, FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_80_MM),
+    safeInt(argv, FIELD_MAX_CHARS, RNPrinter.PRINTING_LINES_MAX_CHAR_42),
+  )
   constructor() : this("", "", 0, 0, 0, 0f, 0)
 
   val ready: Boolean
@@ -39,26 +47,26 @@ class PrinterSelectorArgument(
   val data: Data
     get() {
       return Data.Builder()
-        .putString("connection", connection)
-        .putString("address", address)
-        .putInt("port", port)
-        .putInt("baudrate", baudrate)
-        .putInt("dpi", dpi)
-        .putFloat("width", width)
-        .putInt("maxChars", maxChars)
+        .putString(FIELD_CONNECTION, connection)
+        .putString(FIELD_ADDRESS, address)
+        .putInt(FIELD_PORT, port)
+        .putInt(FIELD_BAUD_RATE, baudrate)
+        .putInt(FIELD_DPI, dpi)
+        .putFloat(FIELD_WIDTH, width)
+        .putInt(FIELD_MAX_CHARS, maxChars)
         .build()
     }
 
   val readableMap: ReadableMap
     get() {
       return Arguments.createMap().apply {
-        putString("connection", connection)
-        putString("address", address)
-        putInt("port", port)
-        putInt("baudrate", baudrate)
-        putInt("dpi", dpi)
-        putDouble("width", width.toDouble())
-        putInt("maxChars", maxChars)
+        putString(FIELD_CONNECTION, connection)
+        putString(FIELD_ADDRESS, address)
+        putInt(FIELD_PORT, port)
+        putInt(FIELD_BAUD_RATE, baudrate)
+        putInt(FIELD_DPI, dpi)
+        putDouble(FIELD_WIDTH, width.toDouble())
+        putInt(FIELD_MAX_CHARS, maxChars)
       }
     }
 
@@ -72,6 +80,50 @@ class PrinterSelectorArgument(
     fun fromJson(json: String): PrinterSelectorArgument {
       val serializer = Json.serializersModule.serializer<PrinterSelectorArgument>()
       return Json.decodeFromString(serializer, json)
+    }
+
+    const val FIELD_CONNECTION = "connection"
+    const val FIELD_ADDRESS = "address"
+    const val FIELD_PORT = "port"
+    const val FIELD_BAUD_RATE = "baudrate"
+    const val FIELD_DPI = "dpi"
+    const val FIELD_WIDTH = "width"
+    const val FIELD_MAX_CHARS = "maxChars"
+
+    fun safeString(argv: ReadableMap, field: String, defaultValue: String = ""): String {
+      return try {
+        val result = argv.getString(field)
+        result!!
+      } catch (e: Throwable) {
+        defaultValue
+      }
+    }
+
+    fun safeInt(argv: ReadableMap, field: String, defaultValue: Int = 0): Int {
+      return try {
+        val result = argv.getInt(field)
+        result!!
+      } catch (e: Throwable) {
+        defaultValue
+      }
+    }
+
+    fun safeFloat(argv: ReadableMap, field: String, defaultValue: Float = 0f): Float {
+      return try {
+        val result = argv.getDouble(FIELD_WIDTH).toFloat()
+        result!!
+      } catch (e: Throwable) {
+        defaultValue
+      }
+    }
+
+    fun safeBoolean(argv: ReadableMap, field: String, defaultValue: Boolean = false): Boolean {
+      return try {
+        val result = argv.getBoolean(FIELD_WIDTH)
+        result!!
+      } catch (e: Throwable) {
+        defaultValue
+      }
     }
   }
 }

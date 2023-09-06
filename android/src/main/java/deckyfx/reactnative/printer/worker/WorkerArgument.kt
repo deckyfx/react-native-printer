@@ -3,6 +3,7 @@ package deckyfx.reactnative.printer.worker
 import androidx.work.Data
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
+import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -30,21 +31,34 @@ class WorkerArgument(
   val maxChars: Int = 0,
 ) {
   constructor(argv: Data) : this(
-    argv.getString("text"),
-    argv.getBoolean("cutPaper", false),
-    argv.getBoolean("openCashBox", false),
-    argv.getString("file"),
+    argv.getString(FIELD_TEXT),
+    argv.getBoolean(FIELD_CUT_PAPER, false),
+    argv.getBoolean(FIELD_OPEN_CASH_BOX, false),
+    argv.getString(FIELD_FILE),
 
-    argv.getString("connection"),
-    argv.getString("address"),
-    argv.getInt("port", 0),
-    argv.getInt("baudrate", 0),
-    argv.getInt("dpi", 0),
-    argv.getFloat("width", 0f),
-    argv.getInt("maxChars", 0)
+    argv.getString(FIELD_CONNECTION),
+    argv.getString(FIELD_ADDRESS),
+    argv.getInt(FIELD_PORT, 0),
+    argv.getInt(FIELD_BAUD_RATE, 0),
+    argv.getInt(FIELD_DPI, 0),
+    argv.getFloat(FIELD_WIDTH, 0f),
+    argv.getInt(FIELD_MAX_CHARS, 0)
   )
 
-  constructor(argv: ReadableMap) : this(Data.Builder().putAll(argv.toHashMap()).build())
+  constructor(argv: ReadableMap) : this(
+    PrinterSelectorArgument.safeString(argv, FIELD_TEXT),
+    PrinterSelectorArgument.safeBoolean(argv, FIELD_CUT_PAPER),
+    PrinterSelectorArgument.safeBoolean(argv, FIELD_OPEN_CASH_BOX),
+    PrinterSelectorArgument.safeString(argv, FIELD_FILE),
+
+    PrinterSelectorArgument.safeString(argv, FIELD_CONNECTION),
+    PrinterSelectorArgument.safeString(argv, FIELD_ADDRESS),
+    PrinterSelectorArgument.safeInt(argv, FIELD_PORT),
+    PrinterSelectorArgument.safeInt(argv, FIELD_BAUD_RATE),
+    PrinterSelectorArgument.safeInt(argv, FIELD_DPI),
+    PrinterSelectorArgument.safeFloat(argv, FIELD_WIDTH),
+    PrinterSelectorArgument.safeInt(argv, FIELD_MAX_CHARS)
+  )
 
   val isFile: Boolean
     get() {
@@ -59,36 +73,36 @@ class WorkerArgument(
   val data: Data
     get() {
       return Data.Builder()
-        .putString("text", text)
-        .putBoolean("cutPaper", cutPaper)
-        .putBoolean("openCashBox", openCashBox)
-        .putString("file", file)
+        .putString(FIELD_TEXT, text)
+        .putBoolean(FIELD_CUT_PAPER, cutPaper)
+        .putBoolean(FIELD_OPEN_CASH_BOX, openCashBox)
+        .putString(FIELD_FILE, file)
 
-        .putString("connection", connection)
-        .putString("address", address)
-        .putInt("port", port)
-        .putInt("baudrate", baudrate)
-        .putInt("dpi", dpi)
-        .putFloat("width", width)
-        .putInt("maxChars", maxChars)
+        .putString(FIELD_CONNECTION, connection)
+        .putString(FIELD_ADDRESS, address)
+        .putInt(FIELD_PORT, port)
+        .putInt(FIELD_BAUD_RATE, baudrate)
+        .putInt(FIELD_DPI, dpi)
+        .putFloat(FIELD_WIDTH, width)
+        .putInt(FIELD_MAX_CHARS, maxChars)
         .build()
     }
 
   val readableMap: ReadableMap
     get() {
       return Arguments.createMap().apply {
-        putString("text", text)
-        putBoolean("cutPaper", cutPaper)
-        putBoolean("openCashBox", openCashBox)
-        putString("file", file)
+        putString(FIELD_TEXT, text)
+        putBoolean(FIELD_CUT_PAPER, cutPaper)
+        putBoolean(FIELD_OPEN_CASH_BOX, openCashBox)
+        putString(FIELD_FILE, file)
 
-        putString("connection", connection)
-        putString("address", address)
-        putInt("port", port)
-        putInt("baudrate", baudrate)
-        putInt("dpi", dpi)
-        putDouble("width", width.toDouble())
-        putInt("maxChars", maxChars)
+        putString(FIELD_CONNECTION, connection)
+        putString(FIELD_ADDRESS, address)
+        putInt(FIELD_PORT, port)
+        putInt(FIELD_BAUD_RATE, baudrate)
+        putInt(FIELD_DPI, dpi)
+        putDouble(FIELD_WIDTH, width.toDouble())
+        putInt(FIELD_MAX_CHARS, maxChars)
       }
     }
 
@@ -115,5 +129,18 @@ class WorkerArgument(
     ): WorkerArgument {
       return WorkerArgument(text, cutPaper, openCashBox, null)
     }
+
+    const val FIELD_TEXT = "text"
+    const val FIELD_CUT_PAPER = "cutPaper"
+    const val FIELD_OPEN_CASH_BOX = "openCashBox"
+    const val FIELD_FILE = "file"
+
+    const val FIELD_CONNECTION = "connection"
+    const val FIELD_ADDRESS = "address"
+    const val FIELD_PORT = "port"
+    const val FIELD_BAUD_RATE = "baudrate"
+    const val FIELD_DPI = "dpi"
+    const val FIELD_WIDTH = "width"
+    const val FIELD_MAX_CHARS = "maxChars"
   }
 }

@@ -36,6 +36,7 @@ const USBPrinter = () => {
         }
       }
     );
+
     const allowed = await RNPrinter.checkPermissions(
       DeviceScanner.SCAN_BLUETOOTH
     );
@@ -48,37 +49,43 @@ const USBPrinter = () => {
 
   const print = async () => {
     if (address) {
+      const jobId = await JobBuilder.begin();
+      await JobBuilder.selectPrinter(jobId, {
+        connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
+        address: address,
+      });
+      await JobBuilder.initializePrinter(jobId);
       const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
       for (let i = 0; i < designs.length; i++) {
         let line = designs[i]!!;
-        await JobBuilder.printLine(line);
+        await JobBuilder.printLine(jobId, line);
       }
-      await JobBuilder.feedPaper(20);
-      await JobBuilder.printLine('------------------');
-      await JobBuilder.feedPaper(20);
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.feedPaper(20);
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.feedPaper(20);
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.printLine('--------Sesuatu----------');
-      await JobBuilder.feedPaper(20);
-      await JobBuilder.printLine('--------Last----------');
-      await JobBuilder.feedPaper(100);
-      await JobBuilder.printLine(' ');
-      await JobBuilder.printLine(' ');
-      await JobBuilder.printLine(' ');
-      await JobBuilder.printLine(' ');
-      await JobBuilder.printLine(' ');
-      await JobBuilder.printLine(' ');
-      await JobBuilder.cutPaper();
-      const job = await JobBuilder.build();
+      await JobBuilder.feedPaper(jobId, 20);
+      await JobBuilder.printLine(jobId, '------------------');
+      await JobBuilder.feedPaper(jobId, 20);
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.feedPaper(jobId, 20);
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.feedPaper(jobId, 20);
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
+      await JobBuilder.feedPaper(jobId, 20);
+      await JobBuilder.printLine(jobId, '--------Last----------');
+      await JobBuilder.feedPaper(jobId, 100);
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.printLine(jobId, ' ');
+      await JobBuilder.cutPaper(jobId);
+      const job = await JobBuilder.build(jobId);
       RNPrinter.enqueuePrint(job);
     }
   };

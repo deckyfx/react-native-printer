@@ -41,9 +41,9 @@ class PrintingWorkerManager private constructor() {
     val jobTag = PRINTING_JOB_TAG
     val inputData = Data.Builder()
       .putAll(data)
-      .putString("jobId", jobId.toString())
-      .putString("jobName", jobName)
-      .putString("jobTag", jobTag)
+      .putString(WorkerEventData.FIELD_JOB_ID, jobId.toString())
+      .putString(WorkerEventData.FIELD_JOB_NAME, jobName)
+      .putString(WorkerEventData.FIELD_JOB_TAG, jobTag)
       .build()
     val workRequest: OneTimeWorkRequest =
       OneTimeWorkRequestBuilder<PrintingWorker>()

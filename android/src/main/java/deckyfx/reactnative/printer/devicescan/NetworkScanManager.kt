@@ -4,7 +4,6 @@ import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -41,16 +40,16 @@ class NetworkScanManager {
       ip?.let { _ip ->
         val ipSegments = _ip.split(".").toMutableList()
         coroutineScope {
-          (1..254).map { i ->
+          (242..244).map { i ->
             async {
               ipSegments[3] = i.toString()
               val host = ipSegments.joinToString(".")
               val port = DEFAULT_PRINTER_PORT
               val reachable = socketConnect(host, port)
               if (!reachable) {
-                cancel()
+                return@async
               }
-              val connection = TcpConnection(host, port)
+              val connection = TcpConnection(host, port, SOCKET_TIMEOUT)
               var deviceName: String? = ""
               try {
                 connection.connect()
@@ -82,8 +81,6 @@ class NetworkScanManager {
   private fun socketConnect(host: String?, port: Int? = DEFAULT_PRINTER_PORT): Boolean {
     if (!mIsRunning) return false
     val socketAddress: InetSocketAddress = if (host != null) {
-      val address = InetAddress.getByName(host)
-      address.canonicalHostName
       InetSocketAddress(InetAddress.getByName(host), port!!)
     } else {
       InetSocketAddress(port!!)
@@ -92,6 +89,7 @@ class NetworkScanManager {
     return try {
       socket.connect(socketAddress, SOCKET_TIMEOUT)
       socket.soTimeout = SOCKET_TIMEOUT
+      socket.close()
       return true
     } catch (e: IOException) {
       socket.close()
@@ -150,7 +148,7 @@ class NetworkScanManager {
 
   companion object {
     const val DEFAULT_PRINTER_PORT = 9100
-    const val SOCKET_TIMEOUT = 200
+    const val SOCKET_TIMEOUT = 500
 
     private val LOG_TAG = NetworkScanManager::class.java.simpleName
     private val DSLITE_LIST = listOf(

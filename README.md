@@ -41,7 +41,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-**1.0.4-b**
+**1.0.4-c**
 
 ## Tested Printer
  - [x] SEWOO SLK-TS100
@@ -105,22 +105,22 @@ builder.addLine(TagHelper.center(TagHelper.qrcode('qrcode data')));
 builder.addLine(TagHelper.center(TagHelper.image('image source')));
 
 // Build printing job
-await JobBuilder.begin();
-await JobBuilder.selectPrinter({
+const jobId = await JobBuilder.begin();
+await JobBuilder.selectPrinter(jobId, {
   connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
   address: "00:00:00:00:00",
 });
-await JobBuilder.initializePrinter();
+await JobBuilder.initializePrinter(jobId);
 // Put all design
 for (let i = 0; i < builder.designs.length; i++) {
   let line = builder.designs[i]!!;
-  await JobBuilder.printLine(line);
+  await JobBuilder.printLine(jobId, line);
 }
-await JobBuilder.cutPaper();
-await JobBuilder.openCashBox();
+await JobBuilder.cutPaper(jobId);
+await JobBuilder.openCashBox(jobId);
 
 // execute job
-const job = await JobBuilder.build();
+const job = await JobBuilder.build(jobId);
 RNPrinter.enqueuePrint(job);
 
 // Another way

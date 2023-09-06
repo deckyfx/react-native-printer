@@ -6,16 +6,17 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
+import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FileWriter
 import java.util.UUID
+
 
 class JobBuilder(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
-  private lateinit var uuid: UUID
-  private lateinit var fileos: FileOutputStream
-  private var building: Boolean = false
+  private val files = mutableMapOf<UUID, File>()
 
   override fun getName(): String {
     return LOG_TAG
@@ -37,25 +38,33 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     return constants
   }
 
-  private val dirpath: String
+  private val dirPath: String
     get() {
       return "${reactContext.filesDir.absolutePath}/printing"
     }
 
-  private val filepath: String
-    get() {
-      return "${dirpath}/${uuid}"
+  private fun appendToFile(uuidString: String, contents: String) {
+    val uuid = UUID.fromString(uuidString)
+    val file = files[uuid] ?: throw IllegalArgumentException("File with UUID $uuid does not exist")
+    // Here true is to append the content to file
+    // BufferedWriter writer give better performance
+    with(BufferedWriter(FileWriter(file, true))) {
+      write(contents)
+      close()
     }
+  }
 
   @ReactMethod
   @Suppress("unused")
   fun begin(promise: Promise) {
-    uuid = UUID.randomUUID()
-    val directory = File(dirpath)
+    val uuid = UUID.randomUUID()
+
+    val directory = File(dirPath)
+    val path = "${dirPath}/${uuid}"
     if (!directory.exists()) {
       directory.mkdirs()
     }
-    val file = File(filepath)
+    val file = File(path)
     // If the file doesn't exist, create it.
     if (!file.exists()) {
       file.createNewFile()
@@ -65,101 +74,85 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     fos.write("".toByteArray())
     fos.close()
 
-    // Get a FileOutputStream to write to the file.
-    fileos = FileOutputStream(file)
-    building = true
-    promise.resolve(true)
+    files[uuid] = file
+
+    promise.resolve(uuid.toString())
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun build(promise: Promise) {
-    fileos.close()
-    building = false
-    promise.resolve(JobBuilderData(uuid.toString(), filepath).readableMap)
+  fun build(uuidString: String, promise: Promise) {
+    val uuid = UUID.fromString(uuidString)
+    val path = "${dirPath}/${uuid}"
+    val file = files[uuid] ?: throw IllegalArgumentException("File with UUID $uuid does not exist")
+    files.remove(uuid)
+    promise.resolve(JobBuilderData(uuid.toString(), path).readableMap)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun discard(promise: Promise) {
-    fileos.close()
-    val file = File(filepath)
+  fun discard(uuidString: String, promise: Promise) {
+    val uuid = UUID.fromString(uuidString)
+    val path = "${dirPath}/${uuid}"
+    val file = File(path)
     if (file.exists()) {
       file.delete()
     }
-    // Delete the file.
-    building = false
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun selectPrinter(selector: ReadableMap, promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
-    val selector = PrinterSelectorArgument(selector)
-    fileos.write("${COMMAND_SELECT_PRINTER}${selector.json}\n".toByteArray())
+  fun selectPrinter(uuid: String, selector: ReadableMap, promise: Promise) {
+    val selectorArg = PrinterSelectorArgument(selector)
+    appendToFile(uuid, "${COMMAND_SELECT_PRINTER}${selectorArg.json}\n")
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun initializePrinter(promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
-    fileos.write("${COMMAND_CUT_PAPER}\n".toByteArray())
+  fun initializePrinter(uuid: String, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_CUT_PAPER}\n")
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun printLine(line: String, promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
+  fun printLine(uuid: String, line: String, promise: Promise) {
     var lineAdd = line
     if (!line.endsWith("\n")) {
       lineAdd += "\n"
     }
-    fileos.write("${COMMAND_PRINT}${lineAdd}".toByteArray())
+    appendToFile(uuid, "${COMMAND_PRINT}${lineAdd}")
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun feedPaper(dots: Int = 0, promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
-    fileos.write("${COMMAND_FEED_PRINTER}${dots}\n".toByteArray())
+  fun feedPaper(uuid: String, dots: Int = 0, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_FEED_PRINTER}${dots}\n")
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun cutPaper(promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
-    fileos.write("${COMMAND_CUT_PAPER}\n".toByteArray())
+  fun cutPaper(uuid: String, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_CUT_PAPER}\n")
     promise.resolve(true)
   }
 
   @ReactMethod
   @Suppress("unused")
-  fun openCashBox(promise: Promise) {
-    if (!building) {
-      return promise.resolve(false)
-    }
-    fileos.write("${COMMAND_OPEN_CASHBOX}\n".toByteArray())
+  fun openCashBox(uuid: String, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_OPEN_CASHBOX}\n")
     promise.resolve(true)
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
   @Suppress("unused")
-  fun building(promise: Promise): Boolean {
-    return building
+  fun building(uuidString: String, promise: Promise): Boolean {
+    val uuid = UUID.fromString(uuidString)
+    val file = files[uuid] ?: return false
+    return true
   }
 }

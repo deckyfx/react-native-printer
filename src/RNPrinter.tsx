@@ -103,6 +103,7 @@ export type RNPrinterEventPayload = {
   generation?: number | null | undefined;
   runAttemptCount?: number | null | undefined;
   error?: string | null | undefined;
+  message?: string | null | undefined;
 };
 
 export type RNPrinter = {

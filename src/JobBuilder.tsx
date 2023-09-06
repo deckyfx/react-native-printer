@@ -9,70 +9,70 @@ export interface JobBuilderInterface {
   /**
    * Begin a job builder
    *
-   * @return {*}  {Promise<boolean>}
+   * @return {string}  jobId {Promise<string>}
    */
-  begin(): Promise<boolean>;
+  begin(): Promise<string>;
 
   /**
    * Select a printer *Must begin job first
    *
    * @return {*}  {Promise<boolean>}
    */
-  selectPrinter(selector: PrinterSelector): Promise<boolean>;
+  selectPrinter(jobId: string, selector: PrinterSelector): Promise<boolean>;
 
   /**
    * Initialize a printer, reset all settings
    *
    * @return {*}  {Promise<boolean>}
    */
-  initializePrinter(): Promise<boolean>;
+  initializePrinter(jobId: string): Promise<boolean>;
 
   /**
    * Print one line *Must begin job and select a printer first
    *
    * @return {*}  {Promise<boolean>}
    */
-  printLine(line: string): Promise<boolean>;
+  printLine(jobId: string, line: string): Promise<boolean>;
 
   /**
    * Feed printer paper *Must begin job and select a printer first
    *
    * @return {*}  {Promise<boolean>}
    */
-  feedPaper(dots: number): Promise<boolean>;
+  feedPaper(jobId: string, dots: number): Promise<boolean>;
 
   /**
    * Cut paper *Must begin job and select a printer first
    *
    * @return {*}  {Promise<boolean>}
    */
-  cutPaper(): Promise<boolean>;
+  cutPaper(jobId: string): Promise<boolean>;
 
   /**
    * Open cash box, ony for certain type of printer *Must begin job and select a printer first
    *
    * @return {*}  {Promise<boolean>}
    */
-  openCashBox(): Promise<boolean>;
+  openCashBox(jobId: string): Promise<boolean>;
 
   /**
    * Build job
    *
    * @return {*}  {Promise<string>} JobID to be enqueued
    */
-  build(): Promise<JobData>;
+  build(jobId: string): Promise<JobData>;
 
   /**
    * Cancel and discard current job builder
    *
    * @return {*}  {Promise<boolean>}
    */
-  discard(): Promise<boolean>;
+  discard(jobId: string): Promise<boolean>;
 
   /**
    * Is currently is building
    *
    * @return {*}  {Boolean}
    */
-  building(): Boolean;
+  building(jobId: string): Boolean;
 }

@@ -26,17 +26,17 @@ class WorkerEventData(
   val writableMap: WritableMap
     get() {
       return Arguments.createMap().apply {
-        putMap("selector", selector?.readableMap)
-        putString("file", file)
-        putString("jobId", jobId)
-        putString("jobName", jobName)
-        putString("jobTag", jobTag)
-        putString("state", state)
-        putString("id", id)
-        putArray("tags", tags)
-        putInt("generation", generation)
-        putInt("runAttemptCount", runAttemptCount)
-        putString("error", error)
+        putMap(FIELD_SELECTOR, selector?.readableMap)
+        putString(FIELD_FILE, file)
+        putString(FIELD_JOB_ID, jobId)
+        putString(FIELD_JOB_NAME, jobName)
+        putString(FIELD_JOB_TAG, jobTag)
+        putString(FIELD_STATE, state)
+        putString(FIELD_ID, id)
+        putArray(FIELD_TAGS, tags)
+        putInt(FIELD_GENERATION, generation)
+        putInt(FIELD_RUN_ATTEMPT_COUNT, runAttemptCount)
+        putString(FIELD_ERROR, error)
       }
     }
 
@@ -57,75 +57,75 @@ class WorkerEventData(
       val result = Arguments.createMap().apply {
         if (workInfo.progress.keyValueMap.isNotEmpty()) {
           val selector = PrinterSelectorArgument()
-          workInfo.progress.getString("connection")?.let {
+          workInfo.progress.getString(PrinterSelectorArgument.FIELD_CONNECTION)?.let {
             selector.connection = it
           }
-          workInfo.progress.getString("address")?.let {
+          workInfo.progress.getString(PrinterSelectorArgument.FIELD_ADDRESS)?.let {
             selector.address = it
           }
-          workInfo.progress.getInt("port", 0).takeIf { it > 0 }?.let {
+          workInfo.progress.getInt(PrinterSelectorArgument.FIELD_PORT, 0).takeIf { it > 0 }?.let {
             selector.port = it
           }
-          workInfo.progress.getInt("baudrate", 0).takeIf { it > 0 }?.let {
+          workInfo.progress.getInt(PrinterSelectorArgument.FIELD_BAUD_RATE, 0).takeIf { it > 0 }?.let {
             selector.baudrate = it
           }
-          workInfo.progress.getInt("dpi", 0).takeIf { it > 0 }?.let {
+          workInfo.progress.getInt(PrinterSelectorArgument.FIELD_DPI, 0).takeIf { it > 0 }?.let {
             selector.dpi = it
           }
-          workInfo.progress.getFloat("width", 0f).takeIf { it > 0f }?.let {
+          workInfo.progress.getFloat(PrinterSelectorArgument.FIELD_WIDTH, 0f).takeIf { it > 0f }?.let {
             selector.width = it
           }
-          workInfo.progress.getInt("maxChars", 0).takeIf { it > 0 }?.let {
+          workInfo.progress.getInt(PrinterSelectorArgument.FIELD_MAX_CHARS, 0).takeIf { it > 0 }?.let {
             selector.maxChars = it
           }
           data.selector = selector
-          workInfo.progress.getString("file")?.let {
+          workInfo.progress.getString(FIELD_FILE)?.let {
             data.file = it
           }
-          workInfo.progress.getString("jobId")?.let {
+          workInfo.progress.getString(FIELD_JOB_ID)?.let {
             data.jobId = it
           }
-          workInfo.progress.getString("jobName")?.let {
+          workInfo.progress.getString(FIELD_JOB_NAME)?.let {
             data.jobName = it
           }
-          workInfo.progress.getString("jobTag")?.let {
+          workInfo.progress.getString(FIELD_JOB_TAG)?.let {
             data.jobTag = it
           }
         }
         if (workInfo.outputData.keyValueMap.isNotEmpty()) {
           val selector = PrinterSelectorArgument()
-          workInfo.outputData.getString("connection")?.let {
+          workInfo.outputData.getString(PrinterSelectorArgument.FIELD_CONNECTION)?.let {
             selector.connection = it
           }
-          workInfo.outputData.getString("address")?.let {
+          workInfo.outputData.getString(PrinterSelectorArgument.FIELD_ADDRESS)?.let {
             selector.address = it
           }
-          workInfo.outputData.getInt("port", 0).takeIf { it > 0 }?.let {
+          workInfo.outputData.getInt(PrinterSelectorArgument.FIELD_PORT, 0).takeIf { it > 0 }?.let {
             selector.port = it
           }
-          workInfo.outputData.getInt("baudrate", 0).takeIf { it > 0 }?.let {
+          workInfo.outputData.getInt(PrinterSelectorArgument.FIELD_BAUD_RATE, 0).takeIf { it > 0 }?.let {
             selector.baudrate = it
           }
-          workInfo.outputData.getInt("dpi", 0).takeIf { it > 0 }?.let {
+          workInfo.outputData.getInt(PrinterSelectorArgument.FIELD_DPI, 0).takeIf { it > 0 }?.let {
             selector.dpi = it
           }
-          workInfo.outputData.getFloat("width", 0f).takeIf { it > 0f }?.let {
+          workInfo.outputData.getFloat(PrinterSelectorArgument.FIELD_WIDTH, 0f).takeIf { it > 0f }?.let {
             selector.width = it
           }
-          workInfo.outputData.getInt("maxChars", 0).takeIf { it > 0 }?.let {
+          workInfo.outputData.getInt(PrinterSelectorArgument.FIELD_MAX_CHARS, 0).takeIf { it > 0 }?.let {
             selector.maxChars = it
           }
           data.selector = selector
-          workInfo.outputData.getString("file")?.let {
+          workInfo.outputData.getString(FIELD_FILE)?.let {
             data.file = it
           }
-          workInfo.outputData.getString("jobId")?.let {
+          workInfo.outputData.getString(FIELD_JOB_ID)?.let {
             data.jobId = it
           }
-          workInfo.outputData.getString("jobName")?.let {
+          workInfo.outputData.getString(FIELD_JOB_NAME)?.let {
             data.jobName = it
           }
-          workInfo.outputData.getString("jobTag")?.let {
+          workInfo.outputData.getString(FIELD_JOB_TAG)?.let {
             data.jobTag = it
           }
         }
@@ -150,7 +150,7 @@ class WorkerEventData(
         }
 
         WorkInfo.State.FAILED -> {
-          val errorMessage = workInfo.outputData.getString("error")
+          val errorMessage = workInfo.outputData.getString(FIELD_ERROR)
           data.error = errorMessage
         }
 
@@ -162,5 +162,18 @@ class WorkerEventData(
       }
       return data
     }
+
+    const val FIELD_SELECTOR = "selector"
+    const val FIELD_FILE = "file"
+    const val FIELD_JOB_ID = "jobId"
+    const val FIELD_JOB_NAME = "jobName"
+
+    const val FIELD_JOB_TAG = "jobTag"
+    const val FIELD_STATE = "state"
+    const val FIELD_ID = "id"
+    const val FIELD_TAGS = "tags"
+    const val FIELD_GENERATION = "generation"
+    const val FIELD_RUN_ATTEMPT_COUNT = "runAttemptCount"
+    const val FIELD_ERROR = "error"
   }
 }
