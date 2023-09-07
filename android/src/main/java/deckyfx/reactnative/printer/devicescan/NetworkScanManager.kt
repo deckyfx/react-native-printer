@@ -40,7 +40,7 @@ class NetworkScanManager {
       ip?.let { _ip ->
         val ipSegments = _ip.split(".").toMutableList()
         coroutineScope {
-          (242..244).map { i ->
+          (1..254).map { i ->
             async {
               ipSegments[3] = i.toString()
               val host = ipSegments.joinToString(".")
