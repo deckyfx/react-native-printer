@@ -41,7 +41,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-**1.0.4-d**
+**1.0.4-e**
 
 ## Tested Printer
  - [x] SEWOO SLK-TS100
@@ -105,15 +105,21 @@ builder.addLine(TagHelper.center(TagHelper.qrcode('qrcode data')));
 builder.addLine(TagHelper.center(TagHelper.image('image source')));
 
 // Build printing job
-const jobId = await JobBuilder.begin();
-await JobBuilder.selectPrinter(jobId, {
+const printer = {
   connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
   address: "00:00:00:00:00",
-});
+}
+const jobId = await JobBuilder.begin();
+await JobBuilder.selectPrinter(jobId, printer);
 await JobBuilder.initializePrinter(jobId);
+// Build the design
+const designBuilder = new DesignBuilder(
+  RNPrinter.PRINTING_LINES_MAX_CHAR_40
+);
+designBuilder.addLine('Print something')
 // Put all design
-for (let i = 0; i < builder.designs.length; i++) {
-  let line = builder.designs[i]!!;
+for (let i = 0; i < designBuilder.designs.length; i++) {
+  let line = designBuilder.designs[i]!!;
   await JobBuilder.printLine(jobId, line);
 }
 await JobBuilder.cutPaper(jobId);
@@ -121,7 +127,8 @@ await JobBuilder.openCashBox(jobId);
 
 // execute job
 const job = await JobBuilder.build(jobId);
-RNPrinter.enqueuePrint(job);
+// RNPrinter.enqueuePrint(job);
+RNPrinter.enqueuePrint(job, printer);
 
 // Another way
 RNPrinter.write(RNPrinter.PRINTER_CONNECTION_USB, '/dev/usb/001/003', `[C]<img>${imageUri}</img>\n"` + '[L]\n'

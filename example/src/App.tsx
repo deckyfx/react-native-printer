@@ -6,6 +6,7 @@ import {
   TagHelper,
   DesignBuilder,
   RNPrinter,
+  JobBuilder,
 } from '@decky.fx/react-native-printer';
 import type { RowConfig } from '@decky.fx/react-native-printer/ColumnConfig';
 
@@ -68,14 +69,28 @@ const App = () => {
   };
 
   const printImage = async () => {
-    if (address) {
-      RNPrinter.enqueuePrint2(
-        {
-          connection: RNPrinter.PRINTER_CONNECTION_USB,
-          address: address,
-        },
-        `[C]<img>${imageUri}</img>\n"` + '[L]\n'
+    if (address && imageUri) {
+      const printer = {
+        connection: RNPrinter.PRINTER_CONNECTION_BLUETOOTH,
+        address: address,
+        width: RNPrinter.PRINTING_WIDTH_76_MM,
+        maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
+      };
+      const jobId = await JobBuilder.begin();
+
+      const designBuilder = new DesignBuilder(
+        RNPrinter.PRINTING_LINES_MAX_CHAR_40
       );
+      designBuilder.addLine(TagHelper.center(TagHelper.image(imageUri)));
+      const designs = designBuilder.designs;
+      for (let i = 0; i < designs.length; i++) {
+        let line = designs[i]!!;
+        await JobBuilder.printLine(jobId, line);
+      }
+      await JobBuilder.cutPaper(jobId);
+      const job = await JobBuilder.build(jobId);
+      // RNPrinter.enqueuePrint(job);
+      RNPrinter.enqueuePrint(job, printer);
     }
   };
 

@@ -13,7 +13,10 @@ import type {
   DeviceScanEventPayload,
   DeviceData,
 } from '@decky.fx/react-native-printer/DeviceScanner';
-import type { RNPrinterEventPayload } from '@decky.fx/react-native-printer/RNPrinter';
+import type {
+  PrinterSelector,
+  RNPrinterEventPayload,
+} from '@decky.fx/react-native-printer/RNPrinter';
 
 import Row from './Row';
 import Button from './Button';
@@ -22,9 +25,19 @@ const SerialPrinter = () => {
   const [address, setAddress] = React.useState<string | undefined>('');
 
   const scan = async () => {
+    RNPrinterEventEmitter.offEvents();
+    DeviceScannerEventEmitter.offEvents();
     RNPrinterEventEmitter.onEvents(
       (event: string, payload: RNPrinterEventPayload) => {
-        console.log('RNPrinterEventEmitter', event, payload);
+        switch (payload.state!!) {
+          case RNPrinter.PRINT_JOB_STATE_ENQUEUED:
+          case RNPrinter.PRINT_JOB_STATE_RUNNING:
+          case RNPrinter.PRINT_JOB_STATE_SUCCEEDED:
+          case RNPrinter.PRINT_JOB_STATE_FAILED:
+          case RNPrinter.PRINT_JOB_STATE_CANCELED:
+            console.log(event, payload.state, payload.id);
+            break;
+        }
       }
     );
     DeviceScannerEventEmitter.onEvents(
@@ -45,18 +58,25 @@ const SerialPrinter = () => {
   };
 
   const print = async () => {
-    if (address) {
-      const jobId = await JobBuilder.begin();
-      await JobBuilder.selectPrinter(jobId, {
-        connection: RNPrinter.PRINTER_CONNECTION_SERIAL,
-        address: address,
-      });
-      await JobBuilder.initializePrinter(jobId);
-      const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
-      for (let i = 0; i < designs.length; i++) {
-        let line = designs[i]!!;
-        await JobBuilder.printLine(jobId, line);
-      }
+    if (!address) {
+      return;
+    }
+    const printer: PrinterSelector = {
+      connection: RNPrinter.PRINTER_CONNECTION_SERIAL,
+      address: address,
+      baudrate: 9600,
+      width: RNPrinter.PRINTING_WIDTH_76_MM,
+      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
+    };
+    const jobId = await JobBuilder.begin();
+    await JobBuilder.selectPrinter(jobId, printer);
+    await JobBuilder.initializePrinter(jobId);
+    const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
+    for (let i = 0; i < designs.length; i++) {
+      let line = designs[i]!!;
+      await JobBuilder.printLine(jobId, line);
+    }
+    /*
       await JobBuilder.feedPaper(jobId, 20);
       await JobBuilder.printLine(jobId, '------------------');
       await JobBuilder.feedPaper(jobId, 20);
@@ -81,24 +101,11 @@ const SerialPrinter = () => {
       await JobBuilder.printLine(jobId, ' ');
       await JobBuilder.printLine(jobId, ' ');
       await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.cutPaper(jobId);
-      const job = await JobBuilder.build(jobId);
-      RNPrinter.enqueuePrint(job);
-    }
-  };
-
-  const print2 = async () => {
-    if (address) {
-      RNPrinter.enqueuePrint2(
-        {
-          connection: RNPrinter.PRINTER_CONNECTION_SERIAL,
-          address: address,
-        },
-        RNPrinter.TEST_PRINT_DESIGN,
-        true,
-        true
-      );
-    }
+      */
+    await JobBuilder.cutPaper(jobId);
+    const job = await JobBuilder.build(jobId);
+    // RNPrinter.enqueuePrint(job);
+    RNPrinter.enqueuePrint(job, printer);
   };
 
   const stop = async () => {
@@ -117,7 +124,6 @@ const SerialPrinter = () => {
       <Button text="Scan Serial Devices" onClick={scan} />
       <Text>{address}</Text>
       <Button text="Print" onClick={print} />
-      <Button text="Print (Deprecated)" onClick={print2} />
       <Button text="Stop Scan" onClick={stop} />
     </Row>
   );

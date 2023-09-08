@@ -76,6 +76,25 @@ class PrinterSelectorArgument(
       return Json.encodeToString(serializer, this)
     }
 
+  val key: String
+    get() {
+      when (connection) {
+        RNPrinter.PRINTER_CONNECTION_NETWORK -> {
+          return "${connection}-${address}:${port}"
+        }
+        RNPrinter.PRINTER_CONNECTION_BLUETOOTH -> {
+          return "${connection}-${address}"
+        }
+        RNPrinter.PRINTER_CONNECTION_USB -> {
+          return "${connection}-${address}"
+        }
+        RNPrinter.PRINTER_CONNECTION_SERIAL -> {
+          return "${connection}-${address}:${baudrate}"
+        }
+      }
+      return ""
+    }
+
   companion object {
     fun fromJson(json: String): PrinterSelectorArgument {
       val serializer = Json.serializersModule.serializer<PrinterSelectorArgument>()

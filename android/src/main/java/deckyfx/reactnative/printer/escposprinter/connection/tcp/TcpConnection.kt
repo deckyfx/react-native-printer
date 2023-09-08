@@ -17,7 +17,7 @@ class TcpConnection
 @JvmOverloads constructor(
   private val address: String,
   private val port: Int,
-  private val timeout: Int = 30
+  private val timeout: Int = 500
 ) : DeviceConnection() {
   private var socket: Socket? = null
   /**

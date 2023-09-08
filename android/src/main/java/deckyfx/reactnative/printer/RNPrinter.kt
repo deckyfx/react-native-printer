@@ -15,7 +15,6 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.work.Data
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.facebook.react.bridge.Arguments
@@ -35,8 +34,7 @@ import deckyfx.reactnative.printer.escposprinter.connection.serial.SerialConnect
 import deckyfx.reactnative.printer.escposprinter.connection.tcp.TcpConnection
 import deckyfx.reactnative.printer.escposprinter.connection.usb.UsbPrintersConnectionsManager
 import deckyfx.reactnative.printer.worker.JobBuilderData
-import deckyfx.reactnative.printer.worker.PrintingWorkerManager
-import deckyfx.reactnative.printer.worker.WorkerArgument
+import deckyfx.reactnative.printer.worker.PrintingJobsManager
 import deckyfx.reactnative.printer.worker.WorkerEventData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -60,7 +58,12 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     private val LOG_TAG = RNPrinter::class.java.simpleName
 
     const val EVENT_PRINTING_JOB = "PRINTING_JOB"
-    const val EVENT_PERMISSION_CHANGED = "PERMISSION_CHANGED"
+
+    const val PRINT_JOB_STATE_ENQUEUED = "ENQUEUED";
+    const val PRINT_JOB_STATE_RUNNING = "RUNNING";
+    const val PRINT_JOB_STATE_SUCCEEDED = "SUCCEEDED";
+    const val PRINT_JOB_STATE_FAILED = "FAILED";
+    const val PRINT_JOB_STATE_CANCELED = "CANCELED";
 
     const val PRINTER_CONNECTION_NETWORK = "network"
     const val PRINTER_CONNECTION_BLUETOOTH = "bluetooth"
@@ -118,6 +121,12 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     val constants: MutableMap<String, Any> = HashMap()
     constants["EVENT_PRINTING_JOB"] = EVENT_PRINTING_JOB
 
+    constants["PRINT_JOB_STATE_ENQUEUED"] = PRINT_JOB_STATE_ENQUEUED
+    constants["PRINT_JOB_STATE_RUNNING"] = PRINT_JOB_STATE_RUNNING
+    constants["PRINT_JOB_STATE_SUCCEEDED"] = PRINT_JOB_STATE_SUCCEEDED
+    constants["PRINT_JOB_STATE_FAILED"] = PRINT_JOB_STATE_FAILED
+    constants["PRINT_JOB_STATE_CANCELED"] = PRINT_JOB_STATE_CANCELED
+
     constants["PRINTER_CONNECTION_NETWORK"] = PRINTER_CONNECTION_NETWORK
     constants["PRINTER_CONNECTION_BLUETOOTH"] = PRINTER_CONNECTION_BLUETOOTH
     constants["PRINTER_CONNECTION_USB"] = PRINTER_CONNECTION_USB
@@ -139,6 +148,22 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
     constants["TEST_PRINT_DESIGN"] = TEST_PRINT_DESIGN
     return constants
+  }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun enqueuePrint(job: ReadableMap, promise: Promise) {
+    enqueuePrint(job, null, promise)
+  }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun enqueuePrint(job: ReadableMap, printer: ReadableMap? = null, promise: Promise) {
+    val printerSelectorArgument = if (printer != null)  PrinterSelectorArgument(printer) else null
+    val jobBuilderData = JobBuilderData(job)
+    val uuid = PrintingJobsManager.getInstance(reactContext).enqueuePrint(jobBuilderData, printerSelectorArgument)
+    observeWork(uuid)
+    promise.resolve(uuid.toString())
   }
 
   @ReactMethod
@@ -321,70 +346,6 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   @Suppress("unused")
-  fun write(config: ReadableMap, text: String, promise: Promise) {
-    val printer = resolvePrinter(config)
-    printer?.let {
-      try {
-        printer.printFormattedText(text, 0)
-        return
-      } catch (e: Exception) {
-        promise.reject(e)
-        return
-      }
-    }
-    promise.resolve(true)
-  }
-
-  @ReactMethod
-  @Suppress("unused")
-  fun cutPaper(config: ReadableMap, promise: Promise) {
-    val printer = resolvePrinter(config)
-    printer?.let {
-      try {
-        printer.cutPaper()
-        return
-      } catch (e: Exception) {
-        promise.reject(e)
-        return
-      }
-    }
-    promise.resolve(true)
-  }
-
-  @ReactMethod
-  @Suppress("unused")
-  fun feedPaper(config: ReadableMap, promise: Promise) {
-    val printer = resolvePrinter(config)
-    printer?.let {
-      try {
-        printer.feedPaper(0)
-        return
-      } catch (e: Exception) {
-        promise.reject(e)
-        return
-      }
-    }
-    promise.resolve(true)
-  }
-
-  @ReactMethod
-  @Suppress("unused")
-  fun openCashBox(config: ReadableMap, promise: Promise) {
-    val printer = resolvePrinter(config)
-    printer?.let {
-      try {
-        printer.openCashBox()
-        return
-      } catch (e: Exception) {
-        promise.reject(e)
-        return
-      }
-    }
-    promise.resolve(true)
-  }
-
-  @ReactMethod
-  @Suppress("unused")
   fun testConnection(config: ReadableMap, promise: Promise) {
     val printer = resolvePrinter(config)
     printer?.let {
@@ -417,52 +378,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   @Suppress("unused")
-  fun testPrint(config: ReadableMap, promise: Promise) {
-    val printer = resolvePrinter(config)
-    printer?.let {
-      try {
-        printer.printFormattedTextAndCut(TEST_PRINT_DESIGN, 0)
-        return
-      } catch (e: Exception) {
-        promise.reject(e)
-        return
-      }
-    }
-    promise.resolve(true)
-  }
-
-  @Deprecated("Use enqueuePrint(jobData: JobData) is preferred")
-  @ReactMethod
-  @Suppress("unused")
-  fun enqueuePrint2(
-    selector: ReadableMap,
-    text: String,
-    cutPaper: Boolean = true,
-    openCashBox: Boolean = true,
-    promise: Promise
-  ) {
-    val printerSelector = PrinterSelectorArgument(selector)
-    val argument = WorkerArgument.text(text, cutPaper, openCashBox)
-    val data = Data.Builder()
-      .putAll(printerSelector.data)
-      .putAll(argument.data)
-      .build()
-    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, data)
-    promise.resolve(uuid.toString())
-  }
-
-  @ReactMethod
-  @Suppress("unused")
-  fun enqueuePrint(config: ReadableMap, promise: Promise) {
-    val jobBuilderData = JobBuilderData(config)
-    val uuid = PrintingWorkerManager.getInstance().enqueuePrint(reactContext, jobBuilderData)
-    observeWork(uuid)
-    promise.resolve(uuid.toString())
-  }
-
-  @ReactMethod
-  @Suppress("unused")
   fun prunePrintingWorks() {
+    WorkManager.getInstance(reactContext).cancelAllWork()
     WorkManager.getInstance(reactContext).pruneWork()
   }
 
@@ -558,7 +475,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   @Suppress("unused")
   fun getAllJobs(promise: Promise) {
     val list = WorkManager.getInstance(reactContext)
-      .getWorkInfosByTag(PrintingWorkerManager.PRINTING_JOB_TAG)
+      .getWorkInfosByTag(PrintingJobsManager.PRINTING_JOB_TAG)
     val array = Arguments.createArray().apply {
       list.get().forEach { workInfo ->
         pushMap(WorkerEventData.fromWorkInfo(workInfo).writableMap)
@@ -607,7 +524,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
   }
 
   private fun removeWork(id: UUID, file: String?) {
-    PrintingWorkerManager.getInstance().cancelWork(reactContext, id)
+    PrintingJobsManager.getInstance(reactContext).cancelWork(id)
     if (file.isNullOrEmpty()) {
       return;
     }

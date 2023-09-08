@@ -4,6 +4,21 @@ import type { JobData } from './JobBuilder';
 
 const EVENT_PRINTING_JOB = 'PRINTING_JOB';
 
+export type EVENT_PRINTINGS = typeof EVENT_PRINTING_JOB;
+
+const PRINT_JOB_STATE_ENQUEUED = 'ENQUEUED';
+const PRINT_JOB_STATE_RUNNING = 'RUNNING';
+const PRINT_JOB_STATE_SUCCEEDED = 'SUCCEEDED';
+const PRINT_JOB_STATE_FAILED = 'FAILED';
+const PRINT_JOB_STATE_CANCELED = 'CANCELED';
+
+export type PRINT_JOB_STATES =
+  | typeof PRINT_JOB_STATE_ENQUEUED
+  | typeof PRINT_JOB_STATE_RUNNING
+  | typeof PRINT_JOB_STATE_SUCCEEDED
+  | typeof PRINT_JOB_STATE_FAILED
+  | typeof PRINT_JOB_STATE_CANCELED;
+
 const PRINTER_CONNECTION_NETWORK = 'network';
 const PRINTER_CONNECTION_BLUETOOTH = 'bluetooth';
 const PRINTER_CONNECTION_USB = 'usb';
@@ -27,6 +42,12 @@ const TEST_PRINT_DESIGN = '';
 
 export const Constants = {
   EVENT_PRINTING_JOB: EVENT_PRINTING_JOB,
+
+  PRINT_JOB_STATE_ENQUEUED: PRINT_JOB_STATE_ENQUEUED,
+  PRINT_JOB_STATE_RUNNING: PRINT_JOB_STATE_RUNNING,
+  PRINT_JOB_STATE_SUCCEEDED: PRINT_JOB_STATE_SUCCEEDED,
+  PRINT_JOB_STATE_FAILED: PRINT_JOB_STATE_FAILED,
+  PRINT_JOB_STATE_CANCELED: PRINT_JOB_STATE_CANCELED,
 
   PRINTER_CONNECTION_NETWORK: PRINTER_CONNECTION_NETWORK,
   PRINTER_CONNECTION_BLUETOOTH: PRINTER_CONNECTION_BLUETOOTH,
@@ -75,6 +96,7 @@ export type ConnectionSelector = {
 export type PrinterSelector = ConnectionSelector & {
   address: string;
   port?: number | undefined;
+  baudrate?: number | undefined;
   dpi?: number | undefined;
   width?: PrintingWidthType | undefined;
   maxChars?: PrintingLinesMaxCharType | undefined;
@@ -97,7 +119,7 @@ export type RNPrinterEventPayload = {
   jobId?: string | null | undefined;
   jobName?: string | null | undefined;
   jobTag?: string | null | undefined;
-  state?: string | null | undefined;
+  state?: PRINT_JOB_STATES | null | undefined;
   id?: string | null | undefined;
   tags?: Array<string> | null | undefined;
   generation?: number | null | undefined;
@@ -108,6 +130,12 @@ export type RNPrinterEventPayload = {
 
 export type RNPrinter = {
   EVENT_PRINTING_JOB: typeof EVENT_PRINTING_JOB;
+
+  PRINT_JOB_STATE_ENQUEUED: typeof PRINT_JOB_STATE_ENQUEUED;
+  PRINT_JOB_STATE_RUNNING: typeof PRINT_JOB_STATE_RUNNING;
+  PRINT_JOB_STATE_SUCCEEDED: typeof PRINT_JOB_STATE_SUCCEEDED;
+  PRINT_JOB_STATE_FAILED: typeof PRINT_JOB_STATE_FAILED;
+  PRINT_JOB_STATE_CANCELED: typeof PRINT_JOB_STATE_CANCELED;
 
   PRINTER_CONNECTION_NETWORK: typeof PRINTER_CONNECTION_NETWORK;
   PRINTER_CONNECTION_BLUETOOTH: typeof PRINTER_CONNECTION_BLUETOOTH;
@@ -130,6 +158,23 @@ export type RNPrinter = {
 
   TEST_PRINT_DESIGN: typeof TEST_PRINT_DESIGN;
 
+  /**
+   * Enqueue printing job
+   *
+   * @param {JobData} jobData Data yield by JobBuilder.build()
+   * @return {*} `Promise<string>` Job UUID
+   */
+  enqueuePrint(jobData: JobData): Promise<string>;
+
+  /**
+   * Enqueue printing job to specific printers
+   *
+   * @param {JobData} jobData Data yield by JobBuilder.build()
+   * @param {PrinterSelector} selector Printer Selector Argument
+   * @return {*} `Promise<string>` Job UUID
+   */
+  enqueuePrint(jobData: JobData, selector: PrinterSelector): Promise<string>;
+
   checkPermissions(scanType: SCAN_TYPE): Promise<boolean>;
   requestPermissions(scanType: SCAN_TYPE): Promise<boolean>;
   getUsbPrintersCount(): Promise<number>;
@@ -138,42 +183,4 @@ export type RNPrinter = {
   getPrinterModel(selector: PrinterSelector): Promise<string>;
   getAllJobs(): Promise<Array<RNPrinterEventPayload>>;
   prunePrintingWorks(): void;
-
-  /**
-   * Enqueue printing job
-   *
-   * @param {JobData} jobData data yielded by JobBuilder.build()
-   * @return {*}  {Promise<string>}
-   */
-  enqueuePrint(jobData: JobData): Promise<string>;
-
-  /**
-   * @deprecated use enqueuePrint(jobData: JobData) is preferred
-   */
-  write(selector: PrinterSelector, text: string): Promise<boolean>;
-
-  /**
-   * @deprecated use enqueuePrint(jobData: JobData) is preferred
-   */
-  cutPaper(selector: PrinterSelector): void;
-
-  /**
-   * @deprecated use enqueuePrint(jobData: JobData) is preferred
-   */
-  openCashBox(selector: PrinterSelector): void;
-
-  /**
-   * @deprecated use enqueuePrint(jobData: JobData) is preferred
-   */
-  testPrint(selector: PrinterSelector): Promise<void>;
-
-  /**
-   * @deprecated use enqueuePrint(jobData: JobData) is preferred
-   */
-  enqueuePrint2(
-    selector: PrinterSelector,
-    text: string,
-    cutPaper?: boolean,
-    openCashBox?: boolean
-  ): Promise<string>;
 };

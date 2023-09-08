@@ -22,9 +22,19 @@ const USBPrinter = () => {
   const [address, setAddress] = React.useState<string | undefined>('');
 
   const scan = async () => {
+    RNPrinterEventEmitter.offEvents();
+    DeviceScannerEventEmitter.offEvents();
     RNPrinterEventEmitter.onEvents(
       (event: string, payload: RNPrinterEventPayload) => {
-        console.log('RNPrinterEventEmitter', event, payload);
+        switch (payload.state!!) {
+          case RNPrinter.PRINT_JOB_STATE_ENQUEUED:
+          case RNPrinter.PRINT_JOB_STATE_RUNNING:
+          case RNPrinter.PRINT_JOB_STATE_SUCCEEDED:
+          case RNPrinter.PRINT_JOB_STATE_FAILED:
+          case RNPrinter.PRINT_JOB_STATE_CANCELED:
+            console.log(event, payload.state, payload.id);
+            break;
+        }
       }
     );
     DeviceScannerEventEmitter.onEvents(
@@ -45,18 +55,25 @@ const USBPrinter = () => {
   };
 
   const print = async () => {
+    if (!address) {
+      return;
+    }
     if (address) {
-      const jobId = await JobBuilder.begin();
-      await JobBuilder.selectPrinter(jobId, {
+      const printer = {
         connection: RNPrinter.PRINTER_CONNECTION_USB,
         address: address,
-      });
+        width: RNPrinter.PRINTING_WIDTH_76_MM,
+        maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
+      };
+      const jobId = await JobBuilder.begin();
+      await JobBuilder.selectPrinter(jobId, printer);
       await JobBuilder.initializePrinter(jobId);
       const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
       for (let i = 0; i < designs.length; i++) {
         let line = designs[i]!!;
         await JobBuilder.printLine(jobId, line);
       }
+      /*
       await JobBuilder.feedPaper(jobId, 20);
       await JobBuilder.printLine(jobId, '------------------');
       await JobBuilder.feedPaper(jobId, 20);
@@ -81,23 +98,11 @@ const USBPrinter = () => {
       await JobBuilder.printLine(jobId, ' ');
       await JobBuilder.printLine(jobId, ' ');
       await JobBuilder.printLine(jobId, ' ');
+      */
       await JobBuilder.cutPaper(jobId);
       const job = await JobBuilder.build(jobId);
-      RNPrinter.enqueuePrint(job);
-    }
-  };
-
-  const print2 = async () => {
-    if (address) {
-      RNPrinter.enqueuePrint2(
-        {
-          connection: RNPrinter.PRINTER_CONNECTION_USB,
-          address: address,
-        },
-        RNPrinter.TEST_PRINT_DESIGN,
-        true,
-        true
-      );
+      // RNPrinter.enqueuePrint(job);
+      RNPrinter.enqueuePrint(job, printer);
     }
   };
 
@@ -117,7 +122,6 @@ const USBPrinter = () => {
       <Button text="Scan USB Devices" onClick={scan} />
       <Text>{address}</Text>
       <Button text="Print" onClick={print} />
-      <Button text="Print (Deprecated)" onClick={print2} />
       <Button text="Stop Scan" onClick={stop} />
     </Row>
   );

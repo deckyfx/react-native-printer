@@ -122,14 +122,6 @@ class WorkerArgument(
       return WorkerArgument(null, false, false, file)
     }
 
-    fun text(
-      text: String,
-      cutPaper: Boolean = false,
-      openCashBox: Boolean = false
-    ): WorkerArgument {
-      return WorkerArgument(text, cutPaper, openCashBox, null)
-    }
-
     const val FIELD_TEXT = "text"
     const val FIELD_CUT_PAPER = "cutPaper"
     const val FIELD_OPEN_CASH_BOX = "openCashBox"

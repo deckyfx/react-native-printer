@@ -113,9 +113,11 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     }
     // Close the FileReader object.
     bufferedReader.close()
+    printer?.disconnectPrinter()
   }
 
   override fun doWork(): Result {
+    System.out.println("WORKING!!!!!!!!!!!!!!!!!!!!!!")
     val progress = Data.Builder()
       .putAll(inputData)
     if (printerSelector != null) {
@@ -138,10 +140,10 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
         progress.putAll(printerSelector!!.data)
       }
       progress.putString("error", error.message)
-      if (argument.isFile || runAttemptCount >= 3) {
-        return Result.failure(progress.build())
+      if (runAttemptCount >= 3) {
+        Result.failure(progress.build())
       } else {
-        return Result.retry()
+        Result.retry()
       }
     }
   }
