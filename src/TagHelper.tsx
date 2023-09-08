@@ -139,7 +139,7 @@ export default {
    * @return formated text
    */
   left: (text: string) => {
-    return align(text, Tags.ALLIGNMENT.CENTER);
+    return align(text, Tags.ALLIGNMENT.LEFT);
   },
 
   /**

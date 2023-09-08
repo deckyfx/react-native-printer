@@ -59,11 +59,12 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
     const val EVENT_PRINTING_JOB = "PRINTING_JOB"
 
-    const val PRINT_JOB_STATE_ENQUEUED = "ENQUEUED";
-    const val PRINT_JOB_STATE_RUNNING = "RUNNING";
-    const val PRINT_JOB_STATE_SUCCEEDED = "SUCCEEDED";
-    const val PRINT_JOB_STATE_FAILED = "FAILED";
-    const val PRINT_JOB_STATE_CANCELED = "CANCELED";
+    const val PRINT_JOB_STATE_ENQUEUED = "ENQUEUED"
+    const val PRINT_JOB_STATE_RUNNING = "RUNNING"
+    const val PRINT_JOB_STATE_SUCCEEDED = "SUCCEEDED"
+    const val PRINT_JOB_STATE_FAILED = "FAILED"
+    const val PRINT_JOB_STATE_CANCELED = "CANCELED"
+    const val PRINT_JOB_STATE_RETRYING = "RETRYING"
 
     const val PRINTER_CONNECTION_NETWORK = "network"
     const val PRINTER_CONNECTION_BLUETOOTH = "bluetooth"
@@ -74,13 +75,22 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     const val PRINTER_TYPE_DOTMATRIX = "dotmatrix"
 
     const val PRINTING_DPI_NORMAL = 210
+    const val PRINTING_LINES_MAX_CHAR_32 = 32
     const val PRINTING_LINES_MAX_CHAR_33 = 33
     const val PRINTING_LINES_MAX_CHAR_40 = 40
     const val PRINTING_LINES_MAX_CHAR_42 = 42
     const val PRINTING_LINES_MAX_CHAR_56 = 56
-    const val PRINTING_WIDTH_58_MM = 41f
-    const val PRINTING_WIDTH_76_MM = 48f
-    const val PRINTING_WIDTH_80_MM = 60f
+
+    // Width is used to calculate image and QR Code placement,
+    // It is in mili-meter
+    // Somehow need width correction around 6mm,
+    // maybe because there are slightly white space in left and right?
+    private const val PRINTING_WIDTH_CORRECTION = 10f
+    const val PRINTING_WIDTH_58_MM = 58f - PRINTING_WIDTH_CORRECTION
+    const val PRINTING_WIDTH_70_MM = 70f - PRINTING_WIDTH_CORRECTION
+    const val PRINTING_WIDTH_75_MM = 75f - PRINTING_WIDTH_CORRECTION
+    const val PRINTING_WIDTH_76_MM = 76f - PRINTING_WIDTH_CORRECTION
+    const val PRINTING_WIDTH_80_MM = 80f - PRINTING_WIDTH_CORRECTION
 
     const val TEST_PRINT_DESIGN =
       // "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, this.getApplicationContext().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM))+"</img>\n" +
@@ -106,6 +116,7 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
         "[L]5 rue des girafes\n" +
         "[L]31547 PERPETES\n" +
         "[L]Tel : +33801201456\n" +
+        "012345678901234567890123456789012345678901234567890\n" +
         "[L]\n" +
         "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
         "[C]<qrcode size='20'>https://dantsu.com/</qrcode>\n" +
@@ -137,12 +148,15 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
     constants["PRINTING_DPI_NORMAL"] = PRINTING_DPI_NORMAL
 
+    constants["PRINTING_LINES_MAX_CHAR_32"] = PRINTING_LINES_MAX_CHAR_32
     constants["PRINTING_LINES_MAX_CHAR_33"] = PRINTING_LINES_MAX_CHAR_33
     constants["PRINTING_LINES_MAX_CHAR_40"] = PRINTING_LINES_MAX_CHAR_40
     constants["PRINTING_LINES_MAX_CHAR_42"] = PRINTING_LINES_MAX_CHAR_42
     constants["PRINTING_LINES_MAX_CHAR_56"] = PRINTING_LINES_MAX_CHAR_56
 
     constants["PRINTING_WIDTH_58_MM"] = PRINTING_WIDTH_58_MM
+    constants["PRINTING_WIDTH_70_MM"] = PRINTING_WIDTH_70_MM
+    constants["PRINTING_WIDTH_75_MM"] = PRINTING_WIDTH_75_MM
     constants["PRINTING_WIDTH_76_MM"] = PRINTING_WIDTH_76_MM
     constants["PRINTING_WIDTH_80_MM"] = PRINTING_WIDTH_80_MM
 

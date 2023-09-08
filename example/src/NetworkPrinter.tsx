@@ -73,8 +73,8 @@ const NetworkPrinter = () => {
       connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
       address: address,
       port: port,
-      width: RNPrinter.PRINTING_WIDTH_76_MM,
-      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
+      width: RNPrinter.PRINTING_WIDTH_80_MM,
+      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_42,
     };
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);

@@ -6,8 +6,10 @@ import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserExceptio
 import java.util.Hashtable
 
 class PrinterTextParserQRCode(
-  printerTextParserColumn: PrinterTextParserColumn, textAlign: String?,
-  qrCodeAttributes: Hashtable<String, String>, data: String
+  printerTextParserColumn: PrinterTextParserColumn,
+  textAlign: String?,
+  qrCodeAttributes: Hashtable<String, String>,
+  data: String
 ) : PrinterTextParserImg(
   printerTextParserColumn,
   textAlign,

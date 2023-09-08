@@ -112,7 +112,7 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   @Suppress("unused")
   fun initializePrinter(uuid: String, promise: Promise) {
-    appendToFile(uuid, "${COMMAND_CUT_PAPER}\n")
+    appendToFile(uuid, "${COMMAND_INITIALIZE}\n")
     promise.resolve(true)
   }
 
@@ -150,7 +150,7 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod(isBlockingSynchronousMethod = true)
   @Suppress("unused")
-  fun building(uuidString: String, promise: Promise): Boolean {
+  fun building(uuidString: String): Boolean {
     val uuid = UUID.fromString(uuidString)
     val file = files[uuid] ?: return false
     return true

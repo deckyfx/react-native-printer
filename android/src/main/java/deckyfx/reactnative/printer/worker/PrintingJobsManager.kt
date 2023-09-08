@@ -12,6 +12,11 @@ class PrintingJobsManager private constructor(private val context: Context) {
 
   private val jobQueues = mutableMapOf<String, PrintingJobQueue>()
 
+  init {
+    // Cancel all works in initial states
+    workManager.cancelAllWork()
+  }
+
   companion object {
     @SuppressLint("StaticFieldLeak")
     @Volatile
@@ -26,13 +31,8 @@ class PrintingJobsManager private constructor(private val context: Context) {
       }
   }
 
-  init {
-    // Cancel all works in initial states
-    workManager.cancelAllWork()
-  }
-
   fun enqueuePrint(jobBuilderData: JobBuilderData, printerSelector: PrinterSelectorArgument? = null): UUID {
-    val argument = WorkerArgument.file(jobBuilderData.file)
+    val argument = WorkerArgument(jobBuilderData.file)
 
     val (_, workRequest) = WorkRequestFactory.create(argument, jobBuilderData.uuid)
 

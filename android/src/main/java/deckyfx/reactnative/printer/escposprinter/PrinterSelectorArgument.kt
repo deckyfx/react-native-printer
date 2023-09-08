@@ -26,23 +26,23 @@ class PrinterSelectorArgument(
     argv.getInt(FIELD_PORT, NetworkScanManager.DEFAULT_PRINTER_PORT),
     argv.getInt(FIELD_BAUD_RATE, SerialConnection.DEFAULT_BAUD_RATE),
     argv.getInt(FIELD_DPI, RNPrinter.PRINTING_DPI_NORMAL),
-    argv.getFloat(FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_80_MM),
+    argv.getFloat(FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_76_MM),
     argv.getInt(FIELD_MAX_CHARS, RNPrinter.PRINTING_LINES_MAX_CHAR_42)
   )
 
   constructor(argv: ReadableMap) : this(
-    safeString(argv, FIELD_CONNECTION)!!,
-    safeString(argv,FIELD_ADDRESS)!!,
+    safeString(argv, FIELD_CONNECTION),
+    safeString(argv,FIELD_ADDRESS),
     safeInt(argv, FIELD_PORT, NetworkScanManager.DEFAULT_PRINTER_PORT),
     safeInt(argv, FIELD_BAUD_RATE, SerialConnection.DEFAULT_BAUD_RATE),
     safeInt(argv, FIELD_DPI, RNPrinter.PRINTING_DPI_NORMAL),
-    safeFloat(argv, FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_80_MM),
+    safeFloat(argv, FIELD_WIDTH, RNPrinter.PRINTING_WIDTH_76_MM),
     safeInt(argv, FIELD_MAX_CHARS, RNPrinter.PRINTING_LINES_MAX_CHAR_42),
   )
   constructor() : this("", "", 0, 0, 0, 0f, 0)
 
   val ready: Boolean
-    get() = !connection.isNullOrEmpty() && !address.isNullOrEmpty()
+    get() = connection.isNotEmpty() && address.isNotEmpty()
 
   val data: Data
     get() {
@@ -121,7 +121,7 @@ class PrinterSelectorArgument(
     fun safeInt(argv: ReadableMap, field: String, defaultValue: Int = 0): Int {
       return try {
         val result = argv.getInt(field)
-        result!!
+        result
       } catch (e: Throwable) {
         defaultValue
       }
@@ -129,8 +129,8 @@ class PrinterSelectorArgument(
 
     fun safeFloat(argv: ReadableMap, field: String, defaultValue: Float = 0f): Float {
       return try {
-        val result = argv.getDouble(FIELD_WIDTH).toFloat()
-        result!!
+        val result = argv.getDouble(field).toFloat()
+        result
       } catch (e: Throwable) {
         defaultValue
       }
@@ -138,8 +138,8 @@ class PrinterSelectorArgument(
 
     fun safeBoolean(argv: ReadableMap, field: String, defaultValue: Boolean = false): Boolean {
       return try {
-        val result = argv.getBoolean(FIELD_WIDTH)
-        result!!
+        val result = argv.getBoolean(field)
+        result
       } catch (e: Throwable) {
         defaultValue
       }

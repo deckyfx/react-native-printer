@@ -68,18 +68,6 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     setProgressAsync(progress.build())
   }
 
-  private fun processText() {
-    printerSelector = PrinterSelectorArgument(inputData)
-    printer = resolvePrinter(printerSelector!!)
-    printer?.printFormattedText(argument.text, 0)
-    if (argument.cutPaper) {
-      printer?.cutPaper()
-    }
-    if (argument.openCashBox) {
-      printer?.openCashBox()
-    }
-  }
-
   private fun processFile() {
     // Create a FileReader object.
     val fileReader = FileReader(argument.file)
@@ -117,32 +105,27 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
   }
 
   override fun doWork(): Result {
-    System.out.println("WORKING!!!!!!!!!!!!!!!!!!!!!!")
     val progress = Data.Builder()
       .putAll(inputData)
     if (printerSelector != null) {
       progress.putAll(printerSelector!!.data)
     }
     return try {
-      if (argument.isText) {
-        setProgressAsync(progress.build())
-        processText()
-      } else if (argument.isFile) {
-        processFile()
-      }
+      processFile()
       if (printerSelector != null) {
         progress.putAll(printerSelector!!.data)
       }
-      setProgressAsync(progress.build())
       Result.success(progress.build())
     } catch (error: Exception) {
       if (printerSelector != null) {
         progress.putAll(printerSelector!!.data)
       }
-      progress.putString("error", error.message)
+      progress.putString(WorkerEventData.FIELD_ERROR, error.message)
       if (runAttemptCount >= 3) {
         Result.failure(progress.build())
       } else {
+        progress.putBoolean(RNPrinter.PRINT_JOB_STATE_RETRYING, true)
+        setProgressAsync(progress.build())
         Result.retry()
       }
     }

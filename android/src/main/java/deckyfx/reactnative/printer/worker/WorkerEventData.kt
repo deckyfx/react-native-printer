@@ -4,6 +4,7 @@ import androidx.work.WorkInfo
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
+import deckyfx.reactnative.printer.RNPrinter
 import deckyfx.reactnative.printer.escposprinter.PrinterSelectorArgument
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -144,6 +145,11 @@ class WorkerEventData(
         }
 
         WorkInfo.State.RUNNING -> {
+          val isRetrying = workInfo.progress.getBoolean(RNPrinter.PRINT_JOB_STATE_RETRYING, false)
+          if (isRetrying) {
+            // Notify your UI or perform any desired action when the worker is retrying
+            data.state = RNPrinter.PRINT_JOB_STATE_RETRYING
+          }
         }
 
         WorkInfo.State.SUCCEEDED -> {
