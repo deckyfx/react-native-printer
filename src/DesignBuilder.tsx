@@ -156,6 +156,15 @@ export default class DesignBuilder {
   public columns(columns: RowConfig): Array<string> {
     const hasSpacer = columns.some((config) => config.spacer);
     const configs = columns.slice(0, 3); // only take maximum three columns
+    const valid = configs.every((column) => {
+      return column.width && column.width > 0;
+    });
+    if (!valid) {
+      console.warn(
+        'One or more column has invalid width, all column should have width >= 1'
+      );
+      return [];
+    }
     const totalWidth = configs.reduce((total, column) => {
       return total + column.width;
     }, 0);
