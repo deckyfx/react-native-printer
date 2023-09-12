@@ -28,11 +28,18 @@ export interface JobBuilderInterface {
   initializePrinter(jobId: string): Promise<boolean>;
 
   /**
-   * Set Printor to dotmatrix, use 'ESC *' to print rasterized image instead of 'GS v 0'
+   * Set Printer as dot matrix bypass printing image, qrcode, and barcode
    *
    * @return {*}  {Promise<boolean>}
    */
   setAsDotMatrix(jobId: string): Promise<boolean>;
+
+  /**
+   * Set Printer to dotmatrix, use 'ESC *' to print rasterized image instead of 'GS v 0'
+   *
+   * @return {*}  {Promise<boolean>}
+   */
+  useEscAsterisk(jobId: string): Promise<boolean>;
 
   /**
    * Print one line *Must begin job and select a printer first

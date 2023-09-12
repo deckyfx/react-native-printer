@@ -79,7 +79,9 @@ const NetworkPrinter = () => {
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
-    // await JobBuilder.setAsDotMatrix(jobId);
+    await JobBuilder.setAsDotMatrix(jobId);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await JobBuilder.useEscAsterisk(jobId);
     const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;

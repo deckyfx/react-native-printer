@@ -15,6 +15,8 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.Arrays
 import java.util.EnumMap
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 class EscPosPrinterCommands @JvmOverloads constructor(
   printerConnection: DeviceConnection,
@@ -23,6 +25,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   private val printerConnection: DeviceConnection
   private val charsetEncoding: EscPosCharsetEncoding
   private var useEscAsteriskCommand = false
+  private var isDotMatrixPrinter = false
 
   val connection: DeviceConnection
     get() = printerConnection
@@ -539,6 +542,17 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   }
 
   /**
+   * Set as dot matrix bypass printing image, barcode, and qrcode
+   *
+   * @param enable true to use "ESC *", false to use "GS v 0"
+   * @return Fluent interface
+   */
+  fun setAsDotMatrix(enable: Boolean): EscPosPrinterCommands {
+    isDotMatrixPrinter = enable
+    return this
+  }
+
+  /**
    * Print image with the connected printer.
    *
    * @param image Bytes contain the image in ESC/POS command
@@ -549,8 +563,12 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     if (!printerConnection.isConnected) {
       return this
     }
+    if (isDotMatrixPrinter) {
+      println("Bypass printing image due to DOT Matrix Printer")
+      return this
+    }
     val bytesToPrint: Array<out ByteArray?> =
-      if (useEscAsteriskCommand) convertGSv0ToEscAsterisk(image) else arrayOf<ByteArray>(image)
+      if (useEscAsteriskCommand) convertGSv0ToEscAsterisk(image) else arrayOf(image)
     for (bytes in bytesToPrint) {
       bytes?.let { printerConnection.write(it) }
       printerConnection.send()
@@ -566,6 +584,10 @@ class EscPosPrinterCommands @JvmOverloads constructor(
    */
   fun printBarcode(barcode: Barcode): EscPosPrinterCommands {
     if (!printerConnection.isConnected) {
+      return this
+    }
+    if (isDotMatrixPrinter) {
+      println("Bypass printing barcode due to DOT Matrix Printer")
       return this
     }
     val code: String = barcode.code
@@ -601,6 +623,10 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   fun printQRCode(qrCodeType: Int, text: String, size: Int): EscPosPrinterCommands {
     var size = size
     if (!printerConnection.isConnected) {
+      return this
+    }
+    if (isDotMatrixPrinter) {
+      println("Bypass printing qrcode due to DOT Matrix Printer")
       return this
     }
     if (size < 1) {
@@ -893,7 +919,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       val nH = dotsByLine / 256
       val nL = dotsByLine % 256
       val imageHeight = yH * 256 + yL
-      val imageLineHeightCount = Math.ceil(imageHeight.toDouble() / 24.0).toInt()
+      val imageLineHeightCount = ceil(imageHeight.toDouble() / 24.0).toInt()
       val imageBytesSize = 6 + bytesByLine * 24
       val returnedBytes = arrayOfNulls<ByteArray>(imageLineHeightCount + 2)
       returnedBytes[0] = LINE_SPACING_24
@@ -945,7 +971,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
         )
         hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
         val code = Encoder.encode(data, ErrorCorrectionLevel.L, hints)
-        byteMatrix = code.matrix
+        byteMatrix = code!!.matrix
       } catch (e: WriterException) {
         e.printStackTrace()
         throw EscPosBarcodeException("Unable to encode QR code")
@@ -955,10 +981,10 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       }
       val width = byteMatrix.width
       val height = byteMatrix.height
-      val coefficient = Math.round(size.toFloat() / width.toFloat())
+      val coefficient = (size.toFloat() / width.toFloat()).roundToInt()
       val imageWidth = width * coefficient
       val imageHeight = height * coefficient
-      val bytesByLine = Math.ceil((imageWidth.toFloat() / 8f).toDouble()).toInt()
+      val bytesByLine = ceil((imageWidth.toFloat() / 8f).toDouble()).toInt()
       var i = 8
       if (coefficient < 1) {
         return initGSv0Command(0, 0)
@@ -988,7 +1014,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           i += lineBytes.size
         }
       }
-      return imageBytes
+            return imageBytes
     }
   }
 }

@@ -103,6 +103,10 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
           }
 
           JobBuilder.COMMAND_SET_AS_DOT_MATRIX -> {
+            printer!!.setAsDotMatrix(true)
+          }
+
+          JobBuilder.COMMAND_USE_ESC_ASTERISK -> {
             printer!!.useEscAsteriskCommand(true)
           }
 

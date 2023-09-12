@@ -27,6 +27,7 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     const val COMMAND_SELECT_PRINTER = "SELECT_PRINTER:"
     const val COMMAND_INITIALIZE = "INITIALIZE:"
     const val COMMAND_SET_AS_DOT_MATRIX = "IS_DOT_MATRIX:"
+    const val COMMAND_USE_ESC_ASTERISK = "USE_ESC_ASTERISK:"
     const val COMMAND_PRINT = "PRINT:"
     const val COMMAND_FEED_PRINTER = "FEED_PRINTER:"
     const val COMMAND_CUT_PAPER = "CUT_PAPER:"
@@ -153,6 +154,13 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
   @Suppress("unused")
   fun setAsDotMatrix(uuid: String, promise: Promise) {
     appendToFile(uuid, "${COMMAND_SET_AS_DOT_MATRIX}\n")
+    promise.resolve(true)
+  }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun useEscAsterisk(uuid: String, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_USE_ESC_ASTERISK}\n")
     promise.resolve(true)
   }
 

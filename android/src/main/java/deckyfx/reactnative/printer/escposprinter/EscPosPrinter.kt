@@ -112,6 +112,18 @@ class EscPosPrinter(
     printer!!.useEscAsteriskCommand(enable)
     return this
   }
+
+  /**
+   * Set as dot matrix bypass printing image, barcode, and qrcode
+   *
+   * @param enable true to use "ESC *", false to use "GS v 0"
+   * @return Fluent interface
+   */
+  fun setAsDotMatrix(enable: Boolean): EscPosPrinter {
+    printer!!.setAsDotMatrix(enable)
+    return this
+  }
+
   /**
    * Print a formatted text. Read the README.md for more information about text formatting options.
    *
