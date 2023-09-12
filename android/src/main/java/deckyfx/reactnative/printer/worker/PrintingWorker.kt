@@ -68,6 +68,15 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     setProgressAsync(progress.build())
   }
 
+  private fun getCommand(line: String): Pair<String, String>? {
+    val indexOfColon = line.indexOf(":")
+    return if (indexOfColon == -1) {
+      null
+    } else {
+      Pair(line.substring(0, indexOfColon + 1), line.substring(indexOfColon + 1))
+    }
+  }
+
   private fun processFile() {
     // Create a FileReader object.
     val fileReader = FileReader(argument.file)
@@ -77,25 +86,46 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
     // Read each line of the file.
     var line: String?
     while (bufferedReader.readLine().also { line = it } != null) {
+      val (command, argument) = getCommand(line!!) ?: Pair("", "")
       if (printer == null) {
-        if (line!!.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
+        if (command == JobBuilder.COMMAND_SELECT_PRINTER) {
           resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
         }
         continue
       } else {
-        if (line!!.startsWith(JobBuilder.COMMAND_SELECT_PRINTER)) {
-          resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
-        } else if (line!!.startsWith(JobBuilder.COMMAND_INITIALIZE)) {
-          printer!!.write(EscPosCommands.byteArray(EscPosCommands.INITIALIZE))
-        } else if (line!!.startsWith(JobBuilder.COMMAND_PRINT)) {
-          printer!!.printFormattedText(line!!.replace(JobBuilder.COMMAND_PRINT, ""), 0)
-        } else if (line!!.startsWith(JobBuilder.COMMAND_FEED_PRINTER)) {
-          val feed = line!!.replace(JobBuilder.COMMAND_FEED_PRINTER, "").toFloat()
-          printer!!.feedPaper(printer!!.mmToPx(feed))
-        } else if (line!!.startsWith(JobBuilder.COMMAND_CUT_PAPER)) {
-          printer!!.cutPaper()
-        } else if (line!!.startsWith(JobBuilder.COMMAND_OPEN_CASHBOX)) {
-          printer!!.openCashBox()
+        when (command) {
+          JobBuilder.COMMAND_SELECT_PRINTER -> {
+            resolvePrinterFromJSON(line!!.replace(JobBuilder.COMMAND_SELECT_PRINTER, ""))
+          }
+
+          JobBuilder.COMMAND_INITIALIZE -> {
+            printer!!.write(EscPosCommands.byteArray(EscPosCommands.INITIALIZE))
+          }
+
+          JobBuilder.COMMAND_SET_AS_DOT_MATRIX -> {
+            printer!!.useEscAsteriskCommand(true)
+          }
+
+          JobBuilder.COMMAND_PRINT -> {
+            printer!!.printFormattedText(argument, 0)
+          }
+
+          JobBuilder.COMMAND_FEED_PRINTER -> {
+            val feed = try {
+              argument.toFloat()
+            } catch (e: NumberFormatException) {
+              0f
+            }
+            printer!!.feedPaper(printer!!.mmToPx(feed))
+          }
+
+          JobBuilder.COMMAND_CUT_PAPER -> {
+            printer!!.cutPaper()
+          }
+
+          JobBuilder.COMMAND_OPEN_CASH_BOX -> {
+            printer!!.openCashBox()
+          }
         }
       }
     }

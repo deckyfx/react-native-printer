@@ -813,6 +813,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     const val BARCODE_TEXT_POSITION_BELOW = 2
     const val QRCODE_1 = 49
     const val QRCODE_2 = 50
+
     fun initGSv0Command(bytesByLine: Int, bitmapHeight: Int): ByteArray {
       val xH = bytesByLine / 256
       val xL = bytesByLine - xH * 256

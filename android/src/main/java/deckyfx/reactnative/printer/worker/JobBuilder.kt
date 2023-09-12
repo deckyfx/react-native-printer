@@ -26,10 +26,11 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     private val LOG_TAG = JobBuilder::class.java.simpleName
     const val COMMAND_SELECT_PRINTER = "SELECT_PRINTER:"
     const val COMMAND_INITIALIZE = "INITIALIZE:"
+    const val COMMAND_SET_AS_DOT_MATRIX = "IS_DOT_MATRIX:"
     const val COMMAND_PRINT = "PRINT:"
     const val COMMAND_FEED_PRINTER = "FEED_PRINTER:"
     const val COMMAND_CUT_PAPER = "CUT_PAPER:"
-    const val COMMAND_OPEN_CASHBOX = "OPEN_CASHBOX:"
+    const val COMMAND_OPEN_CASH_BOX = "OPEN_CASH_BOX:"
   }
 
   override fun getConstants(): Map<String, Any> {
@@ -144,7 +145,14 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   @Suppress("unused")
   fun openCashBox(uuid: String, promise: Promise) {
-    appendToFile(uuid, "${COMMAND_OPEN_CASHBOX}\n")
+    appendToFile(uuid, "${COMMAND_OPEN_CASH_BOX}\n")
+    promise.resolve(true)
+  }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun setAsDotMatrix(uuid: String, promise: Promise) {
+    appendToFile(uuid, "${COMMAND_SET_AS_DOT_MATRIX}\n")
     promise.resolve(true)
   }
 

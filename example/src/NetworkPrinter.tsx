@@ -73,12 +73,13 @@ const NetworkPrinter = () => {
       connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
       address: address,
       port: port,
-      width: RNPrinter.PRINTING_WIDTH_80_MM,
-      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_42,
+      width: RNPrinter.PRINTING_WIDTH_76_MM,
+      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
     };
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
+    // await JobBuilder.setAsDotMatrix(jobId);
     const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;

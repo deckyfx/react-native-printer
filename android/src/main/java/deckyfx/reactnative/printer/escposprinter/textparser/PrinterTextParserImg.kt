@@ -7,7 +7,9 @@ import deckyfx.reactnative.printer.escposprinter.EscPosPrinterCommands
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinterSize
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionException
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosEncodingException
+import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.roundToInt
 
 open class PrinterTextParserImg(
   printerTextParserColumn: PrinterTextParserColumn,
@@ -47,10 +49,8 @@ open class PrinterTextParserImg(
       floor(((printer.printerWidthPx - width).toFloat() / 8f).toDouble()).toInt()
     var nbrWhiteByteToInsert = 0
     when (textAlign) {
-      PrinterTextParser.TAGS_ALIGN_CENTER -> nbrWhiteByteToInsert = Math.round(
-        nbrByteDiff.toFloat() / 2f
-      )
-
+      PrinterTextParser.TAGS_ALIGN_CENTER -> nbrWhiteByteToInsert =
+        (nbrByteDiff.toFloat() / 2f).roundToInt()
       PrinterTextParser.TAGS_ALIGN_RIGHT -> nbrWhiteByteToInsert = nbrByteDiff
     }
     if (nbrWhiteByteToInsert > 0) {
@@ -68,7 +68,7 @@ open class PrinterTextParserImg(
       image = newImage
     }
     length =
-      Math.ceil((byteWidth.toFloat() * 8 / printer.printerCharSizeWidthPx.toFloat()).toDouble())
+      ceil((byteWidth.toFloat() * 8 / printer.printerCharSizeWidthPx.toFloat()).toDouble())
         .toInt()
     this.image = image
   }
