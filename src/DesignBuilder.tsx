@@ -253,11 +253,11 @@ export default class DesignBuilder {
           }
           switch (configs[index]?.allignment) {
             case TagHelper.ALLIGNMENT.LEFT:
-              return line.padStart(config.width, STRING_PADDER);
+              return line.padEnd(config.width, STRING_PADDER);
             case TagHelper.ALLIGNMENT.CENTER:
               return this.padLeftRight(line, STRING_PADDER, config.width);
             case TagHelper.ALLIGNMENT.RIGHT:
-              return line.padEnd(config.width, STRING_PADDER);
+              return line.padStart(config.width, STRING_PADDER);
           }
           return line;
         })
