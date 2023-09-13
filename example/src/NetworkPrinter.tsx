@@ -8,6 +8,9 @@ import {
   DeviceScannerEventEmitter,
   RNPrinterEventEmitter,
   JobBuilder,
+  TableBuilder,
+  DesignBuilder,
+  TagHelper,
 } from '@decky.fx/react-native-printer';
 import type {
   DeviceScanEventPayload,
@@ -73,8 +76,8 @@ const NetworkPrinter = () => {
       connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
       address: address,
       port: port,
-      width: RNPrinter.PRINTING_WIDTH_76_MM,
-      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
+      width: RNPrinter.PRINTING_WIDTH_80_MM,
+      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_42,
     };
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
@@ -82,11 +85,101 @@ const NetworkPrinter = () => {
     await JobBuilder.setAsDotMatrix(jobId);
     // eslint-disable-next-line react-hooks/rules-of-hooks
     await JobBuilder.useEscAsterisk(jobId);
+
+    /*
     const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;
       await JobBuilder.printLine(jobId, line);
     }
+    */
+    const designBuilder = new DesignBuilder(
+      RNPrinter.PRINTING_LINES_MAX_CHAR_42
+    );
+    const table = new TableBuilder(
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.LEFT,
+        spacer: true,
+      },
+      {
+        width: 0,
+        allignment: TagHelper.ALLIGNMENT.CENTER,
+      },
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.RIGHT,
+      }
+    )
+      .rows(['L'.repeat(5), 'C'.repeat(30), 'R'.repeat(5)])
+      .build();
+    designBuilder.addTable(table);
+    const table2 = new TableBuilder(
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.LEFT,
+        spacer: true,
+      },
+      {
+        width: 0,
+        allignment: TagHelper.ALLIGNMENT.LEFT,
+      },
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.LEFT,
+      }
+    )
+      .rows(['L', 'L', 'L'])
+      .build();
+    designBuilder.addTable(table2);
+    const table3 = new TableBuilder(
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.RIGHT,
+        spacer: true,
+      },
+      {
+        width: 0,
+        allignment: TagHelper.ALLIGNMENT.RIGHT,
+      },
+      {
+        width: 5,
+        allignment: TagHelper.ALLIGNMENT.RIGHT,
+      }
+    )
+      .rows(['R', 'R', 'R'])
+      .build();
+    designBuilder.addTable(table3);
+    const table4 = new TableBuilder(
+      {
+        width: 6,
+        allignment: TagHelper.ALLIGNMENT.CENTER,
+        spacer: true,
+      },
+      {
+        width: 0,
+        allignment: TagHelper.ALLIGNMENT.CENTER,
+      },
+      {
+        width: 7,
+        allignment: TagHelper.ALLIGNMENT.CENTER,
+      }
+    )
+      .rows(['C', 'C', 'C'])
+      .build();
+    designBuilder.addTable(table4);
+    designBuilder.addLine('0123456789'.repeat(5));
+    designBuilder.addLine(TagHelper.right('Right'));
+    designBuilder.addBlankLine();
+    designBuilder.addBlankLine();
+    designBuilder.addBlankLine();
+    designBuilder.addBlankLine();
+    const designs = designBuilder.designs;
+    for (let i = 0; i < designs.length; i++) {
+      let line = designs[i]!!;
+      await JobBuilder.printLine(jobId, line);
+    }
+
     /*
       await JobBuilder.feedPaper(jobId, 20);
       await JobBuilder.printLine(jobId, '------------------');

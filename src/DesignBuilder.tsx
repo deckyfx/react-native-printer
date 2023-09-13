@@ -48,12 +48,15 @@ export default class DesignBuilder {
   }
 
   /**
-   * Get design preview
+   * Display design preview
    *
    * @readonly
    */
-  public get preview(): string {
-    return `\n${this.design}`;
+  public get preview() {
+    this.designs.forEach((line) => {
+      console.log(line.trim());
+    });
+    return this;
   }
 
   /**
@@ -80,7 +83,7 @@ export default class DesignBuilder {
   }
 
   /**
-   * Add blank white space
+   * Add one line of blank white space
    */
   public addBlankLine() {
     this._design.push(' ');
@@ -104,6 +107,28 @@ export default class DesignBuilder {
   private testWhitespace(char: string): boolean {
     var white = new RegExp(/^\s$/);
     return white.test(char.charAt(0));
+  }
+
+  private padLeftRight(str: string, pad: string, length: number): string {
+    // Check if the string is longer than n characters.
+    if (str.length >= length) {
+      return str;
+    }
+
+    // Calculate the number of characters to pad on each side.
+    const padLength = Math.ceil((length - str.length) / 2);
+
+    // Determine the number of characters to pad on the left and right sides.
+    const left = padLength;
+    let right = padLength;
+
+    // Decrease the right padding length by one if the total length is greater than n.
+    if (padLength * 2 + str.length > length) {
+      right--;
+    }
+
+    // Create the padded string.
+    return `${pad.repeat(left)}${str}${pad.repeat(right)}`;
   }
 
   /**
@@ -156,49 +181,69 @@ export default class DesignBuilder {
   public columns(columns: RowConfig): Array<string> {
     const hasSpacer = columns.some((config) => config.spacer);
     const configs = columns.slice(0, 3); // only take maximum three columns
-    const valid = configs.every((column) => {
-      return column.width && column.width > 0;
+    let zero_width_count = 0;
+    configs.forEach((column) => {
+      if (!column.width) {
+        zero_width_count += 1;
+      }
     });
-    if (!valid) {
+    if (zero_width_count > 1) {
       console.warn(
-        'One or more column has invalid width, all column should have width >= 1'
+        'Invalid configuration!, thee are more than 1 column with 0 width'
       );
       return [];
     }
-    const totalWidth = configs.reduce((total, column) => {
-      return total + column.width;
-    }, 0);
+    if (zero_width_count == 1) {
+      // * If there are exatcly one column with 0 width, it will assume it takes the rest of width
+      // * Get the ocupied width
+      const ocupied = columns.reduce((total, column) => {
+        if (column.width) {
+          return (total += column.width + (hasSpacer ? 1 : 0));
+        }
+        return total;
+      }, 0);
+      // * Get the rest of width
+      const rest = this.maxChar - ocupied;
+      // * Update the configuration
+      columns = columns.map((column) => {
+        if (!column.width) {
+          column.width = rest;
+        }
+        return column;
+      });
+    }
+    // * Include spacer to all columns but the last column
+    const totalWidth =
+      configs.reduce((total, column) => {
+        return total + column.width;
+      }, 0) + (hasSpacer ? configs.length - 1 : 0);
     if (totalWidth > this.maxChar) {
       console.warn(
-        `sum of column width ${totalWidth} exceed printing max char ${this.maxChar}`
+        `sum of column width ${totalWidth} exceed printing max char ${this.maxChar}\n`,
+        'If you add spacer, the total width will be added by (column_num - 1)'
       );
       return [];
     }
     let result: Array<Array<string>> = [];
     let chunkedNums = 0;
-    // Chunks all texts
-    configs.forEach((config, index) => {
-      const width =
-        hasSpacer && index < configs.length - 1
-          ? config.width - 1
-          : config.width;
+    // * Chunks all texts
+    configs.forEach((config) => {
+      const width = config.width;
       const chunked = this.chuckLines(config.text || '', width);
       if (chunked.length > chunkedNums) {
         chunkedNums = chunked.length;
       }
       result.push(chunked);
     });
-    // Pad result so all chunked array has same size
-    // Also pad line with whitespaces to emulate allignment
+    // * Pad result so all chunked array has same size
+    // * Also pad line with whitespaces to emulate allignment
+    const STRING_PADDER = ' ';
     result = result.map((chunkeds, index) => {
       const config = configs[index]!;
-      const width =
-        hasSpacer && index < configs.length - 1
-          ? config.width - 1
-          : config.width;
+      const width = config.width;
       if (chunkeds.length < chunkedNums) {
         const diff = chunkedNums - chunkeds.length;
-        const fill = Array(diff).fill(' '.repeat(config.width));
+        const fill = Array(diff).fill(STRING_PADDER.repeat(config.width));
         chunkeds.push(...fill);
       }
       chunkeds = chunkeds
@@ -206,19 +251,13 @@ export default class DesignBuilder {
           if (line.length >= width) {
             return line;
           }
-          const diff = width - line.length;
-          const fill = ' '.repeat(diff);
           switch (configs[index]?.allignment) {
             case TagHelper.ALLIGNMENT.LEFT:
-              return line + fill;
+              return line.padStart(config.width, STRING_PADDER);
             case TagHelper.ALLIGNMENT.CENTER:
-              const leftdiff = Math.floor(diff / 2);
-              const rightdiff = diff - leftdiff;
-              const leftfill = ' '.repeat(leftdiff);
-              const rightfill = ' '.repeat(rightdiff);
-              return leftfill + line + rightfill;
+              return this.padLeftRight(line, STRING_PADDER, config.width);
             case TagHelper.ALLIGNMENT.RIGHT:
-              return fill + line;
+              return line.padEnd(config.width, STRING_PADDER);
           }
           return line;
         })
@@ -233,6 +272,7 @@ export default class DesignBuilder {
         });
       return chunkeds;
     });
+
     // Transpose array;
     result = Array.from(result[0]!).map((_, i) => result.map((row) => row[i]!));
     const result2 = result.map((_) => _.join(hasSpacer ? ' ' : ''));
