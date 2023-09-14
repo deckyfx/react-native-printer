@@ -8,11 +8,15 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
-import android.webkit.URLUtil
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinter
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
 import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParserImg.Companion.bitmapToHexadecimalString
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
+import java.net.URL
 import java.util.Locale
+import kotlin.math.ceil
 
 
 class PrinterImageUriParser(
@@ -81,13 +85,7 @@ class PrinterImageUriParser(
                       }
                     }
 
-                    if (URLUtil.isContentUrl(imageContents)) {
-                      // content:// is not handlee for now
-                    } else if (URLUtil.isFileUrl(imageContents) || URLUtil.isAssetUrl(imageContents)) {
-                      imageData = getImageHexadecimalString(imageContents, width, height)
-                    } else if (URLUtil.isHttpUrl(imageContents) || URLUtil.isHttpsUrl(imageContents)) {
-                      imageData = getImageHexadecimalString(imageContents, width, height)
-                    }
+                    imageData = getImageHexadecimalString(imageContents, width, height)
                     if (!imageData.isNullOrEmpty()) {
                       resultLines[i] =
                         textAlign + "<" + textParserTag.tagName + ">" + imageData + "</" + textParserTag.tagName + ">"
@@ -107,26 +105,93 @@ class PrinterImageUriParser(
     return resultLines.joinToString("\n")
   }
 
+  private fun getImageHexadecimalString(imageUri: String, maxWidth: Int, maxHeight: Int): String? {
+    /**
+     * Supported URI schemes:
+     *
+     * * file://
+     * * content://
+     * * data://
+     * * resource://
+     * * asset://
+     * * http://
+     * * https://
+     */
+    try {
+      val url = URL(imageUri)
+      val scheme = url.protocol
+      var inputStream: InputStream? = null
+      var fileName: String? = null
+      if (scheme == "http" || scheme == "https") {
+        // Check if the file exists in context.filesDir
+        fileName = getFileNameFromImageUri(imageUri)
+        val file = File(context!!.filesDir, fileName)
+        if (file.exists()) {
+          inputStream = file.inputStream()
+          val bitmap = BitmapFactory.decodeStream(inputStream) ?: return null
+          return bitmapToHexadecimalString(this.escPosPrinter, bitmap, false)
+        } else {
+          // Remote file
+          val connection = url.openConnection()
+          inputStream = connection.getInputStream()
+        }
+      } else {
+        inputStream = context!!.contentResolver.openInputStream(Uri.parse(imageUri))
+      }
+      val bitmap = BitmapFactory.decodeStream(inputStream) ?: return null
+      val grayscaleBitmap = toGrayscale(bitmap)
+      val resizedBitmap = resizeImage(grayscaleBitmap, maxWidth, maxHeight)
+
+      if (!fileName.isNullOrBlank()) {
+        // Save the bitmap to local storage
+        val file = File(context.filesDir, fileName)
+        resizedBitmap.compress(Bitmap.CompressFormat.PNG, 100, file.outputStream())
+      }
+
+      val byteArrayOutputStream = ByteArrayOutputStream()
+      resizedBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+      byteArrayOutputStream.close()
+
+      inputStream?.close()
+      bitmap.recycle()
+      grayscaleBitmap.recycle()
+
+      val byteArrays = byteArrayOutputStream.toByteArray()
+      return bitmapToHexadecimalString(this.escPosPrinter, resizedBitmap, false)
+    } catch (e: Exception) {
+      return null
+    }
+  }
+
   private fun resizeImage(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
     var image = image
-    if (maxHeight > 0 && maxWidth > 0) {
-      val width = image.width
-      val height = image.height
-      val ratioBitmap = width.toFloat() / height.toFloat()
-      val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
-      var finalWidth = maxWidth
-      var finalHeight = maxHeight
-      if (ratioMax > ratioBitmap) {
-        finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+    var finalWidth = 0
+    var finalHeight = 0
+    if ((maxWidth > 0 && maxHeight > 0) || (maxWidth == 0 && maxHeight == 0) || (maxWidth == 0 && maxHeight > 0) ) {
+      finalHeight = if (maxHeight > 250 || maxHeight == 0) {
+        250
       } else {
-        finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+        maxHeight
       }
+      val ratioMax = finalHeight.toFloat() / image.height.toFloat()
+      finalWidth = ceil(image.width.toFloat() * ratioMax).toInt()
+    } else if (maxWidth > 0) {
+      finalWidth = if (maxWidth > 250) {
+        250
+      } else {
+        maxWidth
+      }
+      val ratioMax = finalWidth.toFloat() / image.width.toFloat()
+      finalHeight = ceil(image.height.toFloat() * ratioMax).toInt()
+    }
+
+    if (finalHeight > 0 && finalWidth > 0) {
       image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true)
     }
     return image
   }
 
-  private fun toGrayscale(bmpOriginal: Bitmap): Bitmap? {
+  private fun toGrayscale(bmpOriginal: Bitmap): Bitmap {
     val height: Int = bmpOriginal.height
     val width: Int = bmpOriginal.width
     val bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -140,28 +205,9 @@ class PrinterImageUriParser(
     return bmpGrayscale
   }
 
-  private fun getImageHexadecimalString(filePath: String, maxWidth: Int, maxHeight: Int): String? {
-    val fileUri = Uri.parse(filePath)
-    var image: Bitmap? = null
-    val op = BitmapFactory.Options()
-    op.inPreferredConfig = Bitmap.Config.ARGB_8888
-    image = BitmapFactory.decodeFile(fileUri.path, op)
-    if (image == null) {
-      return null
-    }
-    val width = when (maxWidth > 0) {
-      true -> maxWidth
-      false -> 250
-    }
-    val height = when (maxHeight > 0) {
-      true -> maxHeight
-      false -> 250
-    }
-    val resizedImage = resizeImage(image, width, height)
-    image.recycle()
-    val grayscaleImage = toGrayscale(resizedImage)
-    resizedImage.recycle()
-    return bitmapToHexadecimalString(this.escPosPrinter, grayscaleImage)
+  private fun getFileNameFromImageUri(imageUri: String): String {
+    val fileName = imageUri.substring(imageUri.lastIndexOf("/") + 1)
+    return fileName
   }
 
   companion object

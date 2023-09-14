@@ -867,7 +867,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     fun bitmapToBytes(bitmap: Bitmap, gradient: Boolean): ByteArray {
       val bitmapWidth = bitmap.width
       val bitmapHeight = bitmap.height
-      val bytesByLine = Math.ceil((bitmapWidth.toFloat() / 8f).toDouble()).toInt()
+      val bytesByLine = ceil((bitmapWidth.toFloat() / 8f).toDouble()).toInt()
       val imageBytes = initGSv0Command(bytesByLine, bitmapHeight)
       var i = 8
       var greyscaleCoefficientInit = 0

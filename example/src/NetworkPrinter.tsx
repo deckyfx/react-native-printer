@@ -82,9 +82,8 @@ const NetworkPrinter = () => {
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
-    await JobBuilder.setAsDotMatrix(jobId);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await JobBuilder.useEscAsterisk(jobId);
+    //await JobBuilder.setAsDotMatrix(jobId);
+    //await JobBuilder.useEscAsterisk(jobId);
 
     /*
     const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
@@ -170,10 +169,18 @@ const NetworkPrinter = () => {
     designBuilder.addTable(table4);
     designBuilder.addLine('0123456789'.repeat(5));
     designBuilder.addLine(TagHelper.right('Right'));
+    designBuilder.addLine(
+      TagHelper.center(
+        TagHelper.image(
+          'https://sharktest.b-cdn.net/64dc6ab1a30b6a3da3d56157/bill/Genshin_Impact_logo_1694678343.jpg'
+        )
+      )
+    );
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
+    designBuilder.addLine('!!!!!!!!!!');
     const designs = designBuilder.designs;
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;
