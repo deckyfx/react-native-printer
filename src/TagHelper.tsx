@@ -122,7 +122,6 @@ const wraptag = (
     })
     .join(' ');
   const modifier = modifiers.length > 0 ? ` ${modifiers}` : '';
-  console.log(wrap(text, `<${tag}${modifier}>`, `</${tag}>`));
   return wrap(text, `<${tag}${modifier}>`, `</${tag}>`);
 };
 
@@ -187,7 +186,6 @@ export default {
     color: FontColor | null | undefined = Tags.FONT.COLOR.BLACK,
     underline: boolean | null | undefined = false
   ) => {
-    console.log('Underline?', underline);
     return wraptag(text, Tags.FONT.TAG, [
       [Tags.FONT.ATTRIBUTES.SIZE, size],
       [Tags.FONT.ATTRIBUTES.COLOR, color],
