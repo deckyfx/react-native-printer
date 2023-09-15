@@ -8,7 +8,6 @@ import {
   DeviceScannerEventEmitter,
   RNPrinterEventEmitter,
   JobBuilder,
-  TableBuilder,
   DesignBuilder,
   TagHelper,
 } from '@decky.fx/react-native-printer';
