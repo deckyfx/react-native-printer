@@ -82,19 +82,18 @@ const NetworkPrinter = () => {
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
-    //await JobBuilder.setAsDotMatrix(jobId);
-    //await JobBuilder.useEscAsterisk(jobId);
-
+    await JobBuilder.setAsDotMatrix(jobId);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await JobBuilder.useEscAsterisk(jobId);
+    const designBuilder = new DesignBuilder(
+      RNPrinter.PRINTING_LINES_MAX_CHAR_42
+    );
     /*
     const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;
       await JobBuilder.printLine(jobId, line);
     }
-    */
-    const designBuilder = new DesignBuilder(
-      RNPrinter.PRINTING_LINES_MAX_CHAR_42
-    );
     const table = new TableBuilder(
       {
         width: 5,
@@ -176,6 +175,25 @@ const NetworkPrinter = () => {
         )
       )
     );
+    */
+    designBuilder.addLine('Normal');
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(TagHelper.bold('Bold'));
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(
+      TagHelper.underline(TagHelper.font('Underlined', null, null, true))
+    );
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(TagHelper.bold(TagHelper.underline('Underlined')));
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(
+      TagHelper.font('Tall', TagHelper.FONT_SIZE.TALL, null, true)
+    );
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(TagHelper.font('Wide', TagHelper.FONT_SIZE.WIDE));
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(TagHelper.font('BIG', TagHelper.FONT_SIZE.BIG));
+    designBuilder.addLine('Normal');
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();

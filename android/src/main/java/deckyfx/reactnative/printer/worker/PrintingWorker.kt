@@ -99,15 +99,15 @@ class PrintingWorker(private val context: Context, workerParams: WorkerParameter
           }
 
           JobBuilder.COMMAND_INITIALIZE -> {
-            printer!!.write(EscPosCommands.byteArray(EscPosCommands.INITIALIZE))
+            printer!!.write(EscPosCommands.INITIALIZE.toByteArray())
           }
 
           JobBuilder.COMMAND_SET_AS_DOT_MATRIX -> {
-            printer!!.setAsDotMatrix(true)
+            printer!!.isDotMatrixPrinter = true
           }
 
           JobBuilder.COMMAND_USE_ESC_ASTERISK -> {
-            printer!!.useEscAsteriskCommand(true)
+            printer!!.useEscAsteriskCommand = true
           }
 
           JobBuilder.COMMAND_PRINT -> {

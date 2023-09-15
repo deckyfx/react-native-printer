@@ -56,6 +56,7 @@ const Tags = {
     ATTRIBUTES: {
       SIZE: 'size',
       COLOR: 'color',
+      UNDERLINE: 'underline',
     },
     SIZE: FontSizes,
     COLOR: FontColors,
@@ -110,17 +111,18 @@ const wraptag = (
 ) => {
   const modifiers = attributes
     .filter(
-      (attribute) =>
-        attribute[0] !== null &&
-        attribute[1] !== null &&
-        attribute[0] !== undefined &&
-        attribute[1] !== undefined
+      ([key, value]) =>
+        key !== null &&
+        value !== null &&
+        key !== undefined &&
+        value !== undefined
     )
-    .map((attribute) => {
-      return attr(attribute[0], attribute[1] as string | number);
+    .map(([key, value]) => {
+      return attr(key, value as string | number);
     })
     .join(' ');
   const modifier = modifiers.length > 0 ? ` ${modifiers}` : '';
+  console.log(wrap(text, `<${tag}${modifier}>`, `</${tag}>`));
   return wrap(text, `<${tag}${modifier}>`, `</${tag}>`);
 };
 
@@ -181,12 +183,15 @@ export default {
    */
   font: (
     text: string,
-    size: FontSize = Tags.FONT.SIZE.NORMAL,
-    color: FontColor = Tags.FONT.COLOR.BLACK
+    size: FontSize | null | undefined = Tags.FONT.SIZE.NORMAL,
+    color: FontColor | null | undefined = Tags.FONT.COLOR.BLACK,
+    underline: boolean | null | undefined = false
   ) => {
+    console.log('Underline?', underline);
     return wraptag(text, Tags.FONT.TAG, [
       [Tags.FONT.ATTRIBUTES.SIZE, size],
       [Tags.FONT.ATTRIBUTES.COLOR, color],
+      [Tags.FONT.ATTRIBUTES.UNDERLINE, underline ? '1' : null],
     ]);
   },
 

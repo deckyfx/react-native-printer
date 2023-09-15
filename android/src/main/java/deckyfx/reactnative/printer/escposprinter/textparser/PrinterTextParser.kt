@@ -164,6 +164,7 @@ class PrinterTextParser(val printer: EscPosPrinter) {
     const val ATTR_FORMAT_TEXT_FONT_SIZE_WIDE = "wide"
     const val ATTR_FORMAT_TEXT_FONT_SIZE_NORMAL = "normal"
     const val ATTR_FORMAT_TEXT_FONT_COLOR = "color"
+    const val ATTR_FORMAT_TEXT_FONT_UNDERLINE = "underline"
     const val ATTR_FORMAT_TEXT_FONT_COLOR_BLACK = "black"
     const val ATTR_FORMAT_TEXT_FONT_COLOR_BG_BLACK = "bg-black"
     const val ATTR_FORMAT_TEXT_FONT_COLOR_RED = "red"
@@ -196,7 +197,7 @@ class PrinterTextParser(val printer: EscPosPrinter) {
     }
 
     fun arrayByteDropLast(arr: Array<ByteArray?>): Array<ByteArray?> {
-      if (arr.size == 0) {
+      if (arr.isEmpty()) {
         return arr
       }
       val newArr = arrayOfNulls<ByteArray>(arr.size - 1)

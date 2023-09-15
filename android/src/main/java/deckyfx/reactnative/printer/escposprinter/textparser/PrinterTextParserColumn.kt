@@ -138,48 +138,161 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
               }
 
               PrinterTextParser.TAGS_FORMAT_TEXT_FONT -> {
+                val underline = textParserTag.getAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_UNDERLINE) == "1"
                 if (textParserTag.hasAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE)) {
                   when (textParserTag.getAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE)) {
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_NORMAL -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_NORMAL
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_NORMAL -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_TALL -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_DOUBLE_HEIGHT
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_TALL -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_HEIGHT_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_HEIGHT_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_HEIGHT)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_WIDE -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_WIDE -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_2 -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG_2
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_2 -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_2)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_3 -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG_3
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_3 -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_3)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_4 -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG_4
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_4 -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_4)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_5 -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG_5
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_5 -> {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_5)
+                      }
+                    }
 
-                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_6 -> textParser.addTextSize(
-                      EscPosPrinterCommands.TEXT_SIZE_BIG_6
-                    )
+                    PrinterTextParser.ATTR_FORMAT_TEXT_FONT_SIZE_BIG_6 ->  {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_BIG_6)
+                      }
+                    }
 
-                    else -> textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL)
+                    else ->  {
+                      if (textParser.printer.useEscAsteriskCommand) {
+                        // Using ESC !
+                        if (underline) {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_UNDERLINED_ALT)
+                        } else {
+                          textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT)
+                        }
+                      } else {
+                        // Using GS !
+                        textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL)
+                      }
+                    }
                   }
                 } else {
-                  textParser.addTextSize(textParser.lastTextSize)
+                  if (textParser.printer.useEscAsteriskCommand) {
+                    // Using ESC !
+                    if (underline) {
+                      textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_UNDERLINED_ALT)
+                    } else {
+                      textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT)
+                    }
+                  } else {
+                    // Using GS !
+                    textParser.addTextSize(textParser.lastTextSize)
+                  }
                 }
                 if (textParserTag.hasAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_COLOR)) {
                   when (textParserTag.getAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_COLOR)) {

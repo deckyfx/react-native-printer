@@ -89,6 +89,21 @@ class EscPosPrinter(
   val connection: DeviceConnection?
     get() = printer?.connection
 
+  var useEscAsteriskCommand
+    get() = printer?.useEscAsteriskCommand ?: false
+    set(flag) {
+      printer?.useEscAsteriskCommand = flag
+    }
+
+  /**
+   * Active "ESC *" command for image printing.
+   */
+  var isDotMatrixPrinter
+    get() = printer?.isDotMatrixPrinter ?: false
+    set(flag) {
+      printer?.isDotMatrixPrinter = flag
+    }
+
   /**
    * Close the connection with the printer.
    *
@@ -99,28 +114,6 @@ class EscPosPrinter(
       printer!!.disconnect()
       printer = null
     }
-    return this
-  }
-
-  /**
-   * Active "ESC *" command for image printing.
-   *
-   * @param enable true to use "ESC *", false to use "GS v 0"
-   * @return Fluent interface
-   */
-  fun useEscAsteriskCommand(enable: Boolean): EscPosPrinter {
-    printer!!.useEscAsteriskCommand(enable)
-    return this
-  }
-
-  /**
-   * Set as dot matrix bypass printing image, barcode, and qrcode
-   *
-   * @param enable true to use "ESC *", false to use "GS v 0"
-   * @return Fluent interface
-   */
-  fun setAsDotMatrix(enable: Boolean): EscPosPrinter {
-    printer!!.setAsDotMatrix(enable)
     return this
   }
 

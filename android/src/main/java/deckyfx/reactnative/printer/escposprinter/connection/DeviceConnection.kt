@@ -131,10 +131,24 @@ abstract class DeviceConnection {
     if (outputStream == null) {
       return null
     }
-    write(EscPosCommands.byteArray(EscPosCommands.PRINTER_ID_1))
-    val manufacturer = sendAndWaitForResponse(100)
-    write(EscPosCommands.byteArray(EscPosCommands.PRINTER_ID_2))
-    val model = sendAndWaitForResponse(100)
+    write(EscPosCommands.PRINTER_ID_1.toByteArray())
+    var manufacturer = sendAndWaitForResponse(100)
+    if (!manufacturer.isNullOrEmpty() && manufacturer.length == 1) {
+      manufacturer = when (manufacturer[0].code) {
+        2 -> "SEWOO"
+        13 -> "SEWOO"
+        else -> "UNKNOWN"
+      }
+    }
+    write(EscPosCommands.PRINTER_ID_2.toByteArray())
+    var model = sendAndWaitForResponse(100)
+    if (!model.isNullOrEmpty() && model.length == 1) {
+      model = when (model[0].code) {
+        2 -> "LK_D30"
+        13 -> "LK_D30"
+        else -> "UNKNOWN"
+      }
+    }
     var result = manufacturer + model
     if (!result.isNullOrBlank()) {
       val regex = "[^a-zA-Z0-9-]".toRegex()

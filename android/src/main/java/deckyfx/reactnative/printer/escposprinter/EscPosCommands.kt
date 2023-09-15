@@ -5,52 +5,57 @@ class EscPosCommands {
     /**
      * ASCII null control character
      */
-    const val NUL = 0x00
+    const val NUL: Byte = 0x00
 
     /**
      * ASCII linefeed control character
      */
-    const val LF = 0x0a
+    const val LF: Byte = 0x0A
 
     /**
      * ASCII escape control character
      */
-    const val ESC = 0x1b
+    const val ESC: Byte = 0x1B
 
     /**
      * ASCII form separator control character
      */
-    const val FS = 0x1c
+    const val FS: Byte = 0x1C
 
     /**
      * ASCII form feed control character
      */
-    const val FF = 0x0c
+    const val FF: Byte = 0x0C
 
     /**
      * ASCII group separator control character
      */
-    const val GS = 0x1d
+    const val GS: Byte = 0x1D
 
     /**
      * ASCII data link escape control character
      */
-    const val DLE = 0x10
+    const val DLE: Byte = 0x10
 
     /**
      * ASCII end of transmission control character
      */
-    const val EOT = 0x04
+    const val EOT: Byte = 0x04
 
     /**
      * Horizontal tab
      */
-    const val HT = 0x09
+    const val HT: Byte = 0x09
 
     /**
      * Carriage Retur
      */
-    const val CR = 0x0D
+    const val CR: Byte = 0x0D
+
+    /**
+     * !
+     */
+    const val EXCLAMATION: Byte = 0x21
 
     /**
      * Indicates UPC-A barcode when used with Printer::barcode
@@ -317,7 +322,8 @@ class EscPosCommands {
 
     val PRINTER_ID_1 = arrayOf(GS, 0x49, 0x42) // GS I n
     val PRINTER_ID_2 = arrayOf(GS, 0x49, 0x43) // GS I n
-    val PRINTER_ID_3 = arrayOf(GS, 0x49, 0x01) // GS I n
+    val PRINTER_ID_1_ALT = arrayOf(GS, 0x49, 0x01) // GS I n
+    val PRINTER_ID_2_ALT = arrayOf(GS, 0x49, 0x02) // GS I n
 
     val INITIALIZE = arrayOf(ESC, 0x40) // ESC @
 

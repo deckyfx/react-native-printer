@@ -24,8 +24,18 @@ class EscPosPrinterCommands @JvmOverloads constructor(
 ) {
   private val printerConnection: DeviceConnection
   private val charsetEncoding: EscPosCharsetEncoding
-  private var useEscAsteriskCommand = false
-  private var isDotMatrixPrinter = false
+
+  /**
+   * Active "ESC *" command for image print.
+   *
+   */
+  var useEscAsteriskCommand = false
+
+  /**
+   * Set as dot matrix bypass printing image, barcode, and qrcode
+   *
+   */
+  var isDotMatrixPrinter = false
 
   val connection: DeviceConnection
     get() = printerConnection
@@ -254,7 +264,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       return this
     }
     try {
-      printerConnection.write(byteArrayOf(0x1B, 0x74, charsetId.toByte()))
+      printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x74, charsetId.toByte()))
       printerConnection.write(TEXT_SIZE_NORMAL)
       printerConnection.write(TEXT_COLOR_BLACK)
       printerConnection.write(TEXT_COLOR_REVERSE_OFF)
@@ -291,13 +301,13 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           0x18.toByte(),
           0x19.toByte(),
           0x1A.toByte(),
-          0x1B.toByte(),
+          EscPosCommands.ESC,
           0x1C.toByte(),
-          0x1D.toByte(),
+          EscPosCommands.GS,
           0x1E.toByte(),
           0x1F.toByte(),
           0x20.toByte(),
-          0x21.toByte(),
+          EscPosCommands.EXCLAMATION,
           0x22.toByte(),
           0x23.toByte(),
           0x24.toByte(),
@@ -531,28 +541,6 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   }
 
   /**
-   * Active "ESC *" command for image print.
-   *
-   * @param enable true to use "ESC *", false to use "GS v 0"
-   * @return Fluent interface
-   */
-  fun useEscAsteriskCommand(enable: Boolean): EscPosPrinterCommands {
-    useEscAsteriskCommand = enable
-    return this
-  }
-
-  /**
-   * Set as dot matrix bypass printing image, barcode, and qrcode
-   *
-   * @param enable true to use "ESC *", false to use "GS v 0"
-   * @return Fluent interface
-   */
-  fun setAsDotMatrix(enable: Boolean): EscPosPrinterCommands {
-    isDotMatrixPrinter = enable
-    return this
-  }
-
-  /**
    * Print image with the connected printer.
    *
    * @param image Bytes contain the image in ESC/POS command
@@ -595,7 +583,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     val barcodeCommand = ByteArray(barcodeLength + 4)
     System.arraycopy(
       byteArrayOf(
-        0x1D,
+        EscPosCommands.GS,
         0x6B,
         barcode.barcodeType.toByte(),
         barcodeLength.toByte()
@@ -604,9 +592,9 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     for (i in 0 until barcodeLength) {
       barcodeCommand[i + 4] = code[i].code.toByte()
     }
-    printerConnection.write(byteArrayOf(0x1D, 0x48, barcode.textPosition.toByte()))
-    printerConnection.write(byteArrayOf(0x1D, 0x77, barcode.colWidth.toByte()))
-    printerConnection.write(byteArrayOf(0x1D, 0x68, barcode.height.toByte()))
+    printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x48, barcode.textPosition.toByte()))
+    printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x77, barcode.colWidth.toByte()))
+    printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x68, barcode.height.toByte()))
     printerConnection.write(barcodeCommand)
     return this
   }
@@ -640,12 +628,9 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       val pL = commandLength % 256
       val pH = commandLength / 256
 
-      /*byte[] qrCodeCommand = new byte[textBytes.length + 7];
-      System.arraycopy(new byte[]{0x1B, 0x5A, 0x00, 0x00, (byte)size, (byte)pL, (byte)pH}, 0, qrCodeCommand, 0, 7);
-      System.arraycopy(textBytes, 0, qrCodeCommand, 7, textBytes.length);
-      this.printerConnection.write(qrCodeCommand);*/printerConnection.write(
+      printerConnection.write(
         byteArrayOf(
-          0x1D,
+          EscPosCommands.GS,
           0x28,
           0x6B,
           0x04,
@@ -658,7 +643,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       )
       printerConnection.write(
         byteArrayOf(
-          0x1D,
+          EscPosCommands.GS,
           0x28,
           0x6B,
           0x03,
@@ -668,11 +653,11 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           size.toByte()
         )
       )
-      printerConnection.write(byteArrayOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x30))
+      printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x30))
       val qrCodeCommand = ByteArray(textBytes.size + 8)
       System.arraycopy(
         byteArrayOf(
-          0x1D,
+          EscPosCommands.GS,
           0x28,
           0x6B,
           pL.toByte(),
@@ -684,7 +669,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       )
       System.arraycopy(textBytes, 0, qrCodeCommand, 8, textBytes.size)
       printerConnection.write(qrCodeCommand)
-      printerConnection.write(byteArrayOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30))
+      printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30))
     } catch (e: UnsupportedEncodingException) {
       e.printStackTrace()
       throw EscPosEncodingException(e.message)
@@ -729,7 +714,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       return this
     }
     if (dots > 0) {
-      printerConnection.write(byteArrayOf(0x1B, 0x4A, dots.toByte()))
+      printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x4A, dots.toByte()))
       printerConnection.send(dots)
     }
     return this
@@ -745,7 +730,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     if (!printerConnection.isConnected) {
       return this
     }
-    printerConnection.write(byteArrayOf(0x1D, 0x56, 0x01))
+    printerConnection.write(byteArrayOf(EscPosCommands.GS, 0x56, 0x01))
     printerConnection.send(100)
     return this
   }
@@ -760,7 +745,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     if (!printerConnection.isConnected) {
       return this
     }
-    printerConnection.write(byteArrayOf(0x1B, 0x70, 0x00, 0x3C, 0xFF.toByte()))
+    printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x70, 0x00, 0x3C, 0xFF.toByte()))
     printerConnection.send(100)
     return this
   }
@@ -797,37 +782,58 @@ class EscPosPrinterCommands @JvmOverloads constructor(
 
   companion object {
     const val LF: Byte = 0x0A
-    val RESET_PRINTER = byteArrayOf(0x1B, 0x40)
-    val TEXT_ALIGN_LEFT = byteArrayOf(0x1B, 0x61, 0x00)
-    val TEXT_ALIGN_CENTER = byteArrayOf(0x1B, 0x61, 0x01)
-    val TEXT_ALIGN_RIGHT = byteArrayOf(0x1B, 0x61, 0x02)
-    val TEXT_WEIGHT_NORMAL = byteArrayOf(0x1B, 0x45, 0x00)
-    val TEXT_WEIGHT_BOLD = byteArrayOf(0x1B, 0x45, 0x01)
-    val LINE_SPACING_24 = byteArrayOf(0x1b, 0x33, 0x18)
-    val LINE_SPACING_30 = byteArrayOf(0x1b, 0x33, 0x1e)
-    val TEXT_FONT_A = byteArrayOf(0x1B, 0x4D, 0x00)
-    val TEXT_FONT_B = byteArrayOf(0x1B, 0x4D, 0x01)
-    val TEXT_FONT_C = byteArrayOf(0x1B, 0x4D, 0x02)
-    val TEXT_FONT_D = byteArrayOf(0x1B, 0x4D, 0x03)
-    val TEXT_FONT_E = byteArrayOf(0x1B, 0x4D, 0x04)
-    val TEXT_SIZE_NORMAL = byteArrayOf(0x1D, 0x21, 0x00)
-    val TEXT_SIZE_DOUBLE_HEIGHT = byteArrayOf(0x1D, 0x21, 0x01)
-    val TEXT_SIZE_DOUBLE_WIDTH = byteArrayOf(0x1D, 0x21, 0x10)
-    val TEXT_SIZE_BIG = byteArrayOf(0x1D, 0x21, 0x11)
-    val TEXT_SIZE_BIG_2 = byteArrayOf(0x1D, 0x21, 0x22)
-    val TEXT_SIZE_BIG_3 = byteArrayOf(0x1D, 0x21, 0x33)
-    val TEXT_SIZE_BIG_4 = byteArrayOf(0x1D, 0x21, 0x44)
-    val TEXT_SIZE_BIG_5 = byteArrayOf(0x1D, 0x21, 0x55)
-    val TEXT_SIZE_BIG_6 = byteArrayOf(0x1D, 0x21, 0x66)
-    val TEXT_UNDERLINE_OFF = byteArrayOf(0x1B, 0x2D, 0x00)
-    val TEXT_UNDERLINE_ON = byteArrayOf(0x1B, 0x2D, 0x01)
-    val TEXT_UNDERLINE_LARGE = byteArrayOf(0x1B, 0x2D, 0x02)
-    val TEXT_DOUBLE_STRIKE_OFF = byteArrayOf(0x1B, 0x47, 0x00)
-    val TEXT_DOUBLE_STRIKE_ON = byteArrayOf(0x1B, 0x47, 0x01)
-    val TEXT_COLOR_BLACK = byteArrayOf(0x1B, 0x72, 0x00)
-    val TEXT_COLOR_RED = byteArrayOf(0x1B, 0x72, 0x01)
-    val TEXT_COLOR_REVERSE_OFF = byteArrayOf(0x1D, 0x42, 0x00)
-    val TEXT_COLOR_REVERSE_ON = byteArrayOf(0x1D, 0x42, 0x01)
+    val RESET_PRINTER = byteArrayOf(EscPosCommands.ESC, 0x40)
+    val TEXT_ALIGN_LEFT = byteArrayOf(EscPosCommands.ESC, 0x61, 0x00)
+    val TEXT_ALIGN_CENTER = byteArrayOf(EscPosCommands.ESC, 0x61, 0x01)
+    val TEXT_ALIGN_RIGHT = byteArrayOf(EscPosCommands.ESC, 0x61, 0x02)
+    val TEXT_WEIGHT_NORMAL = byteArrayOf(EscPosCommands.ESC, 0x45, 0x00)
+    val TEXT_WEIGHT_BOLD = byteArrayOf(EscPosCommands.ESC, 0x45, 0x01)
+    val LINE_SPACING_24 = byteArrayOf(EscPosCommands.ESC, 0x33, 0x18)
+    val LINE_SPACING_30 = byteArrayOf(EscPosCommands.ESC, 0x33, 0x1e)
+    val TEXT_FONT_A = byteArrayOf(EscPosCommands.ESC, 0x4D, 0x00)
+    val TEXT_FONT_B = byteArrayOf(EscPosCommands.ESC, 0x4D, 0x01)
+    val TEXT_FONT_C = byteArrayOf(EscPosCommands.ESC, 0x4D, 0x02)
+    val TEXT_FONT_D = byteArrayOf(EscPosCommands.ESC, 0x4D, 0x03)
+    val TEXT_FONT_E = byteArrayOf(EscPosCommands.ESC, 0x4D, 0x04)
+    val TEXT_SIZE_NORMAL = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x00)
+    val TEXT_SIZE_DOUBLE_HEIGHT = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x01)
+    val TEXT_SIZE_DOUBLE_WIDTH = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x10)
+    val TEXT_SIZE_BIG = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x11)
+    val TEXT_SIZE_BIG_2 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x22)
+    val TEXT_SIZE_BIG_3 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x33)
+    val TEXT_SIZE_BIG_4 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x44)
+    val TEXT_SIZE_BIG_5 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x55)
+    val TEXT_SIZE_BIG_6 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x66)
+
+    val TEXT_SIZE_NORMAL_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x00)
+    val TEXT_SIZE_DOUBLE_HEIGHT_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x10)
+    val TEXT_SIZE_DOUBLE_WIDTH_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x20)
+    val TEXT_SIZE_BIG_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_BIG_2_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_BIG_3_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_BIG_4_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_BIG_5_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_BIG_6_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+
+    val TEXT_SIZE_NORMAL_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x80.toByte())
+    val TEXT_SIZE_DOUBLE_HEIGHT_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x90.toByte())
+    val TEXT_SIZE_DOUBLE_WIDTH_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xA0.toByte())
+    val TEXT_SIZE_BIG_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+    val TEXT_SIZE_BIG_2_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+    val TEXT_SIZE_BIG_3_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+    val TEXT_SIZE_BIG_4_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+    val TEXT_SIZE_BIG_5_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+    val TEXT_SIZE_BIG_6_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0xB0.toByte())
+
+    val TEXT_UNDERLINE_OFF = byteArrayOf(EscPosCommands.ESC, 0x2D, 0x00)
+    val TEXT_UNDERLINE_ON = byteArrayOf(EscPosCommands.ESC, 0x2D, 0x01)
+    val TEXT_UNDERLINE_LARGE = byteArrayOf(EscPosCommands.ESC, 0x2D, 0x02)
+    val TEXT_DOUBLE_STRIKE_OFF = byteArrayOf(EscPosCommands.ESC, 0x47, 0x00)
+    val TEXT_DOUBLE_STRIKE_ON = byteArrayOf(EscPosCommands.ESC, 0x47, 0x01)
+    val TEXT_COLOR_BLACK = byteArrayOf(EscPosCommands.ESC, 0x72, 0x00)
+    val TEXT_COLOR_RED = byteArrayOf(EscPosCommands.ESC, 0x72, 0x01)
+    val TEXT_COLOR_REVERSE_OFF = byteArrayOf(EscPosCommands.GS, 0x42, 0x00)
+    val TEXT_COLOR_REVERSE_ON = byteArrayOf(EscPosCommands.GS, 0x42, 0x01)
     const val BARCODE_TYPE_UPCA = 65
     const val BARCODE_TYPE_UPCE = 66
     const val BARCODE_TYPE_EAN13 = 67
@@ -846,7 +852,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       val yH = bitmapHeight / 256
       val yL = bitmapHeight - yH * 256
       val imageBytes = ByteArray(8 + bytesByLine * bitmapHeight)
-      imageBytes[0] = 0x1D
+      imageBytes[0] = EscPosCommands.GS
       imageBytes[1] = 0x76
       imageBytes[2] = 0x30
       imageBytes[3] = 0x00
@@ -926,9 +932,9 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       for (i in 0 until imageLineHeightCount) {
         val pxBaseRow = i * 24
         val imageBytes = ByteArray(imageBytesSize)
-        imageBytes[0] = 0x1B
+        imageBytes[0] = EscPosCommands.ESC
         imageBytes[1] = 0x2A
-        imageBytes[2] = 0x21
+        imageBytes[2] = EscPosCommands.EXCLAMATION
         imageBytes[3] = nL.toByte()
         imageBytes[4] = nH.toByte()
         for (j in 5 until imageBytes.size) {
@@ -1014,7 +1020,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           i += lineBytes.size
         }
       }
-            return imageBytes
+      return imageBytes
     }
   }
 }
