@@ -89,4 +89,10 @@ export interface JobBuilderInterface {
    * @return {*}  {Boolean}
    */
   building(jobId: string): Boolean;
+
+  /**
+   * Display design preview
+   *
+   */
+  preview(jobId: string): Promise<string>;
 }

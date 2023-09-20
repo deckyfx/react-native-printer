@@ -1,5 +1,6 @@
 package deckyfx.reactnative.printer.escposprinter.textparser
 
+import deckyfx.reactnative.printer.escposprinter.EscPosCommands
 import deckyfx.reactnative.printer.escposprinter.EscPosPrinterCommands
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosBarcodeException
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
@@ -20,6 +21,7 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
   init {
     var textColumn = textColumn
     line = textParserLine
+    var prependReset = false
     val textParser = line.textParser
     var textAlign = PrinterTextParser.TAGS_ALIGN_LEFT
     val textUnderlineStartColumn = textParser.lastTextUnderline
@@ -27,6 +29,16 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
     val textColorStartColumn = textParser.lastTextColor
     val textReverseColorStartColumn = textParser.lastTextReverseColor
 
+    // =================================================================
+    // Reset Printer Setting
+    if (textColumn.length > 2) {
+      when (textColumn.substring(0, 3).uppercase(Locale.getDefault())) {
+        "[" + PrinterTextParser.TAGS_RESET_PRINTER + "]" -> {
+          prependReset = true
+          textColumn = textColumn.substring(3)
+        }
+      }
+    }
 
     // =================================================================
     // Check the column alignment
@@ -408,6 +420,9 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
       line
         .setNbrCharForgetted(nbrCharForgetted)
         .setNbrCharColumnExceeded(nbrCharColumnExceeded)
+    }
+    if (prependReset) {
+      prependElement(PrinterTextParserCommand(EscPosCommands.INITIALIZE.toByteArray()))
     }
   }
 

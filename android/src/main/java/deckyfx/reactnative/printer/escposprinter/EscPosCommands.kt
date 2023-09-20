@@ -58,6 +58,11 @@ class EscPosCommands {
     const val EXCLAMATION: Byte = 0x21
 
     /**
+     * @
+     */
+    const val AT: Byte = 0x40
+
+    /**
      * Indicates UPC-A barcode when used with Printer::barcode
      */
     const val BARCODE_UPCA = 65
@@ -325,7 +330,7 @@ class EscPosCommands {
     val PRINTER_ID_1_ALT = arrayOf(GS, 0x49, 0x01) // GS I n
     val PRINTER_ID_2_ALT = arrayOf(GS, 0x49, 0x02) // GS I n
 
-    val INITIALIZE = arrayOf(ESC, 0x40) // ESC @
+    val INITIALIZE = arrayOf(ESC, AT, ESC, 0x45, 0x01, ESC, 0x45, 0x00, ESC, AT) // ESC @
 
     fun byteArray(from: Array<Int>): ByteArray {
       return ByteArray(from.size) { from[it].toByte() }

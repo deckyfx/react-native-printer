@@ -9,6 +9,7 @@ import {
   RNPrinterEventEmitter,
   JobBuilder,
   DesignBuilder,
+  TableBuilder,
   TagHelper,
 } from '@decky.fx/react-native-printer';
 import type {
@@ -81,23 +82,18 @@ const NetworkPrinter = () => {
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
-    await JobBuilder.setAsDotMatrix(jobId);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await JobBuilder.useEscAsterisk(jobId);
+    //await JobBuilder.setAsDotMatrix(jobId);
+    //await JobBuilder.useEscAsterisk(jobId);
     const designBuilder = new DesignBuilder(
       RNPrinter.PRINTING_LINES_MAX_CHAR_42
     );
-    /*
-    const designs = RNPrinter.TEST_PRINT_DESIGN.split('\n');
-    for (let i = 0; i < designs.length; i++) {
-      let line = designs[i]!!;
-      await JobBuilder.printLine(jobId, line);
-    }
+
     const table = new TableBuilder(
       {
         width: 5,
         allignment: TagHelper.ALLIGNMENT.LEFT,
         spacer: true,
+        bold: true,
       },
       {
         width: 0,
@@ -106,93 +102,15 @@ const NetworkPrinter = () => {
       {
         width: 5,
         allignment: TagHelper.ALLIGNMENT.RIGHT,
+        bold: true,
       }
     )
-      .rows(['L'.repeat(5), 'C'.repeat(30), 'R'.repeat(5)])
+      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
+      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
+      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
       .build();
     designBuilder.addTable(table);
-    const table2 = new TableBuilder(
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.LEFT,
-        spacer: true,
-      },
-      {
-        width: 0,
-        allignment: TagHelper.ALLIGNMENT.LEFT,
-      },
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.LEFT,
-      }
-    )
-      .rows(['L', 'L', 'L'])
-      .build();
-    designBuilder.addTable(table2);
-    const table3 = new TableBuilder(
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.RIGHT,
-        spacer: true,
-      },
-      {
-        width: 0,
-        allignment: TagHelper.ALLIGNMENT.RIGHT,
-      },
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.RIGHT,
-      }
-    )
-      .rows(['R', 'R', 'R'])
-      .build();
-    designBuilder.addTable(table3);
-    const table4 = new TableBuilder(
-      {
-        width: 6,
-        allignment: TagHelper.ALLIGNMENT.CENTER,
-        spacer: true,
-      },
-      {
-        width: 0,
-        allignment: TagHelper.ALLIGNMENT.CENTER,
-      },
-      {
-        width: 7,
-        allignment: TagHelper.ALLIGNMENT.CENTER,
-      }
-    )
-      .rows(['C', 'C', 'C'])
-      .build();
-    designBuilder.addTable(table4);
-    designBuilder.addLine('0123456789'.repeat(5));
-    designBuilder.addLine(TagHelper.right('Right'));
-    designBuilder.addLine(
-      TagHelper.center(
-        TagHelper.image(
-          'https://sharktest.b-cdn.net/64dc6ab1a30b6a3da3d56157/bill/Genshin_Impact_logo_1694678343.jpg'
-        )
-      )
-    );
-    */
-    designBuilder.addLine('Normal');
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(TagHelper.bold('Bold'));
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(
-      TagHelper.underline(TagHelper.font('Underlined', null, null, true))
-    );
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(TagHelper.bold(TagHelper.underline('Underlined')));
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(
-      TagHelper.font('Tall', TagHelper.FONT_SIZE.TALL, null, true)
-    );
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(TagHelper.font('Wide', TagHelper.FONT_SIZE.WIDE));
-    designBuilder.addLine('Normal');
-    designBuilder.addLine(TagHelper.font('BIG', TagHelper.FONT_SIZE.BIG));
-    designBuilder.addLine('Normal');
+
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
@@ -204,35 +122,9 @@ const NetworkPrinter = () => {
       await JobBuilder.printLine(jobId, line);
     }
 
-    /*
-      await JobBuilder.feedPaper(jobId, 20);
-      await JobBuilder.printLine(jobId, '------------------');
-      await JobBuilder.feedPaper(jobId, 20);
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.feedPaper(jobId, 20);
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.feedPaper(jobId, 20);
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.printLine(jobId, '--------Sesuatu----------');
-      await JobBuilder.feedPaper(jobId, 20);
-      await JobBuilder.printLine(jobId, '--------Last----------');
-      await JobBuilder.feedPaper(jobId, 100);
-      await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.printLine(jobId, ' ');
-      await JobBuilder.printLine(jobId, ' ');
-      */
     await JobBuilder.cutPaper(jobId);
+    console.log(await JobBuilder.preview(jobId));
     const job = await JobBuilder.build(jobId);
-    // RNPrinter.enqueuePrint(job);
     RNPrinter.enqueuePrint(job, printer);
   };
 

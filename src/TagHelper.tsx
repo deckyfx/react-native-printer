@@ -6,6 +6,12 @@ const Allignments = {
 const AllignmentArray = [...Object.values(Allignments)] as const;
 export type Allignment = (typeof AllignmentArray)[number];
 
+const Commands = {
+  RESET: '[X]',
+} as const;
+const CommandArray = [...Object.values(Commands)] as const;
+export type Command = (typeof CommandArray)[number];
+
 const FontSizes = {
   NORMAL: 'normal',
   WIDE: 'wide',
@@ -275,5 +281,15 @@ export default {
    */
   line: (text: string) => {
     return append(text, Tags.BREAKLINE);
+  },
+
+  /**
+   * Reset printer before write the line, must be at first
+   *
+   * @param {string} text input
+   * @return formated text
+   */
+  reset: (text: string) => {
+    return prepend(text, Commands.RESET);
   },
 };

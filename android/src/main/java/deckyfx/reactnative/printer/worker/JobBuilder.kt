@@ -171,4 +171,13 @@ class JobBuilder(private val reactContext: ReactApplicationContext) :
     val file = files[uuid] ?: return false
     return true
   }
+
+  @ReactMethod
+  @Suppress("unused")
+  fun preview(uuid: String, promise: Promise) {
+    val uuidData = UUID.fromString(uuid)
+    val file = files[uuidData] ?: return promise.resolve("")
+    val text = file.readText()
+    promise.resolve(text)
+  }
 }

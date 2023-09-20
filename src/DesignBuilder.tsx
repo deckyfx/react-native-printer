@@ -50,13 +50,11 @@ export default class DesignBuilder {
   /**
    * Display design preview
    *
-   * @readonly
    */
-  public get preview() {
+  public preview() {
     this.designs.forEach((line) => {
       console.log(line.trim());
     });
-    return this;
   }
 
   /**
@@ -275,7 +273,10 @@ export default class DesignBuilder {
 
     // Transpose array;
     result = Array.from(result[0]!).map((_, i) => result.map((row) => row[i]!));
-    const result2 = result.map((_) => _.join(hasSpacer ? ' ' : ''));
+    const result2 = result.map((_) => {
+      const line = _.join(hasSpacer ? ' ' : '');
+      return TagHelper.reset(line);
+    });
     return result2;
   }
 

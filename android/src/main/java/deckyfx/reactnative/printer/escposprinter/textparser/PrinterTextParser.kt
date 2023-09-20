@@ -129,6 +129,7 @@ class PrinterTextParser(val printer: EscPosPrinter) {
     const val TAGS_ALIGN_LEFT = "L"
     const val TAGS_ALIGN_CENTER = "C"
     const val TAGS_ALIGN_RIGHT = "R"
+    const val TAGS_RESET_PRINTER = "X"
     val TAGS_ALIGN = arrayOf(TAGS_ALIGN_LEFT, TAGS_ALIGN_CENTER, TAGS_ALIGN_RIGHT)
     const val TAGS_IMAGE = "img"
     const val TAGS_BARCODE = "barcode"

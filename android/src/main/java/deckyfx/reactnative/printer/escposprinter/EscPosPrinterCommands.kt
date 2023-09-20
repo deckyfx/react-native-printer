@@ -82,6 +82,20 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     return this
   }
 
+  /**
+   * Reset this instance states
+   * To fix sometime bold don't work correctly after turned on and off repeatedly
+   *
+   */
+  fun resetState() {
+    currentTextSize = ByteArray(0)
+    currentTextColor = ByteArray(0)
+    currentTextReverseColor = ByteArray(0)
+    currentTextBold = ByteArray(0)
+    currentTextUnderline = ByteArray(0)
+    currentTextDoubleStrike = ByteArray(0)
+  }
+
   private var currentTextSize: ByteArray? = ByteArray(0)
   private var currentTextColor: ByteArray? = ByteArray(0)
   private var currentTextReverseColor: ByteArray? = ByteArray(0)
@@ -782,7 +796,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
 
   companion object {
     const val LF: Byte = 0x0A
-    val RESET_PRINTER = byteArrayOf(EscPosCommands.ESC, 0x40)
+    val RESET_PRINTER = byteArrayOf(EscPosCommands.ESC, EscPosCommands.AT)
     val TEXT_ALIGN_LEFT = byteArrayOf(EscPosCommands.ESC, 0x61, 0x00)
     val TEXT_ALIGN_CENTER = byteArrayOf(EscPosCommands.ESC, 0x61, 0x01)
     val TEXT_ALIGN_RIGHT = byteArrayOf(EscPosCommands.ESC, 0x61, 0x02)
