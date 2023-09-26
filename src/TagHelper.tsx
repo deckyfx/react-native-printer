@@ -87,6 +87,7 @@ const Tags = {
       SIZE: 'size',
     },
   },
+  RAW: 'raw',
   BREAKLINE: '\n',
 };
 
@@ -129,6 +130,25 @@ const wraptag = (
     .join(' ');
   const modifier = modifiers.length > 0 ? ` ${modifiers}` : '';
   return wrap(text, `<${tag}${modifier}>`, `</${tag}>`);
+};
+
+const toHexString = (input: string | number) => {
+  if (typeof input === 'string') {
+    const hexAsciiString = input
+      .split('')
+      .map((char) => char.charCodeAt(0).toString(16))
+      .join('');
+    return hexAsciiString;
+  } else if (typeof input === 'number') {
+    const hexString = input.toString(16);
+    if (hexString.length % 2 === 1) {
+      return '0' + hexString;
+    } else {
+      return hexString;
+    }
+  } else {
+    throw new Error('Invalid input type. 1');
+  }
 };
 
 export default {
@@ -271,6 +291,33 @@ export default {
     return wraptag(text, Tags.QRCODE.TAG, [
       [Tags.QRCODE.ATTRIBUTES.SIZE, size],
     ]);
+  },
+
+  /**
+   * Add raw command
+   *
+   * @param {string} command hex string
+   * @return image tag text
+   */
+  raw: (command: string) => {
+    return wraptag(command, Tags.RAW, []);
+  },
+
+  hexString(...data: (string | number | (string | number)[])[]): string {
+    return data.reduce((all: string, current) => {
+      if (typeof current === 'string' || typeof current === 'number') {
+        return all + toHexString(current);
+      } else if (Array.isArray(current)) {
+        return (
+          all +
+          current.reduce((_all: string, _current) => {
+            return _all + toHexString(_current);
+          }, '')
+        );
+      } else {
+        throw new Error('Invalid input type. 2');
+      }
+    }, '');
   },
 
   /**

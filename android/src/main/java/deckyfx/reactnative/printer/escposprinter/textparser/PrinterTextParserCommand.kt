@@ -8,8 +8,7 @@ import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosEncodingExcept
 open class PrinterTextParserCommand(
   private val command: ByteArray
 ) : IPrinterTextParserElement {
-  init {
-  }
+  constructor(command: String) : this(hexadecimalStringToBytes(command))
 
   /**
    * Get the image width in char length.
@@ -37,5 +36,20 @@ open class PrinterTextParserCommand(
   }
 
   companion object {
+    /**
+     * Convert hexadecimal string to bytes ESC/POS command.
+     *
+     * @param hexString Hexadecimal string of the image data.
+     * @return Bytes contain the image in ESC/POS command.
+     */
+    @Throws(NumberFormatException::class)
+    fun hexadecimalStringToBytes(hexString: String): ByteArray {
+      val bytes = ByteArray(hexString.length / 2)
+      for (i in bytes.indices) {
+        val pos = i * 2
+        bytes[i] = hexString.substring(pos, pos + 2).toInt(16).toByte()
+      }
+      return bytes
+    }
   }
 }

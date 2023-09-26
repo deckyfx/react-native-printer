@@ -18,6 +18,7 @@ import java.util.EnumMap
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
+
 class EscPosPrinterCommands @JvmOverloads constructor(
   printerConnection: DeviceConnection,
   charsetEncoding: EscPosCharsetEncoding? = null
@@ -63,6 +64,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     if (!printerConnection.isConnected) {
       return this
     }
+    resetState() //  should also reset the printer object state to reset the stylyng flag
     printerConnection.write(RESET_PRINTER)
     return this
   }
@@ -102,6 +104,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
   private var currentTextBold: ByteArray? = ByteArray(0)
   private var currentTextUnderline: ByteArray? = ByteArray(0)
   private var currentTextDoubleStrike: ByteArray? = ByteArray(0)
+
   /**
    * Create new instance of EscPosPrinterCommands.
    *
@@ -205,25 +208,44 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       return this
     }
     if (textSize == null) {
-      textSize = TEXT_SIZE_NORMAL
+      textSize = if (!useEscAsteriskCommand) {
+        TEXT_SIZE_NORMAL
+      } else {
+        TEXT_SIZE_NORMAL_ALT
+      }
     }
-    if (textColor == null) {
-      textColor = TEXT_COLOR_BLACK
-    }
-    if (textReverseColor == null) {
-      textReverseColor = TEXT_COLOR_REVERSE_OFF
-    }
-    if (textBold == null) {
-      textBold = TEXT_WEIGHT_NORMAL
-    }
-    if (textUnderline == null) {
-      textUnderline = TEXT_UNDERLINE_OFF
-    }
-    if (textDoubleStrike == null) {
-      textDoubleStrike = TEXT_DOUBLE_STRIKE_OFF
+    /**
+     * ESC * Formatting only can change font size for now, so bypass all other styling
+     * */
+    if (!useEscAsteriskCommand) {
+      if (textColor == null) {
+        textColor = TEXT_COLOR_BLACK
+      }
+      if (textReverseColor == null) {
+        textReverseColor = TEXT_COLOR_REVERSE_OFF
+      }
+      if (textBold == null) {
+        textBold = TEXT_WEIGHT_NORMAL
+      }
+      if (textUnderline == null) {
+        textUnderline = TEXT_UNDERLINE_OFF
+      }
+      if (textDoubleStrike == null) {
+        textDoubleStrike = TEXT_DOUBLE_STRIKE_OFF
+      }
+    } else {
+      textColor = null
+      textReverseColor = null
+      textBold = null
+      textUnderline = null
+      textDoubleStrike = null
     }
     try {
       if (text.isNullOrEmpty()) return this
+      /**
+       *  Somehow n ESC * styling, after each line there is weird blank space
+       *  Bypass it
+       *  */
       val textBytes: ByteArray = text.toByteArray(Charset.forName(charsetEncoding.name))
       printerConnection.write(charsetEncoding.command)
       //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
@@ -231,23 +253,23 @@ class EscPosPrinterCommands @JvmOverloads constructor(
         printerConnection.write(textSize)
         currentTextSize = textSize
       }
-      if (!Arrays.equals(currentTextDoubleStrike, textDoubleStrike)) {
+      if (!Arrays.equals(currentTextDoubleStrike, textDoubleStrike) && textDoubleStrike != null) {
         printerConnection.write(textDoubleStrike)
         currentTextDoubleStrike = textDoubleStrike
       }
-      if (!Arrays.equals(currentTextUnderline, textUnderline)) {
+      if (!Arrays.equals(currentTextUnderline, textUnderline) && textUnderline != null) {
         printerConnection.write(textUnderline)
         currentTextUnderline = textUnderline
       }
-      if (!Arrays.equals(currentTextBold, textBold)) {
+      if (!Arrays.equals(currentTextBold, textBold) && textBold != null) {
         printerConnection.write(textBold)
         currentTextBold = textBold
       }
-      if (!Arrays.equals(currentTextColor, textColor)) {
+      if (!Arrays.equals(currentTextColor, textColor) && textColor != null) {
         printerConnection.write(textColor)
         currentTextColor = textColor
       }
-      if (!Arrays.equals(currentTextReverseColor, textReverseColor)) {
+      if (!Arrays.equals(currentTextReverseColor, textReverseColor) && textReverseColor != null) {
         printerConnection.write(textReverseColor)
         currentTextReverseColor = textReverseColor
       }
@@ -278,13 +300,17 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       return this
     }
     try {
-      printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x74, charsetId.toByte()))
-      printerConnection.write(TEXT_SIZE_NORMAL)
-      printerConnection.write(TEXT_COLOR_BLACK)
-      printerConnection.write(TEXT_COLOR_REVERSE_OFF)
-      printerConnection.write(TEXT_WEIGHT_NORMAL)
-      printerConnection.write(TEXT_UNDERLINE_OFF)
-      printerConnection.write(TEXT_DOUBLE_STRIKE_OFF)
+      if (!useEscAsteriskCommand) {
+        printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x74, charsetId.toByte()))
+        printerConnection.write(TEXT_SIZE_NORMAL)
+        printerConnection.write(TEXT_COLOR_BLACK)
+        printerConnection.write(TEXT_COLOR_REVERSE_OFF)
+        printerConnection.write(TEXT_WEIGHT_NORMAL)
+        printerConnection.write(TEXT_UNDERLINE_OFF)
+        printerConnection.write(TEXT_DOUBLE_STRIKE_OFF)
+      } else {
+        printerConnection.write(TEXT_SIZE_NORMAL_ALT)
+      }
       printerConnection.write(":::: Charset n°$charsetId : ".toByteArray())
       printerConnection.write(
         byteArrayOf(
@@ -819,15 +845,17 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     val TEXT_SIZE_BIG_5 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x55)
     val TEXT_SIZE_BIG_6 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x66)
 
+    // Use 7x9 font for alternative command for Dotmatrix printer
+    // All bytes is +1
     val TEXT_SIZE_NORMAL_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x00)
-    val TEXT_SIZE_DOUBLE_HEIGHT_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x10)
-    val TEXT_SIZE_DOUBLE_WIDTH_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x20)
-    val TEXT_SIZE_BIG_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
-    val TEXT_SIZE_BIG_2_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
-    val TEXT_SIZE_BIG_3_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
-    val TEXT_SIZE_BIG_4_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
-    val TEXT_SIZE_BIG_5_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
-    val TEXT_SIZE_BIG_6_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x30)
+    val TEXT_SIZE_DOUBLE_HEIGHT_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x11)
+    val TEXT_SIZE_DOUBLE_WIDTH_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x21)
+    val TEXT_SIZE_BIG_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
+    val TEXT_SIZE_BIG_2_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
+    val TEXT_SIZE_BIG_3_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
+    val TEXT_SIZE_BIG_4_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
+    val TEXT_SIZE_BIG_5_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
+    val TEXT_SIZE_BIG_6_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)
 
     val TEXT_SIZE_NORMAL_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x80.toByte())
     val TEXT_SIZE_DOUBLE_HEIGHT_UNDERLINED_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x90.toByte())
@@ -885,14 +913,18 @@ class EscPosPrinterCommands @JvmOverloads constructor(
      * @return Bytes contain the image in ESC/POS command
      */
     fun bitmapToBytes(bitmap: Bitmap, gradient: Boolean): ByteArray {
-      val bitmapWidth = bitmap.width
-      val bitmapHeight = bitmap.height
+      val bitmapWidth: Int = bitmap.width
+      val bitmapHeight: Int = bitmap.height
       val bytesByLine = ceil((bitmapWidth.toFloat() / 8f).toDouble()).toInt()
+
       val imageBytes = initGSv0Command(bytesByLine, bitmapHeight)
+
       var i = 8
       var greyscaleCoefficientInit = 0
       val gradientStep = 6
+
       val colorLevelStep = 765.0 / (15 * gradientStep + gradientStep - 1)
+
       for (posY in 0 until bitmapHeight) {
         var greyscaleCoefficient = greyscaleCoefficientInit
         val greyscaleLine = posY % gradientStep
@@ -902,15 +934,12 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           for (k in 0..7) {
             val posX = j + k
             if (posX < bitmapWidth) {
-              val color = bitmap.getPixel(posX, posY)
+              val color: Int = bitmap.getPixel(posX, posY)
               val red = color shr 16 and 255
               val green = color shr 8 and 255
               val blue = color and 255
-              if (
-                (gradient && (red + green + blue) < ((greyscaleCoefficient * gradientStep + greyscaleLine) * colorLevelStep)) ||
-                (!gradient && (red < 160 || green < 160 || blue < 160))
-              ) {
-                b = b or (1 shl 7) - k
+              if (gradient && red + green + blue < (greyscaleCoefficient * gradientStep + greyscaleLine) * colorLevelStep || !gradient && (red < 160 || green < 160 || blue < 160)) {
+                b = b or (1 shl 7 - k)
               }
               greyscaleCoefficient += 5
               if (greyscaleCoefficient > 15) {
@@ -926,6 +955,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
           greyscaleCoefficientInit = 0
         }
       }
+
       return imageBytes
     }
 
@@ -947,7 +977,7 @@ class EscPosPrinterCommands @JvmOverloads constructor(
         val pxBaseRow = i * 24
         val imageBytes = ByteArray(imageBytesSize)
         imageBytes[0] = EscPosCommands.ESC
-        imageBytes[1] = 0x2A
+        imageBytes[1] = EscPosCommands.ASTERISKS
         imageBytes[2] = EscPosCommands.EXCLAMATION
         imageBytes[3] = nL.toByte()
         imageBytes[4] = nH.toByte()

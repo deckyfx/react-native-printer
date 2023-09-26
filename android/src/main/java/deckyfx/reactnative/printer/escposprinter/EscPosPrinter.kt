@@ -7,7 +7,8 @@ import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosConnectionExce
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosEncodingException
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
 import deckyfx.reactnative.printer.escposprinter.textparser.IPrinterTextParserElement
-import deckyfx.reactnative.printer.escposprinter.textparser.PrinterImageUriParser
+import deckyfx.reactnative.printer.escposprinter.textparser.PreParserImageURI
+import deckyfx.reactnative.printer.escposprinter.textparser.PreParserRaw
 import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParser
 import deckyfx.reactnative.printer.escposprinter.textparser.PrinterTextParserString
 
@@ -152,13 +153,22 @@ class EscPosPrinter(
     if (text.isNullOrEmpty()) {
       return this
     }
-    val imageParsedText = PrinterImageUriParser(context, this).parse(text)
-    if (imageParsedText.isEmpty()) {
+
+    // PreParse raw tag
+    var texts = PreParserRaw().parse(text)
+    if (texts.isEmpty()) {
       return this
     }
+
+    // PreParse img tag if it's contents is an url or uri
+    texts = PreParserImageURI(context, this).parse(text)
+    if (texts.isEmpty()) {
+      return this
+    }
+
     val textParser = PrinterTextParser(this)
     val linesParsed = textParser
-      .setFormattedText(imageParsedText)
+      .setFormattedText(texts)
       .parse()
     printer!!.reset()
     for (line in linesParsed) {

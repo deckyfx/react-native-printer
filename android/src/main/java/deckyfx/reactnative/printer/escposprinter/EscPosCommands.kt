@@ -58,6 +58,11 @@ class EscPosCommands {
     const val EXCLAMATION: Byte = 0x21
 
     /**
+     * !
+     */
+    const val ASTERISKS: Byte = 0x2A
+
+    /**
      * @
      */
     const val AT: Byte = 0x40
@@ -325,12 +330,14 @@ class EscPosCommands {
      */
     const val UNDERLINE_DOUBLE = 2
 
-    val PRINTER_ID_1 = arrayOf(GS, 0x49, 0x42) // GS I n
-    val PRINTER_ID_2 = arrayOf(GS, 0x49, 0x43) // GS I n
-    val PRINTER_ID_1_ALT = arrayOf(GS, 0x49, 0x01) // GS I n
-    val PRINTER_ID_2_ALT = arrayOf(GS, 0x49, 0x02) // GS I n
+    val PRINTER_ID_1 = byteArrayOf(GS, 0x49, 0x42) // GS I n
+    val PRINTER_ID_2 = byteArrayOf(GS, 0x49, 0x43) // GS I n
+    val PRINTER_ID_1_ALT = byteArrayOf(GS, 0x49, 0x01) // GS I n
+    val PRINTER_ID_2_ALT = byteArrayOf(GS, 0x49, 0x02) // GS I n
 
-    val INITIALIZE = arrayOf(ESC, AT, ESC, 0x45, 0x01, ESC, 0x45, 0x00, ESC, AT) // ESC @
+    val INITIALIZE = arrayOf(ESC, AT) // ESC @
+    val LINE_SPACE_24 = byteArrayOf(ESC, 0x33, 0x18)
+    val SELECT_BIT_IMAGE_MODE = byteArrayOf(ESC, ASTERISKS, EXCLAMATION)
 
     fun byteArray(from: Array<Int>): ByteArray {
       return ByteArray(from.size) { from[it].toByte() }

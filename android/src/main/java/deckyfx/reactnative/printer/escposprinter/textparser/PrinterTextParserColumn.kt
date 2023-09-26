@@ -61,7 +61,10 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
         val textParserTag =
           PrinterTextParserTag(trimmedTextColumn.substring(openTagIndex, openTagEndIndex))
         when (textParserTag.tagName) {
-          PrinterTextParser.TAGS_IMAGE, PrinterTextParser.TAGS_BARCODE, PrinterTextParser.TAGS_QRCODE -> {
+          PrinterTextParser.TAGS_IMAGE,
+          PrinterTextParser.TAGS_BARCODE,
+          PrinterTextParser.TAGS_QRCODE,
+          PrinterTextParser.TAGS_RAW -> {
             val closeTag = "</" + textParserTag.tagName + ">"
             val closeTagPosition = trimmedTextColumn.length - closeTag.length
             if (trimmedTextColumn.substring(closeTagPosition) == closeTag) {
@@ -80,6 +83,10 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
                 PrinterTextParser.TAGS_QRCODE -> appendQRCode(
                   textAlign,
                   textParserTag.attributes,
+                  trimmedTextColumn.substring(openTagEndIndex, closeTagPosition)
+                )
+
+                PrinterTextParser.TAGS_RAW -> appendRawCommand(
                   trimmedTextColumn.substring(openTagEndIndex, closeTagPosition)
                 )
               }
@@ -294,17 +301,7 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
                     }
                   }
                 } else {
-                  if (textParser.printer.useEscAsteriskCommand) {
-                    // Using ESC !
-                    if (underline) {
-                      textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_UNDERLINED_ALT)
-                    } else {
-                      textParser.addTextSize(EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT)
-                    }
-                  } else {
-                    // Using GS !
-                    textParser.addTextSize(textParser.lastTextSize)
-                  }
+                  textParser.addTextSize(textParser.lastTextSize)
                 }
                 if (textParserTag.hasAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_COLOR)) {
                   when (textParserTag.getAttribute(PrinterTextParser.ATTR_FORMAT_TEXT_FONT_COLOR)) {
@@ -393,26 +390,43 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
         rightSpace = 0
       }
       if (leftSpace > 0) {
-        this.prependString(
-          generateSpace(leftSpace),
-          EscPosPrinterCommands.TEXT_SIZE_NORMAL,
-          textColorStartColumn,
-          textReverseColorStartColumn,
-          EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
-          textUnderlineStartColumn,
-          textDoubleStrikeStartColumn
-        )
+        if (!textParser.printer.useEscAsteriskCommand) {
+          this.prependString(
+            generateSpace(leftSpace),
+            EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT,
+            null,
+            null,
+            null,
+            null,
+            null
+          )
+        } else {
+          this.prependString(
+            generateSpace(leftSpace),
+            EscPosPrinterCommands.TEXT_SIZE_NORMAL,
+            textColorStartColumn,
+            textReverseColorStartColumn,
+            EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
+            textUnderlineStartColumn,
+            textDoubleStrikeStartColumn
+          )
+        }
       }
       if (rightSpace > 0) {
-        this.appendString(
-          generateSpace(rightSpace),
-          EscPosPrinterCommands.TEXT_SIZE_NORMAL,
-          textParser.lastTextColor,
-          textParser.lastTextReverseColor,
-          EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
-          textParser.lastTextUnderline,
-          textParser.lastTextDoubleStrike
-        )
+        if (!textParser.printer.useEscAsteriskCommand) {
+          this.appendString(
+            generateSpace(rightSpace),
+            EscPosPrinterCommands.TEXT_SIZE_NORMAL,
+            textParser.lastTextColor,
+            textParser.lastTextReverseColor,
+            EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
+            textParser.lastTextUnderline,
+            textParser.lastTextDoubleStrike
+          )
+        }
+        /**
+         * Don't Append right element for ESC *
+         * */
       }
 
       // =================================================================================================
@@ -548,6 +562,13 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
     data: String
   ): PrinterTextParserColumn {
     return this.appendElement(PrinterTextParserQRCode(this, textAlign, qrCodeAttributes, data))
+  }
+
+  @Throws(EscPosParserException::class, EscPosBarcodeException::class)
+  private fun appendRawCommand(
+    data: String
+  ): PrinterTextParserColumn {
+    return this.appendElement(PrinterTextParserCommand(data))
   }
 
   private fun prependElement(element: IPrinterTextParserElement): PrinterTextParserColumn {

@@ -9,7 +9,6 @@ import {
   RNPrinterEventEmitter,
   JobBuilder,
   DesignBuilder,
-  TableBuilder,
   TagHelper,
 } from '@decky.fx/react-native-printer';
 import type {
@@ -82,40 +81,69 @@ const NetworkPrinter = () => {
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
     await JobBuilder.initializePrinter(jobId);
-    //await JobBuilder.setAsDotMatrix(jobId);
-    //await JobBuilder.useEscAsterisk(jobId);
+    await JobBuilder.setAsDotMatrix(jobId);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    await JobBuilder.useEscAsterisk(jobId);
     const designBuilder = new DesignBuilder(
       RNPrinter.PRINTING_LINES_MAX_CHAR_42
     );
 
-    const table = new TableBuilder(
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.LEFT,
-        spacer: true,
-        bold: true,
-      },
-      {
-        width: 0,
-        allignment: TagHelper.ALLIGNMENT.CENTER,
-      },
-      {
-        width: 5,
-        allignment: TagHelper.ALLIGNMENT.RIGHT,
-        bold: true,
-      }
-    )
-      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
-      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
-      .rows(['L'.repeat(10), 'C'.repeat(60), 'R'.repeat(20)])
-      .build();
-    designBuilder.addTable(table);
+    designBuilder.addRawLine(
+      TagHelper.raw(
+        TagHelper.hexString(
+          0x1b,
+          '!',
+          0x11,
+          'Hello World 0',
+          0x1b,
+          '!',
+          0x00,
+          0x0a
+        )
+      )
+    );
+    designBuilder.addRawLine(
+      TagHelper.raw(
+        TagHelper.hexString(
+          0x1b,
+          '!',
+          0x11,
+          'Hello World -1',
+          0x1b,
+          '!',
+          0x00,
+          0x0a
+        )
+      )
+    );
+    designBuilder.addLine(
+      TagHelper.font('Hello World 1', TagHelper.FONT_SIZE.TALL)
+    );
+    designBuilder.addLine(
+      TagHelper.font('Hello World 2', TagHelper.FONT_SIZE.TALL)
+    );
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(
+      TagHelper.font('Hello World 3', TagHelper.FONT_SIZE.TALL)
+    );
+    designBuilder.addLine(
+      TagHelper.font('Hello World 4', TagHelper.FONT_SIZE.TALL)
+    );
+
+    designBuilder.addLine(
+      TagHelper.left(
+        TagHelper.image(
+          'https://sharktest.b-cdn.net/6512604302babcf4abf1ff28/bill/pandawa_1695704074.jpg'
+        )
+      )
+    );
 
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
     designBuilder.addBlankLine();
-    designBuilder.addLine('!!!!!!!!!!');
+    designBuilder.addBlankLine();
+    designBuilder.addBlankLine();
     const designs = designBuilder.designs;
     for (let i = 0; i < designs.length; i++) {
       let line = designs[i]!!;

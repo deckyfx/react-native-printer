@@ -71,13 +71,13 @@ abstract class EscPosPrinterSize protected constructor(
     val maxHeight = 256
     if (bitmapWidth > maxWidth) {
       bitmapHeight =
-        Math.round(bitmapHeight.toFloat() * maxWidth.toFloat() / bitmapWidth.toFloat())
+        (bitmapHeight.toFloat() * maxWidth.toFloat() / bitmapWidth.toFloat()).roundToInt()
       bitmapWidth = maxWidth
       isSizeEdit = true
     }
     if (bitmapHeight > maxHeight) {
       bitmapWidth =
-        Math.round(bitmapWidth.toFloat() * maxHeight.toFloat() / bitmapHeight.toFloat())
+        (bitmapWidth.toFloat() * maxHeight.toFloat() / bitmapHeight.toFloat()).roundToInt()
       bitmapHeight = maxHeight
       isSizeEdit = true
     }

@@ -131,7 +131,7 @@ abstract class DeviceConnection {
     if (outputStream == null) {
       return null
     }
-    write(EscPosCommands.PRINTER_ID_1.toByteArray())
+    write(EscPosCommands.PRINTER_ID_1)
     var manufacturer = sendAndWaitForResponse(100)
     if (!manufacturer.isNullOrEmpty() && manufacturer.length == 1) {
       manufacturer = when (manufacturer[0].code) {
@@ -140,7 +140,7 @@ abstract class DeviceConnection {
         else -> "UNKNOWN"
       }
     }
-    write(EscPosCommands.PRINTER_ID_2.toByteArray())
+    write(EscPosCommands.PRINTER_ID_2)
     var model = sendAndWaitForResponse(100)
     if (!model.isNullOrEmpty() && model.length == 1) {
       model = when (model[0].code) {

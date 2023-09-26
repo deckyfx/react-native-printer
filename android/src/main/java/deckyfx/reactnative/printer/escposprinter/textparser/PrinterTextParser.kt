@@ -7,7 +7,7 @@ import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosEncodingExcept
 import deckyfx.reactnative.printer.escposprinter.exceptions.EscPosParserException
 
 class PrinterTextParser(val printer: EscPosPrinter) {
-  private var textSize = arrayOf<ByteArray?>(EscPosPrinterCommands.TEXT_SIZE_NORMAL)
+  private var textSize = arrayOf<ByteArray?>(if (!printer.useEscAsteriskCommand) EscPosPrinterCommands.TEXT_SIZE_NORMAL else EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT)
   private var textColor = arrayOf<ByteArray?>(EscPosPrinterCommands.TEXT_COLOR_BLACK)
   private var textReverseColor = arrayOf<ByteArray?>(EscPosPrinterCommands.TEXT_COLOR_REVERSE_OFF)
   private var textBold = arrayOf<ByteArray?>(EscPosPrinterCommands.TEXT_WEIGHT_NORMAL)
@@ -132,6 +132,7 @@ class PrinterTextParser(val printer: EscPosPrinter) {
     const val TAGS_RESET_PRINTER = "X"
     val TAGS_ALIGN = arrayOf(TAGS_ALIGN_LEFT, TAGS_ALIGN_CENTER, TAGS_ALIGN_RIGHT)
     const val TAGS_IMAGE = "img"
+    const val TAGS_RAW = "raw"
     const val TAGS_BARCODE = "barcode"
     const val TAGS_QRCODE = "qrcode"
     const val ATTR_BARCODE_WIDTH = "width"

@@ -58,7 +58,7 @@ export default class DesignBuilder {
   }
 
   /**
-   * Add formated line using TagHelper
+   * Add formated line using TagHelper will add \n for every lines
    *
    * @param {string} line
    */
@@ -66,6 +66,15 @@ export default class DesignBuilder {
     if (!line.endsWith('\n')) {
       line = TagHelper.line(line);
     }
+    return this.addRawLine(line);
+  }
+
+  /**
+   * Add raw formated line using TagHelper, not \n will be added
+   *
+   * @param {string} line
+   */
+  public addRawLine(line: string) {
     this._design.push(line);
     return this;
   }
