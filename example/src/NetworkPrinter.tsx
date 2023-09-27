@@ -117,6 +117,13 @@ const NetworkPrinter = () => {
       TagHelper.font('Hello World 2', TagHelper.FONT_SIZE.TALL)
     );
     designBuilder.addLine('12345678901234567890123456789012345678901234567890');
+    designBuilder.addLine('Normal');
+    designBuilder.addLine(TagHelper.bold('Bold'));
+    designBuilder.addLine(TagHelper.underline('Underline'));
+    designBuilder.addLine(
+      TagHelper.bold(TagHelper.underline('Bold Underline'))
+    );
+    designBuilder.addLine('Normal');
     designBuilder.addLine(
       TagHelper.font('Hello World 3', TagHelper.FONT_SIZE.TALL)
     );

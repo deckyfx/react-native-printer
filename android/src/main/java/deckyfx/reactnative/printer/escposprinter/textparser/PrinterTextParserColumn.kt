@@ -390,43 +390,26 @@ class PrinterTextParserColumn(textParserLine: PrinterTextParserLine, textColumn:
         rightSpace = 0
       }
       if (leftSpace > 0) {
-        if (!textParser.printer.useEscAsteriskCommand) {
-          this.prependString(
-            generateSpace(leftSpace),
-            EscPosPrinterCommands.TEXT_SIZE_NORMAL_ALT,
-            null,
-            null,
-            null,
-            null,
-            null
-          )
-        } else {
-          this.prependString(
-            generateSpace(leftSpace),
-            EscPosPrinterCommands.TEXT_SIZE_NORMAL,
-            textColorStartColumn,
-            textReverseColorStartColumn,
-            EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
-            textUnderlineStartColumn,
-            textDoubleStrikeStartColumn
-          )
-        }
+        this.prependString(
+          generateSpace(leftSpace),
+          EscPosPrinterCommands.TEXT_SIZE_NORMAL,
+          textColorStartColumn,
+          textReverseColorStartColumn,
+          EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
+          textUnderlineStartColumn,
+          textDoubleStrikeStartColumn
+        )
       }
       if (rightSpace > 0) {
-        if (!textParser.printer.useEscAsteriskCommand) {
-          this.appendString(
-            generateSpace(rightSpace),
-            EscPosPrinterCommands.TEXT_SIZE_NORMAL,
-            textParser.lastTextColor,
-            textParser.lastTextReverseColor,
-            EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
-            textParser.lastTextUnderline,
-            textParser.lastTextDoubleStrike
-          )
-        }
-        /**
-         * Don't Append right element for ESC *
-         * */
+        this.appendString(
+          generateSpace(rightSpace),
+          EscPosPrinterCommands.TEXT_SIZE_NORMAL,
+          textParser.lastTextColor,
+          textParser.lastTextReverseColor,
+          EscPosPrinterCommands.TEXT_WEIGHT_NORMAL,
+          textParser.lastTextUnderline,
+          textParser.lastTextDoubleStrike
+        )
       }
 
       // =================================================================================================

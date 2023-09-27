@@ -214,31 +214,20 @@ class EscPosPrinterCommands @JvmOverloads constructor(
         TEXT_SIZE_NORMAL_ALT
       }
     }
-    /**
-     * ESC * Formatting only can change font size for now, so bypass all other styling
-     * */
-    if (!useEscAsteriskCommand) {
-      if (textColor == null) {
-        textColor = TEXT_COLOR_BLACK
-      }
-      if (textReverseColor == null) {
-        textReverseColor = TEXT_COLOR_REVERSE_OFF
-      }
-      if (textBold == null) {
-        textBold = TEXT_WEIGHT_NORMAL
-      }
-      if (textUnderline == null) {
-        textUnderline = TEXT_UNDERLINE_OFF
-      }
-      if (textDoubleStrike == null) {
-        textDoubleStrike = TEXT_DOUBLE_STRIKE_OFF
-      }
-    } else {
-      textColor = null
-      textReverseColor = null
-      textBold = null
-      textUnderline = null
-      textDoubleStrike = null
+    if (textColor == null) {
+      textColor = TEXT_COLOR_BLACK
+    }
+    if (textReverseColor == null) {
+      textReverseColor = TEXT_COLOR_REVERSE_OFF
+    }
+    if (textBold == null) {
+      textBold = TEXT_WEIGHT_NORMAL
+    }
+    if (textUnderline == null) {
+      textUnderline = TEXT_UNDERLINE_OFF
+    }
+    if (textDoubleStrike == null) {
+      textDoubleStrike = TEXT_DOUBLE_STRIKE_OFF
     }
     try {
       if (text.isNullOrEmpty()) return this
@@ -247,34 +236,29 @@ class EscPosPrinterCommands @JvmOverloads constructor(
        *  Bypass it
        *  */
       val textBytes: ByteArray = text.toByteArray(Charset.forName(charsetEncoding.name))
-      /**
-       * don't set character encoding for dot-matrix printer
-       */
-      if (!useEscAsteriskCommand && !isDotMatrixPrinter) {
-        printerConnection.write(charsetEncoding.command)
-        //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
-      }
+      printerConnection.write(charsetEncoding.command)
+      //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
       if (!Arrays.equals(currentTextSize, textSize)) {
         printerConnection.write(textSize)
         currentTextSize = textSize
       }
-      if (!Arrays.equals(currentTextDoubleStrike, textDoubleStrike) && textDoubleStrike != null) {
+      if (!Arrays.equals(currentTextDoubleStrike, textDoubleStrike)) {
         printerConnection.write(textDoubleStrike)
         currentTextDoubleStrike = textDoubleStrike
       }
-      if (!Arrays.equals(currentTextUnderline, textUnderline) && textUnderline != null) {
+      if (!Arrays.equals(currentTextUnderline, textUnderline)) {
         printerConnection.write(textUnderline)
         currentTextUnderline = textUnderline
       }
-      if (!Arrays.equals(currentTextBold, textBold) && textBold != null) {
+      if (!Arrays.equals(currentTextBold, textBold)) {
         printerConnection.write(textBold)
         currentTextBold = textBold
       }
-      if (!Arrays.equals(currentTextColor, textColor) && textColor != null) {
+      if (!Arrays.equals(currentTextColor, textColor)) {
         printerConnection.write(textColor)
         currentTextColor = textColor
       }
-      if (!Arrays.equals(currentTextReverseColor, textReverseColor) && textReverseColor != null) {
+      if (!Arrays.equals(currentTextReverseColor, textReverseColor)) {
         printerConnection.write(textReverseColor)
         currentTextReverseColor = textReverseColor
       }
@@ -305,17 +289,17 @@ class EscPosPrinterCommands @JvmOverloads constructor(
       return this
     }
     try {
+      printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x74, charsetId.toByte()))
       if (!useEscAsteriskCommand) {
-        printerConnection.write(byteArrayOf(EscPosCommands.ESC, 0x74, charsetId.toByte()))
         printerConnection.write(TEXT_SIZE_NORMAL)
-        printerConnection.write(TEXT_COLOR_BLACK)
-        printerConnection.write(TEXT_COLOR_REVERSE_OFF)
-        printerConnection.write(TEXT_WEIGHT_NORMAL)
-        printerConnection.write(TEXT_UNDERLINE_OFF)
-        printerConnection.write(TEXT_DOUBLE_STRIKE_OFF)
       } else {
         printerConnection.write(TEXT_SIZE_NORMAL_ALT)
       }
+      printerConnection.write(TEXT_COLOR_BLACK)
+      printerConnection.write(TEXT_COLOR_REVERSE_OFF)
+      printerConnection.write(TEXT_WEIGHT_NORMAL)
+      printerConnection.write(TEXT_UNDERLINE_OFF)
+      printerConnection.write(TEXT_DOUBLE_STRIKE_OFF)
       printerConnection.write(":::: Charset n°$charsetId : ".toByteArray())
       printerConnection.write(
         byteArrayOf(
@@ -851,8 +835,8 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     val TEXT_SIZE_BIG_6 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x66)
 
     /**
-     *     Use 7x9 font for alternative command for Dot-matrix printer
-     *     All bytes is +1
+     *  Use 7x9 font for alternative command for Dot-matrix printer
+     *  All bytes is +1
      */
     val TEXT_SIZE_NORMAL_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x01)
     val TEXT_SIZE_DOUBLE_HEIGHT_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x11)
