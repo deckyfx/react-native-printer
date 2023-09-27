@@ -247,8 +247,13 @@ class EscPosPrinterCommands @JvmOverloads constructor(
        *  Bypass it
        *  */
       val textBytes: ByteArray = text.toByteArray(Charset.forName(charsetEncoding.name))
-      printerConnection.write(charsetEncoding.command)
-      //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
+      /**
+       * don't set character encoding for dot-matrix printer
+       */
+      if (!useEscAsteriskCommand && !isDotMatrixPrinter) {
+        printerConnection.write(charsetEncoding.command)
+        //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
+      }
       if (!Arrays.equals(currentTextSize, textSize)) {
         printerConnection.write(textSize)
         currentTextSize = textSize
@@ -845,9 +850,11 @@ class EscPosPrinterCommands @JvmOverloads constructor(
     val TEXT_SIZE_BIG_5 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x55)
     val TEXT_SIZE_BIG_6 = byteArrayOf(EscPosCommands.GS, EscPosCommands.EXCLAMATION, 0x66)
 
-    // Use 7x9 font for alternative command for Dotmatrix printer
-    // All bytes is +1
-    val TEXT_SIZE_NORMAL_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x00)
+    /**
+     *     Use 7x9 font for alternative command for Dot-matrix printer
+     *     All bytes is +1
+     */
+    val TEXT_SIZE_NORMAL_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x01)
     val TEXT_SIZE_DOUBLE_HEIGHT_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x11)
     val TEXT_SIZE_DOUBLE_WIDTH_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x21)
     val TEXT_SIZE_BIG_ALT = byteArrayOf(EscPosCommands.ESC, EscPosCommands.EXCLAMATION, 0x31)

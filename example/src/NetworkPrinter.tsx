@@ -75,8 +75,8 @@ const NetworkPrinter = () => {
       connection: RNPrinter.PRINTER_CONNECTION_NETWORK,
       address: address,
       port: port,
-      width: RNPrinter.PRINTING_WIDTH_80_MM,
-      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_42,
+      width: RNPrinter.PRINTING_WIDTH_76_MM,
+      maxChars: RNPrinter.PRINTING_LINES_MAX_CHAR_40,
     };
     const jobId = await JobBuilder.begin();
     await JobBuilder.selectPrinter(jobId, printer);
@@ -91,14 +91,7 @@ const NetworkPrinter = () => {
     designBuilder.addRawLine(
       TagHelper.raw(
         TagHelper.hexString(
-          0x1b,
-          '!',
-          0x11,
-          'Hello World 0',
-          0x1b,
-          '!',
-          0x00,
-          0x0a
+          '12345678901234567890123456789012345678901234567890'
         )
       )
     );
@@ -119,10 +112,11 @@ const NetworkPrinter = () => {
     designBuilder.addLine(
       TagHelper.font('Hello World 1', TagHelper.FONT_SIZE.TALL)
     );
+    designBuilder.addBlankLine();
     designBuilder.addLine(
       TagHelper.font('Hello World 2', TagHelper.FONT_SIZE.TALL)
     );
-    designBuilder.addLine('Normal');
+    designBuilder.addLine('12345678901234567890123456789012345678901234567890');
     designBuilder.addLine(
       TagHelper.font('Hello World 3', TagHelper.FONT_SIZE.TALL)
     );
