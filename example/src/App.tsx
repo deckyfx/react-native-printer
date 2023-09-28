@@ -24,7 +24,7 @@ const App = () => {
   const [imageUri, setImageUri] = useState<string | undefined>('');
 
   const buildDesign = () => {
-    const design = new DesignBuilder(RNPrinter.PRINTING_LINES_MAX_CHAR_56);
+    const design = new DesignBuilder(RNPrinter.PRINTING_LINES_MAX_CHAR_42);
     const columnData: RowConfig = [
       {
         width: 26,

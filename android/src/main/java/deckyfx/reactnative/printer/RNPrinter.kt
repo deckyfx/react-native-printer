@@ -76,17 +76,19 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     const val PRINTER_TYPE_DOTMATRIX = "dotmatrix"
 
     const val PRINTING_DPI_NORMAL = 203
+    
+    const val PRINTING_LINES_MAX_CHAR_30 = 30
     const val PRINTING_LINES_MAX_CHAR_32 = 32
     const val PRINTING_LINES_MAX_CHAR_33 = 33
     const val PRINTING_LINES_MAX_CHAR_40 = 40
     const val PRINTING_LINES_MAX_CHAR_42 = 42
-    const val PRINTING_LINES_MAX_CHAR_56 = 56
 
     // Width is used to calculate image and QR Code placement,
     // It is in mili-meter
     // Somehow need width correction around 6mm,
     // maybe because there are slightly white space in left and right?
     private const val PRINTING_WIDTH_CORRECTION = 10f
+    const val PRINTING_WIDTH_56_MM = 56f - PRINTING_WIDTH_CORRECTION
     const val PRINTING_WIDTH_58_MM = 58f - PRINTING_WIDTH_CORRECTION
     const val PRINTING_WIDTH_70_MM = 70f - PRINTING_WIDTH_CORRECTION
     const val PRINTING_WIDTH_75_MM = 75f - PRINTING_WIDTH_CORRECTION
@@ -152,12 +154,13 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
 
     constants["PRINTING_DPI_NORMAL"] = PRINTING_DPI_NORMAL
 
+    constants["PRINTING_LINES_MAX_CHAR_30"] = PRINTING_LINES_MAX_CHAR_30
     constants["PRINTING_LINES_MAX_CHAR_32"] = PRINTING_LINES_MAX_CHAR_32
     constants["PRINTING_LINES_MAX_CHAR_33"] = PRINTING_LINES_MAX_CHAR_33
     constants["PRINTING_LINES_MAX_CHAR_40"] = PRINTING_LINES_MAX_CHAR_40
     constants["PRINTING_LINES_MAX_CHAR_42"] = PRINTING_LINES_MAX_CHAR_42
-    constants["PRINTING_LINES_MAX_CHAR_56"] = PRINTING_LINES_MAX_CHAR_56
 
+    constants["PRINTING_WIDTH_56_MM"] = PRINTING_WIDTH_56_MM
     constants["PRINTING_WIDTH_58_MM"] = PRINTING_WIDTH_58_MM
     constants["PRINTING_WIDTH_70_MM"] = PRINTING_WIDTH_70_MM
     constants["PRINTING_WIDTH_75_MM"] = PRINTING_WIDTH_75_MM
