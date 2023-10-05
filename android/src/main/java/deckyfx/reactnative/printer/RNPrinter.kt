@@ -88,8 +88,8 @@ class RNPrinter(private val reactContext: ReactApplicationContext) :
     // Somehow need width correction around 6mm,
     // maybe because there are slightly white space in left and right?
     private const val PRINTING_WIDTH_CORRECTION = 10f
-    const val PRINTING_WIDTH_56_MM = 56f - PRINTING_WIDTH_CORRECTION
-    const val PRINTING_WIDTH_58_MM = 58f - PRINTING_WIDTH_CORRECTION
+    const val PRINTING_WIDTH_56_MM = 56f - (PRINTING_WIDTH_CORRECTION / 2)
+    const val PRINTING_WIDTH_58_MM = 58f - (PRINTING_WIDTH_CORRECTION / 2)
     const val PRINTING_WIDTH_70_MM = 70f - PRINTING_WIDTH_CORRECTION
     const val PRINTING_WIDTH_75_MM = 75f - PRINTING_WIDTH_CORRECTION
     const val PRINTING_WIDTH_76_MM = 76f - PRINTING_WIDTH_CORRECTION
