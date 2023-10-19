@@ -41,7 +41,7 @@ yarn add @decky.fx/react-native-printer
 ```
 
 ## Latest Working Version
-**1.0.5-f**
+**1.0.5-g**
 
 ## Tested Printer
  - [x] SEWOO SLK-TS100

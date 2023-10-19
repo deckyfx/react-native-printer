@@ -148,7 +148,7 @@ export default class DesignBuilder {
   public chuckLines(text: string, maxLength: number = this.maxChar): string[] {
     // most of this function is credited too
     // https://stackoverflow.com/a/14487422/4825796
-    let newLineStr = '\n' + String.fromCharCode(8203);
+    let newLineStr = '\n';
     let updatedStr = '';
     while (text.length > maxLength) {
       let found = false;
